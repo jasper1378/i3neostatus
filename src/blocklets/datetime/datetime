@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+full_text=$(date "+$output_format")
+full_text=$(sed 's/\&/\&amp;/g' <<< $full_text | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g')
+echo -e "<span>$full_text</span>"
