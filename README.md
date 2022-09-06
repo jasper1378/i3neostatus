@@ -37,3 +37,6 @@ COMING SOON!
 
 ## Usage
 The documentation for a particular blocklet (including and examples i3blocks.conf) can be found in the `doc/` directory.
+
+## License
+See [LICENSE.md](LICENSE.md) for details.
