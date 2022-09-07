@@ -16,10 +16,6 @@ wireless
 ## Installation
 i3blocks-blocklets can be installed from the source directly or as an AUR package.
 
-### Dependencies
-`backlight` depends on [light](https://github.com/haikarainen/light)
-`volume` depends on [PulseAudio](https://www.freedesktop.org/wiki/Software/PulseAudio/)
-
 ### Source
 Acquire the sources
 ```
