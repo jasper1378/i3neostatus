@@ -9,9 +9,9 @@ Print date and time
 ### Required
 These options must be set to the specified values for the blocklet to work.
 
-`$i3blocks-blocklets_dir` should be set the directory containing the compiled blocklets.
+`$i3blocks_blocklets_dir` should be set the directory containing the compiled blocklets.
 ```
-command=$i3blocks-blocklets_dir/datetime
+command=$i3blocks_blocklets_dir/datetime
 ```
 ```
 interval=1
