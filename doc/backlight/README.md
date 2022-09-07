@@ -27,7 +27,7 @@ The text to be printed when the blocklet is functioning.
 ```
 output_format=B: %brightness
 ```
-The text to be printed when the blocklet is not functioning.
+The text to be printed when `light` is not installed.
 ```
 output_format_down=No backlight
 ```
@@ -35,7 +35,7 @@ The color of the text when the blocklet is functioning.
 ```
 color=#FFFFFF
 ```
-The color of the text when the blocklet is not functioning.
+The color of the text when `light` is not installed.
 ```
 color_down=#FF0000
 ```
