@@ -4,14 +4,12 @@
 My personal blocklets for [i3blocks](https://github.com/vivien/i3blocks).
 
 ## Blocklets
-```
-backlight
-battery
-ethernet
-timedate
-volume
-wireless
-```
+`backlight`
+`battery`
+`ethernet`
+`timedate`
+`volume`
+`wireless`
 
 ## Installation
 i3blocks-blocklets can be installed from the source directly or as an AUR package.
