@@ -23,26 +23,26 @@ markup=pango
 ### Optional
 These options allow you to customize the blocklet.
 
-The text to be printed when the blocklet is functioning:
+The text to be printed when the blocklet is functioning.
 ```
 output_format=B: %brightness
 ```
-The text to be printed when the blocklet is not functioning:
+The text to be printed when the blocklet is not functioning.
 ```
 output_format_down=No backlight
 ```
-The color of the text when the blocklet is functioning:
+The color of the text when the blocklet is functioning.
 ```
 color=#FFFFFF
 ```
-The color of the text when the blocklet is not functioning:
+The color of the text when the blocklet is not functioning.
 ```
 color_down=#FF0000
 ```
 
 ### Variables that can be used in `output_format`
 
-The brightness of the backlight:
+The brightness of the backlight.
 ```
 %brightness
 ```
