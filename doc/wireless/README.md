@@ -52,6 +52,25 @@ The color of the text when wireless is not connected.
 color_down=#FF0000
 ```
 
+### Variables that can be used in `output_format`
+
+The quality of the wireless signal.
+```
+%quality
+```
+The ESSID of the connected network.
+```
+%essid
+```
+The frequency of the connected network.
+```
+%frequency
+```
+The IPv4 address of the wireless connection.
+```
+%ip
+```
+
 ## Example config
 See [i3blocks.conf](i3blocks.conf)
 
