@@ -103,7 +103,7 @@ The battery's time remaining to empty or time remaing to full (depending on whet
 %time
 ```
 
-## Exampe config
+## Example config
 See [i3blocks.conf](i3blocks.conf)
 
 ## More information
