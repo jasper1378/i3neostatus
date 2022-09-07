@@ -21,7 +21,7 @@ markup=pango
 ```
 
 ### Optional
-The options allow you to customize the blocklet.
+These options allow you to customize the blocklet.
 
 The name of the battery to watch. Not setting this will cause the blocklet to use the first battery found on the system.
 ```
