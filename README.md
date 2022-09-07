@@ -4,17 +4,14 @@
 My personal blocklets for [i3blocks](https://github.com/vivien/i3blocks).
 
 ## Blocklets
-`backlight`
-
-`battery`
-
-`ethernet`
-
-`timedate`
-
-`volume`
-
-`wireless`
+Blocklet | Description
+---|---
+backlight | Print backlight brightness
+battery | Print battery stats
+ethernet | Print ethernet information
+timedate | Print time and date
+volume | Print volume using PulseAudio
+wireless | Print wireless information
 
 ## Installation
 i3blocks-blocklets can be installed from the source directly or as an AUR package.
