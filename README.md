@@ -5,10 +5,15 @@ My personal blocklets for [i3blocks](https://github.com/vivien/i3blocks).
 
 ## Blocklets
 `backlight`
+
 `battery`
+
 `ethernet`
+
 `timedate`
+
 `volume`
+
 `wireless`
 
 ## Installation
