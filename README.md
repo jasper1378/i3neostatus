@@ -8,8 +8,8 @@ Blocklet | Description
 ---|---
 backlight | Print backlight brightness
 battery | Print battery stats
+datetime | Print date and time
 ethernet | Print ethernet information
-timedate | Print time and date
 volume | Print volume using PulseAudio
 wireless | Print wireless information
 
