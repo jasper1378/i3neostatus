@@ -107,5 +107,5 @@ The battery's time remaining to empty or time remaing to full (depending on whet
 See [i3blocks.conf](i3blocks.conf)
 
 ## More information
-- Although the blocklet is update once a second, the `interval` is set to `persist` rather than `1` for performance reasons (no need to re-fetch environment variables each time).
+- Although the blocklet is updated once a second, the `interval` is set to `persist` rather than `1` for performance reasons (no need to re-fetch environment variables each time).
 - If no battery is found, the blocklet go to sleep. We assume that you're using the same config for a laptop and desktop and we don't want to waste CPU cycles continuously checking. You can always refresh `i3` to force the whole bar to update.
