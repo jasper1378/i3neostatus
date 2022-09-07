@@ -9,9 +9,9 @@ Print volume using PulseAudio
 ### Required
 These options must be set to the specified values for the blocklets to work.
 
-`$i3blocks-blocklets_dir` should be set the directory containing the compiled blocklets.
+`$i3blocks_blocklets_dir` should be set the directory containing the compiled blocklets.
 ```
-command=$i3blocks-blocklets_dir/battery
+command=$i3blocks_blocklets_dir/battery
 ```
 ```
 interval=persist
