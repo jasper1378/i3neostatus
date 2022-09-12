@@ -22,7 +22,7 @@ Battery::Battery(const std::string& name)
 
     m_state = common::ReadFirstLineOfFile(std::string{ path + "status" });
 
-    m_percent = std::stoi(common::ReadFirstLineOfFile(std::string{ path + "capacity" }));
+    m_percent = static_cast<int>(std::round(std::stod(common::ReadFirstLineOfFile(std::string{ path + "capacity" }))));
 
     if (m_state == "Full")
     {
@@ -39,7 +39,14 @@ Battery::Battery(const std::string& name)
     else if (m_state == "Discharging")
     {
         double charge_now{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "charge_now" })) };
-        double current_now{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "current_now" })) };
+
+        std::string current_now_string;
+        do
+        {
+            current_now_string = common::ReadFirstLineOfFile(std::string{ path + "current_now" });
+        }
+        while(current_now_string == "");
+        double current_now{ std::stod(current_now_string) };
 
         m_time = (charge_now / current_now);
     }
