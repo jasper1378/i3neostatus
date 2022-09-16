@@ -96,17 +96,23 @@ int main()
     }
     catch (const std::runtime_error& error)
     {
-        std::cerr << "Error (std::runtime_error): " << error.what() << '\n';
+        std::string error_string{ "Error: " + std::string{ error.what() } };
+        std::cerr << error_string << '\n';
+        common::PrintPangoMarkup(error_string, "#FF0000");
         return 1;
     }
     catch (const std::exception& error)
     {
-        std::cerr << "Error (std::exception): " << error.what() << '\n';
+        std::string error_string{ "Error: " + std::string{ error.what() } };
+        std::cerr << error_string << '\n';
+        common::PrintPangoMarkup(error_string, "#FF0000");
         return 1;
     }
     catch(...)
     {
-        std::cerr << "Unknown error" << '\n';
+        std::string error_string{ "Unknown Error" };
+        std::cerr << error_string << '\n';
+        common::PrintPangoMarkup(error_string, "#FF0000");
         return 1;
     }
 }
