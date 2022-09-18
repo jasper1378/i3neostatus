@@ -17,6 +17,10 @@ wireless | Print wireless information
 i3blocks-blocklets can be installed from the source directly or as an AUR package.
 
 ### Source
+Install dependencies
+- [light](https://github.com/haikarainen/light) (for backlight blocklet)
+- [PulseAudio](https://www.freedesktop.org/wiki/Software/PulseAudio/) (for volume blocklet)
+
 Acquire the sources
 ```
 $ git clone https://github.com/jasper1378/i3blocks-blocklets.git
