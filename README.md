@@ -1,7 +1,7 @@
 # i3blocks-blocklets
 
 ## About
-My personal blocklets for [i3blocks](https://github.com/vivien/i3blocks).
+Jasper's blocklets for [i3blocks](https://github.com/vivien/i3blocks).
 
 ## Blocklets
 Blocklet | Description
