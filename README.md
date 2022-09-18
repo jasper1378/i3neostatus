@@ -28,7 +28,7 @@ $ cd i3blocks-blocklets
 ```
 Build all the blocklets
 ```
-$ ./build_all
+$ ./build_all.sh
 ```
 The resulting compiled blocklets can be found in the `bin/` directory
 
