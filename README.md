@@ -33,7 +33,7 @@ $ ./build_all.sh
 The resulting compiled blocklets can be found in the `bin/` directory
 
 ### AUR
-COMING SOON!
+The AUR package can be found at [jasper-i3blocks-blocklets-git](https://aur.archlinux.org/packages/jasper-i3blocks-blocklets-git). See this [ArchWiki page](https://wiki.archlinux.org/title/Arch_User_Repository) for instructions on how to install an AUR package.
 
 ## Usage
 The documentation for a particular blocklet (including and examples i3blocks.conf) can be found in the `doc/` directory.
