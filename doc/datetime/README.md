@@ -2,7 +2,7 @@
 Print date and time
 
 ## Dependencies
-[`date` program from `coreutils`](https://www.gnu.org/software/coreutils/date)
+None
 
 ## Configuration options
 
