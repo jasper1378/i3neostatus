@@ -46,7 +46,7 @@ std::string common::ReadFirstLineOfFile(const std::string& file_name)
     return file_contents;
 }
 
-void WriteLinesToFile(const std::string& file_name, const std::vector<std::string>& to_write)
+void common::WriteLinesToFile(const std::string& file_name, const std::vector<std::string>& to_write)
 {
     std::ofstream output_file{ file_name };
 
@@ -61,7 +61,7 @@ void WriteLinesToFile(const std::string& file_name, const std::vector<std::strin
     }
 }
 
-void WriteOneLineToFile(const std::string& file_name, const std::string& to_write)
+void common::WriteOneLineToFile(const std::string& file_name, const std::string& to_write)
 {
     std::ofstream output_file{ file_name };
 
