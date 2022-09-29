@@ -1,6 +1,5 @@
 #include "backlight.hpp"
 #include "../../common/common.hpp"
-#include "../../common/missing_dependency_error/missing_dependency_error.hpp"
 
 #include <chrono>
 #include <csignal>
@@ -38,11 +37,22 @@ int main()
     {
         std::signal(SIGUSR1, sigusr1);
 
+        std::string env_backlight_device{ common::GetEnvWrapperExtraEmpties("backlight_device", "", { "_default_" }) };
+
         std::string env_output_format{ common::GetEnvWrapper("output_format", "%brightness") };
 
         const std::string env_color{ common::GetEnvWrapper("color", "#FFFFFF") };
 
-        Backlight backlight{};
+        Backlight backlight;
+
+        if (env_backlight_device != "")
+        {
+            backlight = Backlight{ env_backlight_device };
+        }
+        else
+        {
+            backlight = Backlight{};
+        }
 
         while (true)
         {
@@ -54,7 +64,7 @@ int main()
 
         return 0;
     }
-    catch (const common::MissingDependencyError& error)
+    catch (const Backlight::NoBacklightDeviceError& error)
     {
         const std::string env_output_format_down{ common::GetEnvWrapper("output_format_down", "No backlight") };
         const std::string env_color_down{ common::GetEnvWrapper("color_down", "#FFFFFF") };
