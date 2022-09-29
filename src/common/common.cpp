@@ -46,6 +46,33 @@ std::string common::ReadFirstLineOfFile(const std::string& file_name)
     return file_contents;
 }
 
+void WriteLinesToFile(const std::string& file_name, const std::vector<std::string>& to_write)
+{
+    std::ofstream output_file{ file_name };
+
+    if (!output_file)
+    {
+        throw std::runtime_error{ "Cannot open file for writing" };
+    }
+
+    for (size_t i{ 0 }; i < to_write.size(); ++i)
+    {
+        output_file << to_write[i] << '\n';
+    }
+}
+
+void WriteOneLineToFile(const std::string& file_name, const std::string& to_write)
+{
+    std::ofstream output_file{ file_name };
+
+    if (!output_file)
+    {
+        throw std::runtime_error{ "Cannot open file for writing" };
+    }
+
+    output_file << to_write << '\n';
+}
+
 std::vector<std::string> common::ExecCmdReadWholeOut(const std::string& cmd)
 {
     std::FILE* fp;
@@ -236,4 +263,16 @@ bool common::CheckIfProgramExistsInPath(const std::string& program)
     }
 
     return false;
+}
+
+bool common::ApproximatelyEqualAbsRel(double a, double b, double absEpsilon, double relEpsilon)
+{
+    double diff{ std::abs(a - b) };
+
+    if (diff <= absEpsilon)
+    {
+        return true;
+    }
+
+    return (diff <= (std::max(std::abs(a), std::abs(b)) * relEpsilon));
 }

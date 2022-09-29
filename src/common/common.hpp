@@ -16,6 +16,8 @@ namespace common
 
     std::vector<std::string> ReadWholeFile(const std::string& file_name);
     std::string ReadFirstLineOfFile(const std::string& file_name);
+    void WriteLinesToFile(const std::string& file_name, const std::vector<std::string>& to_write);
+    void WriteOneLineToFile(const std::string& file_name, const std::string& to_write);
     std::vector<std::string> ExecCmdReadWholeOut(const std::string& cmd);
     std::string ExecCmdReadFirstLine(const std::string& cmd);
     void ExecCmdDontRead(const std::string& cmd);
@@ -25,6 +27,7 @@ namespace common
     void ReplacePangoSpecialChars(std::string& str);
     void PrintPangoMarkup( std::string full_text,  std::string color);
     bool CheckIfProgramExistsInPath(const std::string& program);
+    bool ApproximatelyEqualAbsRel(double a, double b, double absEpsilon = 1e-12, double relEpsilon = 1e-8);
 }
 
 #endif
