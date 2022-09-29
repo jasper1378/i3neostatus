@@ -18,7 +18,6 @@ i3blocks-blocklets can be installed from the source directly or as an AUR packag
 
 ### Source
 Install dependencies
-- [light](https://github.com/haikarainen/light) (for backlight blocklet)
 - [PulseAudio](https://www.freedesktop.org/wiki/Software/PulseAudio/) (for volume blocklet)
 
 Acquire the sources

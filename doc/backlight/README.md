@@ -2,7 +2,7 @@
 Print backlight brightness
 
 ## Dependencies
-[light](https://github.com/haikarainen/light)
+None
 
 ## Configuration options
 
@@ -23,11 +23,15 @@ markup=pango
 ### Optional
 These options allow you to customize the blocklet.
 
+The backlight device to monitor. It should refer to a directory under `/sys/class/backlight/`. The special value `_default_` will tell the blocklet to use the first backlight device found. Not setting this option is equivalent to `_default_`.
+```
+backlight_device=_default_
+```
 The text to be printed when the blocklet is functioning.
 ```
 output_format=B: %brightness
 ```
-The text to be printed when `light` is not installed.
+The text to be printed when no backlight device is found.
 ```
 output_format_down=No backlight
 ```
@@ -35,7 +39,7 @@ The color of the text when the blocklet is functioning.
 ```
 color=#FFFFFF
 ```
-The color of the text when `light` is not installed.
+The color of the text when no backlight device is found.
 ```
 color_down=#FF0000
 ```
@@ -53,7 +57,6 @@ See [i3blocks.conf](i3blocks.conf)
 ## More information
 - Although the blocklet is update once a second, the `interval` is set to `persist` rather than `1` for performance reasons (no need to re-fetch environment variables each time).
 - The blocklet will also be updated if it receives a `SIGUSR1` signal. Note that signal should be sent to the blocklet itself, not `i3blocks`.
-- If `light` is not installed, the blocklet will switch into non-functioning mode. However if `light` is installed but no backlight controller is found `%brightness` will be set to `0%`.
 
 ## Bonus
 The following can be inserted into your `i3` config to enable changing your backlight brightness via keybinds while automatically sending `SIGUSR1` to the blocklet to update it.
