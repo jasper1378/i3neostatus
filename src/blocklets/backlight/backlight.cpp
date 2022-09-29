@@ -90,9 +90,10 @@ std::string Backlight::GetFormattedBrightness() const
 
 void Backlight::SetBrightness(double brightness)
 {
-    //TODO
     double max_brightness{ std::stod(common::ReadFirstLineOfFile(std::string{ m_device_path + "/max_brightness" })) };
     double actual_brightness{ (brightness / 100) * max_brightness };
+
+    common::WriteOneLineToFile(std::string{ m_device_path + "/brightness" }, std::to_string(static_cast<int>(std::round(actual_brightness))));
 }
 
 void Backlight::Update()
