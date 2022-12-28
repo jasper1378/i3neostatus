@@ -11,6 +11,15 @@ class Battery
 {
     private:
 
+        enum class AttrsForTimeCalc
+        {
+            charge_and_current,
+            energy_and_power,
+            max,
+        };
+
+    private:
+
         std::string m_name;
         std::string m_state;
         double m_percent;
@@ -33,6 +42,10 @@ class Battery
         std::string GetFormattedTime() const;
 
         void UpdateStatus();
+
+    private:
+
+        AttrsForTimeCalc FindAvailableAttrs(const std::string& bat_path);
 
     public:
 
