@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 Battery::Battery(const std::string& name)
     : m_name{ name }, m_state{}, m_percent{}, m_time{}
@@ -24,35 +25,77 @@ Battery::Battery(const std::string& name)
 
     m_percent = static_cast<int>(std::round(std::stod(common::ReadFirstLineOfFile(std::string{ path + "capacity" }))));
 
-    if (m_state == "Full")
-    {
-        m_time = 0;
-    }
-    else if (m_state == "Charging")
-    {
-        double charge_full{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "charge_full" })) };
-        double charge_now{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "charge_now" })) };
-        double current_now{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "current_now" })) };
+    AttrsForTimeCalc attrs_to_use{ FindAvailableAttrs(path) };
 
-        m_time = ((charge_full - charge_now) / current_now);
-    }
-    else if (m_state == "Discharging")
+    if (attrs_to_use == AttrsForTimeCalc::charge_and_current)
     {
-        double charge_now{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "charge_now" })) };
-
-        std::string current_now_string;
-        do
+        if (m_state == "Full")
         {
-            current_now_string = common::ReadFirstLineOfFile(std::string{ path + "current_now" });
+            m_time = 0;
         }
-        while(current_now_string == "");
-        double current_now{ std::stod(current_now_string) };
+        else if (m_state == "Charging")
+        {
+            double charge_full{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "charge_full" })) };
+            double charge_now{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "charge_now" })) };
+            double current_now{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "current_now" })) };
 
-        m_time = (charge_now / current_now);
+            m_time = ((charge_full - charge_now) / current_now);
+        }
+        else if (m_state == "Discharging")
+        {
+            double charge_now{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "charge_now" })) };
+
+            std::string current_now_string;
+            do
+            {
+                current_now_string = common::ReadFirstLineOfFile(std::string{ path + "current_now" });
+            }
+            while(current_now_string == "");
+            double current_now{ std::stod(current_now_string) };
+
+            m_time = (charge_now / current_now);
+        }
+        else
+        {
+            m_time = 0;
+        }
+    }
+    else if (attrs_to_use == AttrsForTimeCalc::energy_and_power)
+    {
+        if (m_state == "Full")
+        {
+            m_time = 0;
+        }
+        else if (m_state == "Charging")
+        {
+            double energy_full{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "energy_full" })) };
+            double energy_now{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "energy_now" })) };
+            double power_now{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "power_now" })) };
+
+            m_time = ((energy_full - energy_now) / power_now);
+        }
+        else if (m_state == "Discharging")
+        {
+            double energy_now{ std::stod(common::ReadFirstLineOfFile(std::string{ path + "energy_now" })) };
+
+            std::string power_now_string;
+            do
+            {
+                power_now_string = common::ReadFirstLineOfFile(std::string{ path + "power_now" });
+            }
+            while(power_now_string == "");
+            double power_now{ std::stod(power_now_string) };
+
+            m_time = (energy_now / power_now);
+        }
+        else
+        {
+            m_time = 0;
+        }
     }
     else
     {
-        m_time = 0;
+        throw std::runtime_error{ "unable to find all attributes required for time calculation" };
     }
 }
 
@@ -124,6 +167,54 @@ std::string Battery::GetFormattedTime() const
 void Battery::UpdateStatus()
 {
     *this = Battery{ m_name };
+}
+
+Battery::AttrsForTimeCalc Battery::FindAvailableAttrs(const std::string& bat_path)
+{
+    static const auto is_reg_file_or_symlink{ [](const std::string& path)
+    {
+         return ((std::filesystem::is_regular_file(path) == true) || (std::filesystem::is_symlink(path) == true));
+    } };
+
+    static const auto check_if_all_files_exist{ [](const std::vector<std::string>& paths)
+    {
+        for (size_t i{ 0 }; i < paths.size(); ++i)
+        {
+            if (is_reg_file_or_symlink(paths[i]) == false)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    } };
+
+    static const std::vector<std::string> charge_and_current_attrs{
+        { std::string{ bat_path + "charge_full" } },
+        { std::string{ bat_path + "charge_full_design" } },
+        { std::string{ bat_path + "charge_now" } },
+        { std::string{ bat_path + "current_now" } }
+    };
+
+    static const std::vector<std::string> energy_and_power_attrs{
+        { std::string{ bat_path + "energy_full" } },
+        { std::string{ bat_path + "energy_full_design" } },
+        { std::string{ bat_path + "energy_now" } },
+        { std::string{ bat_path + "power_now" } }
+    };
+
+    if (check_if_all_files_exist(charge_and_current_attrs) == true)
+    {
+        return AttrsForTimeCalc::charge_and_current;
+    }
+    else if (check_if_all_files_exist(energy_and_power_attrs) == true)
+    {
+        return AttrsForTimeCalc::energy_and_power;
+    }
+    else
+    {
+        return AttrsForTimeCalc::max;
+    }
 }
 
 Battery::BatteryDoesNotExistError::BatteryDoesNotExistError(const std::string& bat_name)
