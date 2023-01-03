@@ -13,7 +13,7 @@ function copy_script() {
     cd ../../../
 }
 
-mkdir bin
+mkdir -p bin
 
 build backlight
 build battery
