@@ -33,3 +33,7 @@
 
 # Executable directory
 bin/
+
+# Vim
+compile_commands.json
+.cache/
