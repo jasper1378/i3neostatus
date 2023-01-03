@@ -1,4 +1,4 @@
-# i3blocks-blocklets
+# jasper-i3blocks-blocklets
 
 ## About
 Jasper's blocklets for [i3blocks](https://github.com/vivien/i3blocks).
@@ -14,7 +14,7 @@ volume | Print volume using PulseAudio
 wireless | Print wireless information
 
 ## Installation
-i3blocks-blocklets can be installed from the source directly or as an AUR package.
+jasper-i3blocks-blocklets can be installed from the source directly or as an AUR package.
 
 ### Source
 Install dependencies
@@ -22,8 +22,8 @@ Install dependencies
 
 Acquire the sources
 ```
-$ git clone https://github.com/jasper1378/i3blocks-blocklets.git
-$ cd i3blocks-blocklets
+$ git clone https://github.com/jasper1378/jasper-i3blocks-blocklets.git
+$ cd jasper-i3blocks-blocklets
 ```
 Build all the blocklets
 ```
@@ -35,7 +35,7 @@ The resulting compiled blocklets can be found in the `bin/` directory
 The AUR package can be found at [jasper-i3blocks-blocklets-git](https://aur.archlinux.org/packages/jasper-i3blocks-blocklets-git). See this [ArchWiki page](https://wiki.archlinux.org/title/Arch_User_Repository) for instructions on how to install an AUR package.
 
 ## Usage
-The documentation for a particular blocklet (including and examples i3blocks.conf) can be found in the `doc/` directory.
+The documentation for a particular blocklet (including an example i3blocks.conf) can be found in the `doc/` directory.
 
 ## License
 See [LICENSE.md](LICENSE.md) for details.
