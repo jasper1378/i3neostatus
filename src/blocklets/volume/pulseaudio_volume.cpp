@@ -1,110 +1,431 @@
 #include "pulseaudio_volume.hpp"
 
-#include "i3status_pulse.hpp"
+#include "volume.hpp"
 
+#include <pulse/pulseaudio.h>
+
+#include <cmath>
+#include <condition_variable>
+#include <cstdint>
+#include <exception>
+#include <mutex>
+#include <stdexcept>
 #include <string>
+#include <variant>
 
-#include <cstring>
+const std::string PulseaudioVolume::m_k_app_name{ "jasper-i3blocks-blocklets" };
+const std::string PulseaudioVolume::m_k_default_sink_name{ "@DEFAULT_SINK@" };
 
-PulseAudioVolume::PulseAudioVolume()
-    : m_sink_idx{ DEFAULT_SINK_INDEX }, m_sink_name{ "" }
+PulseaudioVolume::PulseaudioVolume()
+    : Volume{},
+      m_device_id{ IdType::string, m_k_default_sink_name },
+      m_info_volume{ 0 },
+      m_info_muted{ 0 },
+      m_info_description{ "" },
+      m_pa_mainloop{ nullptr},
+      m_mainloop_running{ false },
+      m_pa_api{ nullptr },
+      m_pa_context{ nullptr },
+      m_context_connected{ false },
+      m_pa_proplist{ nullptr },
+      m_pa_subscribe_op{ nullptr },
+      m_status{ Status::starting },
+      m_last_error{ "ok" },
+      m_context_state{ PA_CONTEXT_UNCONNECTED },
+      m_context_ready{ false },
+      m_subscribe_ready{ false },
+      m_sink_info_ready{ false }
 {
     Init();
 }
 
-PulseAudioVolume::PulseAudioVolume(const uint32_t sink_idx)
-    : m_sink_idx{ sink_idx }, m_sink_name{ "" }
+PulseaudioVolume::PulseaudioVolume(DeviceId device_id)
+    : Volume{},
+      m_device_id{ device_id },
+      m_info_volume{ 0 },
+      m_info_muted{ 0 },
+      m_info_description{ "" },
+      m_pa_mainloop{ nullptr},
+      m_mainloop_running{ false },
+      m_pa_api{ nullptr },
+      m_pa_context{ nullptr },
+      m_context_connected{ false },
+      m_pa_proplist{ nullptr },
+      m_pa_subscribe_op{ nullptr },
+      m_status{ Status::starting },
+      m_last_error{ "ok" },
+      m_context_state{ PA_CONTEXT_UNCONNECTED },
+      m_context_ready{ false },
+      m_subscribe_ready{ false },
+      m_sink_info_ready{ false }
 {
     Init();
 }
 
-PulseAudioVolume::PulseAudioVolume(const std::string& sink_name)
-    : m_sink_idx{ DEFAULT_SINK_INDEX }, m_sink_name{ sink_name }
+PulseaudioVolume::~PulseaudioVolume()
 {
-    Init();
+    Term();
 }
 
-PulseAudioVolume::PulseAudioVolume(const uint32_t sink_idx, const std::string& sink_name)
-    : m_sink_idx{ sink_idx }, m_sink_name{ sink_name }
+uint32_t PulseaudioVolume::GetVolume() const
 {
-    Init();
+    std::unique_lock<std::mutex> info_lck{ m_info_mx };
+    return m_info_volume;
 }
 
-PulseAudioVolume::PulseAudioVolume(const PulseAudioVolume& other)
-    : m_sink_idx{ other.m_sink_idx },
-      m_sink_name{ other.m_sink_name },
-      m_volume{ other.m_volume },
-      m_muted{ other.m_muted },
-      m_description{ other.m_description }
+bool PulseaudioVolume::GetMuted() const
 {
+    std::unique_lock<std::mutex> info_lck{ m_info_mx };
+    return m_info_muted;
 }
 
-void PulseAudioVolume::Init()
+std::string PulseaudioVolume::GetDescription() const
 {
-    const char* sink_name_as_c_style_str{ ((m_sink_name != "") ? (m_sink_name.c_str()) : (NULL)) };
+    std::unique_lock<std::mutex> info_lck{ m_info_mx };
+    return m_info_description;
+}
 
-    int cvolume{ PULSEAUDIO_VOLUME_FAIL };
-    char description[MAX_SINK_DESCRIPTION_LEN]{ PULSEAUDIO_DESCRIPTION_FAIL };
+Volume::Status PulseaudioVolume::GetStatus() const
+{
+    return m_status;
+}
 
-    do
+std::string PulseaudioVolume::GetLastError() const
+{
+    std::unique_lock<std::mutex> last_error_lck{ m_last_error_mx };
+    return m_last_error;
+}
+
+Volume::DeviceId PulseaudioVolume::GetDefaultDeviceId()
+{
+    return DeviceId{ IdType::string, m_k_default_sink_name};
+}
+
+void PulseaudioVolume::Init()
+{
+    std::unique_lock<std::mutex> m_init_lck{ m_init_mx };
+
+    try
     {
-        if (pulse_initialize())
+        if (m_pa_mainloop == nullptr)
         {
-            cvolume = volume_pulseaudio(m_sink_idx, sink_name_as_c_style_str);
-
-            if (!description_pulseaudio(m_sink_idx, sink_name_as_c_style_str, description))
+            m_pa_mainloop = pa_threaded_mainloop_new();
+            if (m_pa_mainloop == nullptr)
             {
-                std::strcpy(description, PULSEAUDIO_DESCRIPTION_FAIL);
+                throw std::runtime_error{ "pa_threaded_mainloop_new()" };
+            };
+        }
+
+        if (m_pa_api == nullptr)
+        {
+            m_pa_api = pa_threaded_mainloop_get_api(m_pa_mainloop);
+            if (m_pa_api == nullptr)
+            {
+                throw std::runtime_error{ "pa_threaded_mainloop_get_api()" };
             }
         }
-        else
+
+        if (m_pa_proplist == nullptr)
         {
-            cvolume = PULSEAUDIO_VOLUME_FAIL;
+            m_pa_proplist = pa_proplist_new();
+            if (m_pa_proplist == nullptr)
+            {
+                throw std::runtime_error{ "pa_proplist_new()" };
+            }
+
+            int pa_proplist_sets_result{ pa_proplist_sets(m_pa_proplist, PA_PROP_APPLICATION_NAME, m_k_app_name.c_str()) };
+            if (pa_proplist_sets_result < 0)
+            {
+                throw std::runtime_error{ std::string{ "pa_proplist_sets(): " } + pa_strerror(pa_proplist_sets_result) };
+            }
+
+        }
+
+        if (m_pa_context == nullptr)
+        {
+            m_pa_context = pa_context_new_with_proplist(m_pa_api, m_k_app_name.c_str(), m_pa_proplist);
+            if (m_pa_context == nullptr)
+            {
+                throw std::runtime_error{ "pa_context_new_with_proplist()" };
+            }
+
+            pa_context_set_state_callback(m_pa_context, ContextStateCB, this);
+        }
+
+        if (m_context_connected == false)
+        {
+            static constexpr pa_context_flags_t context_flags{ static_cast<pa_context_flags_t>(PA_CONTEXT_NOFAIL | PA_CONTEXT_NOAUTOSPAWN) };
+            if (pa_context_connect(m_pa_context, NULL, context_flags, NULL) < 0)
+            {
+                throw std::runtime_error{ std::string{ "pa_context_connect(): " } + pa_strerror(pa_context_errno(m_pa_context)) };
+            }
+            m_context_connected = true;
+        }
+
+        if (m_mainloop_running == false)
+        {
+            if (pa_threaded_mainloop_start(m_pa_mainloop) < 0)
+            {
+                throw std::runtime_error{ std::string{ "pa_threaded_mainloop_start(): " } + pa_strerror(pa_context_errno(m_pa_context))};
+            }
+            m_mainloop_running = true;
+        }
+
+        m_context_ready.wait(false);
+
+        if (m_pa_subscribe_op == nullptr)
+        {
+            pa_context_set_subscribe_callback(m_pa_context, SubscribeCB, this);
+
+            static constexpr pa_subscription_mask_t sub_mask{ static_cast<pa_subscription_mask_t>(PA_SUBSCRIPTION_EVENT_SINK | PA_SUBSCRIPTION_EVENT_SERVER) };
+            m_pa_subscribe_op = pa_context_subscribe(m_pa_context, sub_mask, SubscribeSuccessCB, this);
+
+            while (pa_operation_get_state(m_pa_subscribe_op) != PA_OPERATION_DONE)
+            {
+                m_subscribe_ready.wait(false);
+            }
+        }
+
+        m_status = Status::running;
+
+        GetSinkInfo();
+    }
+    catch (const std::exception& e)
+    {
+        SetLastError(e.what());
+        Term();
+        throw;
+    }
+    catch (...)
+    {
+        SetLastError("unknown error");
+        Term();
+        throw;
+    }
+}
+
+void PulseaudioVolume::Term()
+{
+    std::unique_lock<std::mutex> m_term_lck{ m_term_mx };
+
+    m_status = Status::stopped;
+
+    m_updated = true;
+    m_updated.notify_all();
+
+    if (m_context_connected == true)
+    {
+        pa_context_disconnect(m_pa_context);
+        m_context_connected = false;
+    }
+
+    if (m_pa_context != nullptr)
+    {
+        pa_context_unref(m_pa_context);
+        m_pa_context = nullptr;
+    }
+
+    if (m_mainloop_running == true)
+    {
+        pa_threaded_mainloop_stop(m_pa_mainloop);
+        m_mainloop_running = false;
+    }
+
+    if (m_pa_mainloop != nullptr)
+    {
+        pa_threaded_mainloop_free(m_pa_mainloop);
+        m_pa_mainloop = nullptr;
+    }
+
+    if (m_pa_proplist != nullptr)
+    {
+        pa_proplist_free(m_pa_proplist);
+        m_pa_proplist = nullptr;
+    }
+
+    if (m_pa_subscribe_op != nullptr)
+    {
+        pa_operation_unref(m_pa_subscribe_op);
+        m_pa_subscribe_op = nullptr;
+    }
+}
+
+void PulseaudioVolume::SetLastError(const std::string& error)
+{
+    std::unique_lock<std::mutex> last_eror_lck{ m_last_error_mx };
+    m_last_error = error;
+    m_updated = true;
+    m_updated.notify_all();
+}
+
+void PulseaudioVolume::GetSinkInfo()
+{
+    if (m_status == Status::stopped)
+    {
+        return;
+    }
+
+    pa_operation* get_sink_info_oper{ nullptr };
+
+    switch (static_cast<int>(m_device_id.type))
+    {
+        case static_cast<int>(IdType::string):
+            {
+                get_sink_info_oper = pa_context_get_sink_info_by_name(
+                    m_pa_context,
+                    std::get<std::string>(m_device_id.value).c_str(),
+                    SinkInfoCB,
+                    this);
+            }
+            break;
+
+        case static_cast<int>(IdType::num):
+            {
+                get_sink_info_oper = pa_context_get_sink_info_by_index(
+                    m_pa_context,
+                    std::get<uint32_t>(m_device_id.value),
+                    SinkInfoCB,
+                    this);
+            }
+            break;
+    }
+
+    if (get_sink_info_oper != nullptr)
+    {
+        pa_operation_unref(get_sink_info_oper);
+    }
+}
+
+void PulseaudioVolume::StoreSinkInfo(const pa_sink_info* i)
+{
+    if (m_status == Status::stopped)
+    {
+        return;
+    }
+
+    static constexpr auto convert_volume_to_percent{ [](const pa_cvolume& raw_volume) -> uint32_t
+    {
+        return (std::round(static_cast<double>(pa_cvolume_avg(&raw_volume) * 100) / PA_VOLUME_NORM));
+    } };
+
+    std::unique_lock<std::mutex> info_lck{ m_info_mx };
+
+    m_info_muted = i->mute;
+    m_info_description = i->active_port->description;
+    m_info_volume = convert_volume_to_percent(i->volume);
+
+    m_updated = true;
+    m_updated.notify_all();
+}
+
+void PulseaudioVolume::ContextStateCB(pa_context* c, void* userdata)
+{
+    PulseaudioVolume* this_ptr{ static_cast<PulseaudioVolume*>(userdata) };
+
+    if (this_ptr->m_status == Status::stopped)
+    {
+        return;
+    }
+
+    this_ptr->m_context_state = pa_context_get_state(c);
+
+    switch (this_ptr->m_context_state)
+    {
+        case PA_CONTEXT_TERMINATED:
+            {
+                this_ptr->m_context_ready = false;
+                this_ptr->SetLastError("PA_CONTEXT_TERMINATED");
+                this_ptr->Term();
+            }
+            break;
+
+        case PA_CONTEXT_FAILED:
+            {
+                this_ptr->m_context_ready = false;
+                this_ptr->SetLastError("PA_CONTEXT_FAILED");
+                this_ptr->Term();
+            }
+            break;
+
+        case PA_CONTEXT_READY:
+            {
+                this_ptr->m_context_ready = true;
+                this_ptr->m_context_ready.notify_all();
+            }
+            break;
+
+        case PA_CONTEXT_UNCONNECTED:
+        case PA_CONTEXT_CONNECTING:
+        case PA_CONTEXT_AUTHORIZING:
+        case PA_CONTEXT_SETTING_NAME:
+        default:
+            {
+                this_ptr->m_context_ready = false;
+            }
+            break;
+    }
+}
+
+void PulseaudioVolume::SubscribeCB(pa_context* c, pa_subscription_event_type_t t, uint32_t idx, void* userdata)
+{
+    PulseaudioVolume* this_ptr{ static_cast<PulseaudioVolume*>(userdata) };
+
+    if (this_ptr->m_status == Status::stopped)
+    {
+        return;
+    }
+
+    if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK)  == PA_SUBSCRIPTION_EVENT_CHANGE)
+    {
+        pa_subscription_event_type_t facility{ static_cast<pa_subscription_event_type_t>(t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) };
+
+        switch (facility)
+        {
+            case PA_SUBSCRIPTION_EVENT_SERVER:
+            case PA_SUBSCRIPTION_EVENT_SINK:
+                {
+                    this_ptr->GetSinkInfo();
+                }
+                break;
+            default:
+                break;
         }
     }
-    while ((cvolume == PULSEAUDIO_VOLUME_FAIL) || (std::strcmp(description, PULSEAUDIO_DESCRIPTION_FAIL) == 0));
-
-    m_volume = DECOMPOSE_VOLUME(cvolume);
-    m_muted = DECOMPOSE_MUTED(cvolume);
-    m_description = description;
 }
 
-PulseAudioVolume::~PulseAudioVolume()
+void PulseaudioVolume::SubscribeSuccessCB(pa_context* c, int success, void* userdata)
 {
-}
+    PulseaudioVolume* this_ptr{ static_cast<PulseaudioVolume*>(userdata) };
 
-PulseAudioVolume& PulseAudioVolume::operator= (const PulseAudioVolume& other)
-{
-    if (this == &other)
+    if (this_ptr->m_status == Status::stopped)
     {
-        return *this;
+        return;
     }
 
-    m_sink_idx = other.m_sink_idx;
-    m_sink_name = other.m_sink_name;
-    m_volume = other.m_volume;
-    m_muted = other.m_muted;
-    m_description = other.m_description;
-
-    return *this;
+    this_ptr->m_subscribe_ready = true;
+    this_ptr->m_subscribe_ready.notify_all();
 }
 
-int PulseAudioVolume::GetVolume() const
+void PulseaudioVolume::SinkInfoCB(pa_context* c, const pa_sink_info* i, int eol, void* userdata)
 {
-    return m_volume;
-}
+    PulseaudioVolume* this_ptr{ static_cast<PulseaudioVolume*>(userdata) };
 
-bool PulseAudioVolume::GetMuted() const
-{
-    return m_muted;
-}
+    if (this_ptr->m_status == Status::stopped)
+    {
+        return;
+    }
 
-std::string PulseAudioVolume::GetDescription() const
-{
-    return m_description;
-}
-
-void PulseAudioVolume::UpdateVolume()
-{
-    Init();
+    if (eol < 0)
+    {
+        this_ptr->SetLastError(std::string{ "SinkInfoCB(): " } + pa_strerror(pa_context_errno(c)));
+        this_ptr->Term();
+        return;
+    }
+    else if (eol > 0)
+    {
+    }
+    else
+    {
+        this_ptr->StoreSinkInfo(i);
+    }
 }

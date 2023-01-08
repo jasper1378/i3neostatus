@@ -11,7 +11,7 @@ These options must be set to the specified values for the blocklet to work.
 
 `$i3blocks_blocklets_dir` should be set the directory containing the compiled blocklets.
 ```
-command=$i3blocks_blocklets_dir/battery
+command=$i3blocks_blocklets_dir/ethernet
 ```
 ```
 interval=persist
