@@ -27,7 +27,7 @@ The volume API to use. Available values are `pulseaudio` and `alsa`. The default
 ```
 volume_api=pulseaudio
 ```
-The audio device to monitor. If using `pulseaudio` this can be a sink name or sink id; once alsa support is added, this could be an equivalent identifier. The special value `_default_` refers to default pulseaudio or alsa device, depending on what `volume_api` is set to. Not setting this option is equivalent to `_default_`.
+The audio device to monitor. If using `pulseaudio` this can be a sink name or sink id; once ALSA support is added, this could be an equivalent identifier. The special value `_default_` refers to default PulseAudio or ALSA device, depending on what `volume_api` is set to. Not setting this option is equivalent to `_default_`.
 ```
 device_id=_default_
 ```
@@ -67,4 +67,4 @@ The mute state of the current device ("True" or "False"). It may be preferred to
 See [i3blocks.conf](i3blocks.conf)
 
 ## More information
-- If the default pulseaudio sink is unsatisfactory, you can use `pactl list sinks` to find the correct sink name/id.
+- If the default PulseAudio sink is unsatisfactory, you can use `pactl list sinks` to find the correct sink name/id.
