@@ -9,6 +9,15 @@
 
 class Backlight
 {
+    public:
+
+        enum class DecimalFormat
+        {
+            always,
+            never,
+            automatic,
+        };
+
     private:
 
         static const std::string m_s_c_backlight_sys_path;
@@ -26,7 +35,7 @@ class Backlight
         Backlight& operator= (const Backlight& other);
 
         double GetBrightness() const;
-        std::string GetFormattedBrightness() const;
+        std::string GetFormattedBrightness(DecimalFormat decimal_format) const;
         void SetBrightness(double brightness);
         void Update();
 
