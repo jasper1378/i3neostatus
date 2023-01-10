@@ -16,12 +16,13 @@ void sigusr1(int sig)
 void Print(
     const Backlight& backlight,
     const std::string& env_output_format,
-    const std::string& env_color
+    const std::string& env_color,
+    Backlight::DecimalFormat decimal_format
 )
 {
     std::string output_format{ env_output_format };
 
-    const std::string& backlight_brightness{ backlight.GetFormattedBrightness() };
+    const std::string& backlight_brightness{ backlight.GetFormattedBrightness(decimal_format) };
 
     common::ReplaceAll(output_format, "%brightness", backlight_brightness);
 
@@ -43,6 +44,25 @@ int main()
 
         const std::string env_color{ common::GetEnvWrapper("color", "#FFFFFF") };
 
+        std::string env_decimals{ common::GetEnvWrapper("decimals", "never") };
+        Backlight::DecimalFormat decimal_format{};
+        if (env_decimals == "never")
+        {
+            decimal_format = Backlight::DecimalFormat::never;
+        }
+        else if (env_decimals == "always")
+        {
+            decimal_format = Backlight::DecimalFormat::always;
+        }
+        else if (env_decimals == "auto")
+        {
+            decimal_format = Backlight::DecimalFormat::automatic;
+        }
+        else
+        {
+            throw std::runtime_error{ "invalid `decimals` setting; valid options are `always`, `never`, and `auto`" };
+        }
+
         Backlight backlight;
 
         if (env_backlight_device != "")
@@ -57,7 +77,7 @@ int main()
         while (true)
         {
             backlight.Update();
-            Print(backlight, env_output_format, env_color);
+            Print(backlight, env_output_format, env_color, decimal_format);
 
             sleep(1);
         }

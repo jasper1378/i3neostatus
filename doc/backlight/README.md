@@ -43,6 +43,10 @@ The color of the text when no backlight device is found.
 ```
 color_down=#FF0000
 ```
+Whether the brightness value should be printed with decimals or not. Valid options are `never`, `always`, and `auto`. The `auto` option will cause the brightness to be printed with decimals only if it's not an integer. Note that the number of decimals places will always be either 0 or 2.
+```
+decimals=never
+```
 
 ### Variables that can be used in `output_format`
 

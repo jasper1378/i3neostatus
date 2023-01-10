@@ -66,8 +66,7 @@ double Backlight::GetBrightness() const
     return m_brightness;
 }
 
-#include <iostream>
-std::string Backlight::GetFormattedBrightness() const
+std::string Backlight::GetFormattedBrightness(DecimalFormat decimal_format) const
 {
     /*
     if (common::ApproximatelyEqualAbsRel(m_brightness, static_cast<int>(m_brightness)))
@@ -85,7 +84,39 @@ std::string Backlight::GetFormattedBrightness() const
     }
     */
 
-    return std::string{ std::to_string(static_cast<int>(std::round(m_brightness))) + "%" };
+    while (true)
+    {
+        switch (decimal_format)
+        {
+            case DecimalFormat::never:
+                {
+                    return std::string{ std::to_string(static_cast<int>(std::round(m_brightness))) + "%" };
+                }
+                break;
+
+            case DecimalFormat::always:
+                {
+                    std::ostringstream out;
+                    out.precision(2);
+                    out << std::fixed << m_brightness;
+                    return std::string{ out.str() + "%"};
+                }
+                break;
+
+            case DecimalFormat::automatic:
+                {
+                    if (m_brightness == std::floor(m_brightness))
+                    {
+                        decimal_format = DecimalFormat::never;
+                    }
+                    else
+                    {
+                        decimal_format = DecimalFormat::always;
+                    }
+                }
+                break;
+        }
+    }
 }
 
 void Backlight::SetBrightness(double brightness)
