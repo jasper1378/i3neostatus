@@ -7,6 +7,7 @@
 
 #include <pulse/pulseaudio.h>
 
+#include <atomic>
 #include <condition_variable>
 #include <cstdint>
 #include <exception>
@@ -16,6 +17,20 @@
 
 class PulseaudioVolume : public Volume
 {
+    public:
+
+        enum class IdType
+        {
+            string,
+            num,
+        };
+
+        struct DeviceId
+        {
+            IdType type;
+            std::variant<std::string, long> value;
+        };
+
     private:
 
         static const std::string m_k_app_name;
@@ -26,7 +41,7 @@ class PulseaudioVolume : public Volume
         DeviceId m_device_id;
 
         mutable std::mutex m_info_mx;
-        uint32_t m_info_volume;
+        long m_info_volume;
         bool m_info_muted;
         std::string m_info_description;
 
@@ -50,8 +65,7 @@ class PulseaudioVolume : public Volume
 
     public:
 
-        PulseaudioVolume();
-        PulseaudioVolume(DeviceId device_id);
+        PulseaudioVolume(const DeviceId& device_id = { IdType::string, m_k_default_sink_name });
 
         PulseaudioVolume(const PulseaudioVolume& other) =delete;
         PulseaudioVolume(PulseaudioVolume&& other) =delete;
@@ -60,7 +74,7 @@ class PulseaudioVolume : public Volume
 
     public:
 
-        uint32_t GetVolume() const override;
+        long GetVolume() const override;
         bool GetMuted() const override;
         std::string GetDescription() const override;
 
@@ -69,17 +83,13 @@ class PulseaudioVolume : public Volume
 
     public:
 
-        static DeviceId GetDefaultDeviceId();
-
-    public:
-
         PulseaudioVolume& operator=(const PulseaudioVolume& other) =delete;
         PulseaudioVolume& operator=(PulseaudioVolume&& other) =delete;
 
     private:
 
-        void Init() override;
-        void Term() override;
+        void Init();
+        void Term();
 
         void SetLastError(const std::string& error);
 

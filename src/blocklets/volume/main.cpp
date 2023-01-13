@@ -1,3 +1,4 @@
+#include "alsa_volume.hpp"
 #include "../../common/common.hpp"
 #include "pulseaudio_volume.hpp"
 #include "volume.hpp"
@@ -11,7 +12,7 @@
 #include <vector>
 
 void Print(
-    const PulseaudioVolume& pavolume,
+    const Volume* volume,
     const std::string& env_output_format,
     const std::string& env_output_format_muted,
     const std::string& env_color_normal,
@@ -21,18 +22,18 @@ void Print(
     std::string output_format{ env_output_format };
     std::string output_format_muted{ env_output_format_muted };
 
-    const std::string& pavolume_volume{ std::to_string(pavolume.GetVolume()) + "%" };
-    bool pavolume_muted{ pavolume.GetMuted() };
-    const std::string& pavolume_devicename{ pavolume.GetDescription() };
+    const std::string& volume_volume{ std::to_string(volume->GetVolume()) + "%" };
+    bool volume_muted{ volume->GetMuted() };
+    const std::string& volume_devicename{ volume->GetDescription() };
 
     std::vector<common::Substitution> general_output_format_subs{
-        { "%volume", pavolume_volume },
-        { "%muted", ((pavolume_muted) ? ("True") : ("False")) },
-        { "%devicename", pavolume_devicename }
+        { "%volume", volume_volume },
+        { "%muted", ((volume_muted) ? ("True") : ("False")) },
+        { "%devicename", volume_devicename }
     };
     for (size_t i{ 0 }; i < general_output_format_subs.size(); ++i)
     {
-        if (pavolume_muted == true)
+        if (volume_muted == true)
         {
             common::ReplaceAll(output_format_muted, general_output_format_subs[i].to_replace, general_output_format_subs[i].replace_with);
         }
@@ -42,8 +43,8 @@ void Print(
         }
     }
 
-    const std::string& full_text{ ((pavolume_muted) ? (output_format_muted) : (output_format)) };
-    const std::string& color{ ((pavolume_muted) ? (env_color_muted) : (env_color_normal)) };
+    const std::string& full_text{ ((volume_muted) ? (output_format_muted) : (output_format)) };
+    const std::string& color{ ((volume_muted) ? (env_color_muted) : (env_color_normal)) };
 
     common::PrintPangoMarkup(full_text, color);
 
@@ -52,6 +53,8 @@ void Print(
 
 int main()
 {
+    Volume* volume{ nullptr };
+
     try
     {
         static constexpr auto is_numeric{ [](const std::string& str)
@@ -69,34 +72,57 @@ int main()
         const std::string env_volume_api{ common::GetEnvWrapper("volume_api", "pulseaudio") };
 
         const std::string env_device_id{ common::GetEnvWrapper("device_id", "_default_") };
-        Volume::DeviceId device_id{};
+        PulseaudioVolume::DeviceId device_id{};
 
         if (env_volume_api == "pulseaudio")
         {
             if (env_device_id == "_default_")
             {
-                device_id = PulseaudioVolume::GetDefaultDeviceId();
+                volume = new PulseaudioVolume{};
             }
             else if (is_numeric(env_device_id) == true)
             {
-                device_id = { Volume::IdType::num, static_cast<uint32_t>(std::stoul(env_device_id)) };
+                volume = new PulseaudioVolume{ PulseaudioVolume::DeviceId{ PulseaudioVolume::IdType::num, std::stol(env_device_id) } };
             }
             else
             {
-                device_id = {Volume::IdType::string, env_device_id};
+                volume = new PulseaudioVolume{ PulseaudioVolume::DeviceId{ PulseaudioVolume::IdType::string, env_device_id } };
             }
         }
         else if (env_volume_api == "alsa")
         {
-            throw std::runtime_error{ "alsa support has not yet been added" };
+            if (env_device_id == "_default_")
+            {
+                volume = new AlsaVolume{};
+            }
+            else
+            {
+                std::string::size_type comma_pos{ env_device_id.find(",") };
+
+                if (comma_pos == std::string::npos)
+                {
+                    volume = new AlsaVolume{ env_device_id };
+                }
+                else
+                {
+                    std::string name{ env_device_id.substr(0, comma_pos) };
+                    std::string idx{ env_device_id.substr(comma_pos + 1) };
+
+                    if (is_numeric(idx) == false)
+                    {
+                        throw std::runtime_error{ "invalid `device_id` for `alsa`: \"" + env_device_id + "\"; try `mixer_name` or `mixer_name,mixer_index`" };
+                    }
+                    else
+                    {
+                        volume = new AlsaVolume{ name, std::stol(idx) };
+                    }
+                }
+            }
         }
         else
         {
             throw std::runtime_error{ "invalid volume_api value: \"" + env_volume_api + "\"; options are \"pulseaudio\" or \"alsa\""};
         }
-
-        // const uint32_t& env_sink_idx{ static_cast<uint32_t>(std::stoul(common::GetEnvWrapperExtraEmpties("sink_idx", std::to_string(DEFAULT_SINK_INDEX), { "_default_" }))) };
-        // const std::string env_sink_name{ common::GetEnvWrapperExtraEmpties("sink_name", "", { "_default_" }) };
 
         const std::string env_output_format{ common::GetEnvWrapper("output_format", "(%devicename): %volume") };
         const std::string env_output_format_muted{ common::GetEnvWrapper("output_format_muted", "(%devicename): muted") };
@@ -104,14 +130,13 @@ int main()
         const std::string env_color_normal{ common::GetEnvWrapper("color_normal", "#FFFFFF") };
         const std::string env_color_muted{ common::GetEnvWrapper("color_muted", "#FFFFFF") };
 
-        PulseaudioVolume pavolume{ device_id };
-        Print(pavolume, env_output_format, env_output_format_muted, env_color_normal, env_color_muted);
+        Print(volume, env_output_format, env_output_format_muted, env_color_normal, env_color_muted);
 
         while (true)
         {
-            pavolume.m_updated.wait(false);
-            pavolume.m_updated = false;
-            switch (pavolume.GetStatus())
+            volume->m_updated.wait(false);
+            volume->m_updated = false;
+            switch (volume->GetStatus())
             {
                 case Volume::Status::starting:
                     {
@@ -120,12 +145,12 @@ int main()
                     break;
                 case Volume::Status::running:
                     {
-                        Print(pavolume, env_output_format, env_output_format_muted, env_color_normal, env_color_muted);
+                        Print(volume, env_output_format, env_output_format_muted, env_color_normal, env_color_muted);
                     }
                     break;
                 case Volume::Status::stopped:
                     {
-                        std::string error{ pavolume.GetLastError() };
+                        std::string error{ volume->GetLastError() };
                         if  (error != "")
                         {
                             throw std::runtime_error{ error };
@@ -139,6 +164,11 @@ int main()
     }
     catch (const std::runtime_error& error)
     {
+        if (volume != nullptr)
+        {
+            delete volume;
+        }
+
         std::string error_string{ "Error: " + std::string{ error.what() } };
         std::cerr << error_string << '\n';
         common::PrintPangoMarkup(error_string, "#FF0000");
@@ -146,6 +176,11 @@ int main()
     }
     catch (const std::exception& error)
     {
+        if (volume != nullptr)
+        {
+            delete volume;
+        }
+
         std::string error_string{ "Error: " + std::string{ error.what() } };
         std::cerr << error_string << '\n';
         common::PrintPangoMarkup(error_string, "#FF0000");
@@ -153,6 +188,11 @@ int main()
     }
     catch (...)
     {
+        if (volume != nullptr)
+        {
+            delete volume;
+        }
+
         std::string error_string{ "Unknown Error" };
         std::cerr << error_string << '\n';
         common::PrintPangoMarkup(error_string, "#FF0000");

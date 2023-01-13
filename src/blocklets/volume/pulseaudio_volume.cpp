@@ -4,6 +4,7 @@
 
 #include <pulse/pulseaudio.h>
 
+#include <atomic>
 #include <cmath>
 #include <condition_variable>
 #include <cstdint>
@@ -16,35 +17,12 @@
 const std::string PulseaudioVolume::m_k_app_name{ "jasper-i3blocks-blocklets" };
 const std::string PulseaudioVolume::m_k_default_sink_name{ "@DEFAULT_SINK@" };
 
-PulseaudioVolume::PulseaudioVolume()
-    : Volume{},
-      m_device_id{ IdType::string, m_k_default_sink_name },
-      m_info_volume{ 0 },
-      m_info_muted{ 0 },
-      m_info_description{ "" },
-      m_pa_mainloop{ nullptr},
-      m_mainloop_running{ false },
-      m_pa_api{ nullptr },
-      m_pa_context{ nullptr },
-      m_context_connected{ false },
-      m_pa_proplist{ nullptr },
-      m_pa_subscribe_op{ nullptr },
-      m_status{ Status::starting },
-      m_last_error{ "ok" },
-      m_context_state{ PA_CONTEXT_UNCONNECTED },
-      m_context_ready{ false },
-      m_subscribe_ready{ false },
-      m_sink_info_ready{ false }
-{
-    Init();
-}
-
-PulseaudioVolume::PulseaudioVolume(DeviceId device_id)
+PulseaudioVolume::PulseaudioVolume(const DeviceId& device_id/*= { IdType::string, m_k_default_sink_name }*/)
     : Volume{},
       m_device_id{ device_id },
-      m_info_volume{ 0 },
-      m_info_muted{ 0 },
-      m_info_description{ "" },
+      m_info_volume{},
+      m_info_muted{},
+      m_info_description{},
       m_pa_mainloop{ nullptr},
       m_mainloop_running{ false },
       m_pa_api{ nullptr },
@@ -67,7 +45,7 @@ PulseaudioVolume::~PulseaudioVolume()
     Term();
 }
 
-uint32_t PulseaudioVolume::GetVolume() const
+long PulseaudioVolume::GetVolume() const
 {
     std::unique_lock<std::mutex> info_lck{ m_info_mx };
     return m_info_volume;
@@ -96,14 +74,9 @@ std::string PulseaudioVolume::GetLastError() const
     return m_last_error;
 }
 
-Volume::DeviceId PulseaudioVolume::GetDefaultDeviceId()
-{
-    return DeviceId{ IdType::string, m_k_default_sink_name};
-}
-
 void PulseaudioVolume::Init()
 {
-    std::unique_lock<std::mutex> m_init_lck{ m_init_mx };
+    std::unique_lock<std::mutex> init_lck{ m_init_mx };
 
     try
     {
@@ -206,7 +179,7 @@ void PulseaudioVolume::Init()
 
 void PulseaudioVolume::Term()
 {
-    std::unique_lock<std::mutex> m_term_lck{ m_term_mx };
+    std::unique_lock<std::mutex> term_lck{ m_term_mx };
 
     m_status = Status::stopped;
 
@@ -283,7 +256,7 @@ void PulseaudioVolume::GetSinkInfo()
             {
                 get_sink_info_oper = pa_context_get_sink_info_by_index(
                     m_pa_context,
-                    std::get<uint32_t>(m_device_id.value),
+                    static_cast<uint32_t>(std::get<long>(m_device_id.value)),
                     SinkInfoCB,
                     this);
             }
@@ -303,7 +276,7 @@ void PulseaudioVolume::StoreSinkInfo(const pa_sink_info* i)
         return;
     }
 
-    static constexpr auto convert_volume_to_percent{ [](const pa_cvolume& raw_volume) -> uint32_t
+    static constexpr auto convert_volume_to_percent{ [](const pa_cvolume& raw_volume) -> long
     {
         return (std::round(static_cast<double>(pa_cvolume_avg(&raw_volume) * 100) / PA_VOLUME_NORM));
     } };
