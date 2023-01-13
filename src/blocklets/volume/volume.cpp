@@ -1,6 +1,5 @@
 #include "volume.hpp"
 
-#include <cstdint>
 #include <string>
 #include <atomic>
 

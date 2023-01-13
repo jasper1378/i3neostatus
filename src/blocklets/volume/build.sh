@@ -3,4 +3,4 @@
 # Dependencies:
 # libpulse
 
-g++ ../../common/common.cpp main.cpp volume.cpp pulseaudio_volume.cpp -lpulse -o volume -O3 -std=c++20
+g++ ../../common/common.cpp main.cpp volume.cpp alsa_volume.cpp pulseaudio_volume.cpp -lasound -lpulse -o volume -O3 -std=c++20
