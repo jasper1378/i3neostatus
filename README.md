@@ -1,5 +1,8 @@
 # jasper-i3blocks-blocklets
 
+## Notice
+In the coming weeks, I plan to merge the contents of this repository into a new project that I have started work on: a complete i3status alternative.
+
 ## About
 Jasper's blocklets for [i3blocks](https://github.com/vivien/i3blocks).
 
