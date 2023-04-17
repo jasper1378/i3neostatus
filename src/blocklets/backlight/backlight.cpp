@@ -146,7 +146,7 @@ void Backlight::ReadAndCalcBrightness()
 {
     CheckThatDeviceExists();
 
-    double actual_brightness{ std::stod(common::ReadFirstLineOfFile(std::string{ m_device_path + "/actual_brightness"})) };
+    double actual_brightness{ std::stod(common::ReadFirstLineOfFile(std::string{ m_device_path + "/brightness"})) };
     double max_brightness{ std::stod(common::ReadFirstLineOfFile(std::string{ m_device_path + "/max_brightness" })) };
 
     m_brightness = ((actual_brightness / max_brightness) * 100);
