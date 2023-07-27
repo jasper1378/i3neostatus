@@ -1,0 +1,3 @@
+[submodule "submodules/libconfigfile"]
+	path = submodules/libconfigfile
+	url = https://github.com/jasper1378/libconfigfile
