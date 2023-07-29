@@ -11,9 +11,9 @@ RELEASE_LINK_FLAGS :=
 DEBUG_LINK_FLAGS :=
 SOURCE_DIRS := ./src
 SUBMODULE_DIR := ./submodules
-INCLUDE_DIRS := ./include $(SUBMODULE_DIR)/libconfigfile/include
+INCLUDE_DIRS := ./include $(wildcard $(SUBMODULE_DIR)/*/include)
 LIBRARIES :=
-SUBMODULE_OBJECTS := $(SUBMODULE_DIR)/libconfigfile/build/libconfigfile.a
+SUBMODULE_OBJECTS := $(wildcard $(SUBMODULE_DIR)/*/build/*.a)
 INSTALL_PATH := /usr/local
 
 export BUILD_DIR := ./build
