@@ -14,7 +14,7 @@ SUBMODULE_DIR := ./submodules
 INCLUDE_DIRS := ./include $(wildcard $(SUBMODULE_DIR)/*/include)
 LIBRARIES :=
 SUBMODULE_OBJECTS := $(wildcard $(SUBMODULE_DIR)/*/build/*.a)
-INSTALL_PATH := /usr/local
+INSTALL_PATH := /usr/local/bin
 
 export BUILD_DIR := ./build
 
