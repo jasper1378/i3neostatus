@@ -1,6 +1,8 @@
 #ifndef I3BAR_PROTOCOL_HPP
 #define I3BAR_PROTOCOL_HPP
 
+#include <boost/json.hpp>
+
 #include <optional>
 #include <string>
 #include <variant>
@@ -54,11 +56,6 @@ struct click_event {
 std::string generate_header(const header &output);
 std::string generate_block(const block &output);
 click_event parse_click_event(const std::string &input);
-
-template <typename t_value>
-std::string generate_json_key_value(std::pair<std::string, t_value> &output);
-template <typename t_value>
-std::pair<std::string, t_value> parse_json_key_value(const std::string &input);
 }; // namespace i3bar_protocol
 
 #endif
