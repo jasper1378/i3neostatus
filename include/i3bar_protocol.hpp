@@ -3,6 +3,7 @@
 
 #include <boost/json.hpp>
 
+#include <iostream>
 #include <optional>
 #include <string>
 #include <variant>
@@ -14,8 +15,13 @@ using pixel_count_t = long;
 struct header {
   int version;
   std::optional<int> stop_signal;
-  std::optional<int> count_signal;
-  std::optional<bool> click_event_events;
+  std::optional<int> cont_signal;
+  std::optional<bool> click_events;
+
+  static constexpr std::string k_version_str{"version"};
+  static constexpr std::string k_stop_signal_str{"stop_signal"};
+  static constexpr std::string k_cont_signal_str{"cont_signal"};
+  static constexpr std::string k_click_events_str{"click_events"};
 };
 
 struct block {
@@ -36,6 +42,24 @@ struct block {
   std::optional<bool> separator;
   std::optional<pixel_count_t> separator_block_width;
   std::optional<std::string> markup;
+
+  static constexpr std::string k_full_text_str{"full_text"};
+  static constexpr std::string k_short_text_str{"short_text"};
+  static constexpr std::string k_color_str{"color"};
+  static constexpr std::string k_background_str{"background"};
+  static constexpr std::string k_border_str{"border"};
+  static constexpr std::string k_border_top_str{"border_top"};
+  static constexpr std::string k_border_right_str{"border_right"};
+  static constexpr std::string k_border_bottom_str{"border_bottom"};
+  static constexpr std::string k_border_left_str{"border_left"};
+  static constexpr std::string k_min_width_str{"min_width"};
+  static constexpr std::string k_align_str{"align"};
+  static constexpr std::string k_name_str{"name"};
+  static constexpr std::string k_instance_str{"instance"};
+  static constexpr std::string k_urgent_str{"urgent"};
+  static constexpr std::string k_separator_str{"separator"};
+  static const std::string k_separator_block_width_str;
+  static constexpr std::string k_markup_str{"markup"};
 };
 
 struct click_event {
@@ -51,11 +75,47 @@ struct click_event {
   pixel_count_t width;
   pixel_count_t height;
   std::vector<std::string> modifiers;
+
+  static constexpr std::string k_name_str{"name"};
+  static constexpr std::string k_instance_str{"instance"};
+  static constexpr std::string k_x_str{"x"};
+  static constexpr std::string k_y_str{"y"};
+  static constexpr std::string k_button_str{"button"};
+  static constexpr std::string k_relative_x_str{"relative_x"};
+  static constexpr std::string k_relative_y_str{"relative_y"};
+  static constexpr std::string k_output_x_str{"output_x"};
+  static constexpr std::string k_output_y_str{"output_y"};
+  static constexpr std::string k_width_str{"width"};
+  static constexpr std::string k_height_str{"height"};
+  static constexpr std::string k_modifiers_str{"modifiers"};
 };
 
-std::string generate_header(const header &output);
-std::string generate_block(const block &output);
-click_event parse_click_event(const std::string &input);
+static constexpr char g_k_newline_char{'\n'};
+static constexpr char g_k_json_array_opening_delimiter{'['};
+static constexpr char g_k_json_array_element_separator{','};
+
+void output_header(const header &output_value,
+                   std::ostream &ouput_stream = std::cout);
+void output_infinite_array_start(std::ostream &output_stream = std::cout);
+void output_statusline(const std::vector<block> &output_value,
+                       std::ostream &output_stream = std::cout);
+click_event parse_click_event(const std::string &input); // TODO
 }; // namespace i3bar_protocol
+
+namespace boost {
+namespace json {
+void tag_invoke(const value_from_tag &, value &bj_value,
+                const i3bar_protocol::header &header);
+void tag_invoke(const value_from_tag &, value &bj_value,
+                i3bar_protocol::header &&header);
+void tag_invoke(const value_from_tag &, value &bj_value,
+                const i3bar_protocol::block &block);
+void tag_invoke(const value_from_tag &, value &bj_value,
+                i3bar_protocol::block &&block); // TODO
+i3bar_protocol::click_event
+tag_invoke(const value_to_tag<i3bar_protocol::click_event> &,
+           const value &bj_value);
+}; // namespace json
+}; // namespace boost
 
 #endif
