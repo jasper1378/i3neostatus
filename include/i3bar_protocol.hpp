@@ -92,6 +92,7 @@ struct click_event {
 
 static constexpr char g_k_newline_char{'\n'};
 static constexpr char g_k_json_array_opening_delimiter{'['};
+static constexpr char g_k_json_array_closing_delimiter{']'};
 static constexpr char g_k_json_array_element_separator{','};
 
 void output_header(const header &output_value,

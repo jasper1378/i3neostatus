@@ -14,19 +14,23 @@ const std::string i3bar_protocol::block::k_separator_block_width_str{
 void i3bar_protocol::output_header(
     const header &output_value, std::ostream &output_stream /*= std::cout */) {
   output_stream << boost::json::serialize(boost::json::value_from(output_value))
-                << g_k_newline_char;
+                << g_k_newline_char << std::flush;
 }
 
 void i3bar_protocol::output_infinite_array_start(
     std::ostream &output_stream /*= std::cout*/) {
   output_stream << g_k_json_array_opening_delimiter << g_k_newline_char;
+  output_stream << g_k_json_array_opening_delimiter
+                << g_k_json_array_closing_delimiter << g_k_newline_char;
+  output_stream << std::flush;
 }
 
 void i3bar_protocol::output_statusline(
     const std::vector<block> &output_value,
     std::ostream &output_stream /*= std::cout*/) {
-  output_stream << boost::json::serialize(boost::json::value_from(output_value))
-                << g_k_json_array_element_separator << g_k_newline_char;
+  output_stream << g_k_json_array_element_separator
+                << boost::json::serialize(boost::json::value_from(output_value))
+                << g_k_newline_char << std::flush;
 }
 
 void boost::json::tag_invoke(const boost::json::value_from_tag &,
@@ -274,12 +278,19 @@ i3bar_protocol::click_event boost::json::tag_invoke(
     const boost::json::value_to_tag<i3bar_protocol::click_event> &,
     const boost::json::value &bj_value) {
 
+  const auto boost_json_string_to_std_string{
+      [](const boost::json::string &bj_string) -> std::string {
+        return std::string{bj_string.begin(), bj_string.end()};
+      }};
+
   const boost::json::object &bj_object{bj_value.as_object()};
 
   i3bar_protocol::click_event click_event{
-      .name{bj_object.at(i3bar_protocol::click_event::k_name_str).as_string()},
-      .instance{bj_object.at(i3bar_protocol::click_event::k_instance_str)
-                    .as_string()},
+      .name{boost_json_string_to_std_string(
+          bj_object.at(i3bar_protocol::click_event::k_name_str).as_string())},
+      .instance{boost_json_string_to_std_string(
+          bj_object.at(i3bar_protocol::click_event::k_instance_str)
+              .as_string())},
       .x{bj_object.at(i3bar_protocol::click_event::k_x_str).as_int64()},
       .y{bj_object.at(i3bar_protocol::click_event::k_y_str).as_int64()},
       .button{static_cast<decltype(click_event.button)>(
@@ -295,11 +306,12 @@ i3bar_protocol::click_event boost::json::tag_invoke(
       .width{bj_object.at(i3bar_protocol::click_event::k_width_str).as_int64()},
       .height{
           bj_object.at(i3bar_protocol::click_event::k_height_str).as_int64()},
-      .modifiers{[](const boost::json::array &bj_array) {
+      .modifiers{[&boost_json_string_to_std_string](
+                     const boost::json::array &bj_array) {
         std::vector<std::string> ret_val{};
         ret_val.reserve(bj_array.size());
         for (auto p{bj_array.begin()}; p != bj_array.end(); ++p) {
-          ret_val.emplace_back(p->as_string());
+          ret_val.emplace_back(boost_json_string_to_std_string(p->as_string()));
         }
         return ret_val;
       }(bj_object.at(i3bar_protocol::click_event::k_modifiers_str)
