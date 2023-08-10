@@ -14,7 +14,7 @@ SOURCE_FILE_EXT := .cpp
 SUBMODULE_DIR := ./submodules
 INCLUDE_DIRS := ./include $(wildcard $(SUBMODULE_DIR)/*/include)
 HEADER_FILE_EXT := .hpp
-LIBRARIES :=
+LIBRARIES := boost_json
 SUBMODULE_OBJECTS := $(wildcard $(SUBMODULE_DIR)/*/build/*.a)
 INSTALL_PATH := /usr/local
 
