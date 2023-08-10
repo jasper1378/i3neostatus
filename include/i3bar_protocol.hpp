@@ -91,16 +91,18 @@ struct click_event {
 };
 
 static constexpr char g_k_newline_char{'\n'};
+static constexpr char g_k_space_char{' '};
 static constexpr char g_k_json_array_opening_delimiter{'['};
 static constexpr char g_k_json_array_closing_delimiter{']'};
 static constexpr char g_k_json_array_element_separator{','};
 
-void output_header(const header &output_value,
-                   std::ostream &ouput_stream = std::cout);
-void output_infinite_array_start(std::ostream &output_stream = std::cout);
-void output_statusline(const std::vector<block> &output_value,
-                       std::ostream &output_stream = std::cout);
-click_event parse_click_event(const std::string &input); // TODO
+void print_header(const header &output_value,
+                  std::ostream &ouput_stream = std::cout);
+void print_array_start(std::ostream &output_stream = std::cout);
+void print_statusline(const std::vector<block> &output_value,
+                      std::ostream &output_stream = std::cout);
+void read_array_start(std::istream &input_stream = std::cin);
+click_event read_click_event(std::istream &input_stream = std::cin);
 }; // namespace i3bar_protocol
 
 namespace boost {
@@ -112,7 +114,7 @@ void tag_invoke(const value_from_tag &, value &bj_value,
 void tag_invoke(const value_from_tag &, value &bj_value,
                 const i3bar_protocol::block &block);
 void tag_invoke(const value_from_tag &, value &bj_value,
-                i3bar_protocol::block &&block); // TODO
+                i3bar_protocol::block &&block);
 i3bar_protocol::click_event
 tag_invoke(const value_to_tag<i3bar_protocol::click_event> &,
            const value &bj_value);

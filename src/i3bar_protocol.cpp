@@ -2,6 +2,8 @@
 
 #include <boost/json.hpp>
 
+#include <iostream>
+#include <limits>
 #include <optional>
 #include <string>
 #include <utility>
@@ -11,13 +13,13 @@
 const std::string i3bar_protocol::block::k_separator_block_width_str{
     "separator_block_width"};
 
-void i3bar_protocol::output_header(
+void i3bar_protocol::print_header(
     const header &output_value, std::ostream &output_stream /*= std::cout */) {
   output_stream << boost::json::serialize(boost::json::value_from(output_value))
                 << g_k_newline_char << std::flush;
 }
 
-void i3bar_protocol::output_infinite_array_start(
+void i3bar_protocol::print_array_start(
     std::ostream &output_stream /*= std::cout*/) {
   output_stream << g_k_json_array_opening_delimiter << g_k_newline_char;
   output_stream << g_k_json_array_opening_delimiter
@@ -25,12 +27,33 @@ void i3bar_protocol::output_infinite_array_start(
   output_stream << std::flush;
 }
 
-void i3bar_protocol::output_statusline(
+void i3bar_protocol::print_statusline(
     const std::vector<block> &output_value,
     std::ostream &output_stream /*= std::cout*/) {
   output_stream << g_k_json_array_element_separator
                 << boost::json::serialize(boost::json::value_from(output_value))
                 << g_k_newline_char << std::flush;
+}
+
+void i3bar_protocol::read_array_start(
+    std::istream &input_stream /*=std::cin*/) {
+  input_stream.ignore(std::numeric_limits<std::streamsize>::max(),
+                      g_k_json_array_opening_delimiter);
+}
+
+i3bar_protocol::click_event
+i3bar_protocol::read_click_event(std::istream &input_stream /*= std::cin*/) {
+  std::string input_str{};
+  std::getline(input_stream, input_str, g_k_newline_char);
+
+  if (input_str.front() == g_k_json_array_element_separator) {
+    input_str.front() = g_k_space_char;
+    // input_str.erase(input_str.begin());
+  }
+
+  boost::json::value bj_value{boost::json::parse(std::move(input_str))};
+
+  return boost::json::value_to<click_event>(std::move(bj_value));
 }
 
 void boost::json::tag_invoke(const boost::json::value_from_tag &,
