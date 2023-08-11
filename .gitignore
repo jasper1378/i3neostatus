@@ -31,9 +31,9 @@
 *.out
 *.app
 
-# Executable directory
-bin/
+# Build directory
+build/
 
-# Vim
-compile_commands.json
+# Temporary editor files
 .cache/
+compile_commands.json
