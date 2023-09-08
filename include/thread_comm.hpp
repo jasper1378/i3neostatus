@@ -6,11 +6,14 @@
 #include <exception>
 #include <iostream>
 #include <memory>
+#include <utility>
 #include <variant>
 
 namespace thread_comm {
+
 template <typename t_data> struct shared_state {
   std::atomic<std::variant<t_data, std::exception_ptr> *> m_data;
+  std::atomic<bool> m_updated;
 };
 
 template <typename t_data>
@@ -23,7 +26,7 @@ public:
   shared_state_ptr() : m_shared_state{nullptr}, m_use_count{nullptr} {}
 
   shared_state_ptr(std::nullptr_t)
-      : m_shared_state{nullptr}, m_use_count{nullptr} {}
+      : m_shared_state{nullptr, false}, m_use_count{nullptr} {}
 
   shared_state_ptr(shared_state<t_data> *ssp)
       : m_shared_state{ssp}, m_use_count{new std::atomic<long>{1}} {}
@@ -174,7 +177,7 @@ std::ostream &operator<<(std::ostream &out,
 template <typename t_data_1, typename... t_args>
 shared_state_ptr<t_data_1> make_shared_state_ptr(t_args &&...args) {
   return shared_state_ptr<t_data_1>{
-      new shared_state<t_data_1> *{std::forward<t_args>(args)...}};
+      new shared_state<t_data_1>{std::forward<t_args>(args)...}};
 }
 
 template <typename t_data> class producer {
@@ -206,10 +209,12 @@ public:
 
   void put(std::unique_ptr<std::variant<t_data, std::exception_ptr>> data) {
     std::variant<t_data, std::exception_ptr> *old_data{
-        m_shared_state_ptr->exchange(data.release())};
+        m_shared_state_ptr->m_data.exchange(data.release())};
     if (old_data) {
       delete old_data;
     }
+    m_shared_state_ptr->m_updated.store(true);
+    m_shared_state_ptr->m_updated.notify_all();
     // TODO re-use buffer
   }
 };
@@ -243,13 +248,20 @@ public:
 
   std::unique_ptr<std::variant<t_data, std::exception_ptr>> get() {
     std::unique_ptr<std::variant<t_data, std::exception_ptr>> data{
-        m_shared_state_ptr->exchange(nullptr)};
+        m_shared_state_ptr->m_data.exchange(nullptr)};
+    m_shared_state_ptr->m_updated.store(false);
     return data;
     // TODO re-use buffer
   }
 
-  // wait() //TODO
+  void wait() { m_shared_state_ptr->m_updated.wait(false); }
 };
+
+template <typename t_data>
+std::pair<producer<t_data>, consumer<t_data>> make_thread_comm_pair() {
+  shared_state_ptr ssp{make_shared_state_ptr<t_data>(nullptr, false)};
+  return std::make_pair<producer<t_data>, consumer<t_data>>(ssp, ssp);
+}
 } // namespace thread_comm
 
 #endif
