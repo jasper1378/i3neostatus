@@ -6,15 +6,6 @@
 #include <iostream>
 #include <thread>
 
-#undef assert
-#define assert(B)                                                              \
-  {                                                                            \
-    if (!(B)) {                                                                \
-      std::cerr << "assertion (" << #B << ") failed\n";                        \
-      std::exit(1);                                                            \
-    }                                                                          \
-  }
-
 using t_data = int;
 
 void producer_test(thread_comm::producer<t_data> &&p) {
@@ -30,7 +21,11 @@ void consumer_test(thread_comm::consumer<t_data> &&c) {
     c.wait();
     try {
       std::unique_ptr<t_data> v{c.get()};
-      std::cerr << *v << '\n';
+      if (v) {
+        std::cerr << *v << '\n';
+      } else {
+        std::cerr << "nullptr" << '\n';
+      }
     } catch (const std::exception &e) {
       std::cerr << "Ex: " << e.what() << '\n';
       std::exit(1);
