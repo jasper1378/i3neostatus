@@ -103,8 +103,7 @@ public:
   void wait() { m_state.wait(STATE::READ); }
 };
 
-template <typename t_value>
-class shared_state_ptr { // TODO optimize dynamic allocations for use_count
+template <typename t_value> class shared_state_ptr {
 public:
   friend std::pair<producer<t_value>, consumer<t_value>>
   make_thread_comm_pair<t_value>();
