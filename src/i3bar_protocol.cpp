@@ -48,7 +48,6 @@ i3bar_protocol::read_click_event(std::istream &input_stream /*= std::cin*/) {
 
   if (input_str.front() == g_k_json_array_element_separator) {
     input_str.front() = g_k_space_char;
-    // input_str.erase(input_str.begin());
   }
 
   boost::json::value bj_value{boost::json::parse(std::move(input_str))};
