@@ -15,9 +15,9 @@ public:
 
   virtual void run() = 0;
 
-  virtual bool term() = 0;
+  virtual void term() = 0;
 
-  virtual bool on_click_event(module_api::click_event &&click_event) = 0;
+  virtual void on_click_event(module_api::click_event &&click_event) = 0;
 };
 
 #endif
