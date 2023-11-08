@@ -1,10 +1,8 @@
+#include "dyn_lib_load.hpp"
 #include "i3bar_protocol.hpp"
 #include "module_api.hpp"
 #include "module_base.hpp"
 #include "thread_comm.hpp"
-
-#include <iostream>
-#include <thread>
 
 void producer(thread_comm::producer<int> &&p) {
   for (int i{0}; i < 10; ++i) {
