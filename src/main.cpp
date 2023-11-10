@@ -1,3 +1,6 @@
+#include <iostream>
+#include <thread>
+
 #include "dyn_lib_load.hpp"
 #include "i3bar_protocol.hpp"
 #include "module_api.hpp"

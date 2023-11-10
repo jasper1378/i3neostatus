@@ -1,5 +1,5 @@
-#ifndef DYN_LIB_LOAD_HPP
-#define DYN_LIB_LOAD_HPP
+#ifndef DYN_LOAD_LIB_HPP
+#define DYN_LOAD_LIB_HPP
 
 #include <exception>
 #include <stdexcept>
@@ -7,7 +7,7 @@
 
 #include <dlfcn.h>
 
-namespace dyn_lib_load {
+namespace dyn_load_lib {
 class error : public std::runtime_error {
 private:
   using base_t = std::runtime_error;
@@ -52,6 +52,7 @@ private:
 
 public:
   lib(const char *filename, dlopen_flags::type flags);
+  lib(const std::string &filename, dlopen_flags::type flags);
   lib(lib &&other) noexcept;
   lib(const lib &other) = delete;
 
@@ -63,39 +64,35 @@ public:
   lib &operator=(const lib &other) = delete;
 
 public:
-  template <typename R, typename... Args>
-  auto get_symbol(const char *symbol, const char *version = "\0") const
-      -> R (*)(Args...) {
-    R (*ret_val)(Args...);
+  template <typename T>
+  T *get_symbol(const char *symbol, const char *version = "\0") const {
+    T *ret_val;
     (*reinterpret_cast<void **>(&ret_val)) =
         get_symbol_impl(m_handle, symbol, version);
     return ret_val;
   }
 
   template <typename T>
-  auto get_symbol(const char *symbol, const char *version = "\0") const -> T * {
-    return (reinterpret_cast<T *>(get_symbol_impl(m_handle, symbol, version)));
+  T *get_symbol(const std::string &symbol,
+                const std::string &version = "\0") const {
+    return get_symbol<T>(symbol.c_str(), version.c_str());
   }
 
 public:
-  template <typename R, typename... Args>
-  static auto get_symbol(dlsym_pseudohandles::type handle, const char *symbol,
-                         const char *version = "\0") -> R (*)(Args...) {
-    R (*ret_val)(Args...);
+  template <typename T>
+  static T *get_symbol(dlsym_pseudohandles::type handle, const char *symbol,
+                       const char *version = "\0") {
+    T *ret_val;
     (*reinterpret_cast<void **>(&ret_val)) =
         get_symbol_impl(handle, symbol, version);
     return ret_val;
   }
 
   template <typename T>
-  static auto get_symbol(dlsym_pseudohandles::type handle, const char *symbol,
-                         const char *version = "\0") -> T * {
-    return (reinterpret_cast<T *>(get_symbol_impl(handle, symbol, version)));
-  }
-
-  template <typename R, typename... Args>
-  static Dl_info get_info(R (*addr)(Args...)) {
-    return get_info_impl(reinterpret_cast<void *>(addr));
+  static T *get_symbol(dlsym_pseudohandles::type handle,
+                       const std::string &symbol,
+                       const std::string &version = "\0") {
+    return get_symbol<T>(handle, symbol.c_str(), version.c_str());
   }
 
   template <typename T> static Dl_info get_info(T *addr) {
@@ -108,6 +105,6 @@ private:
 
   static Dl_info get_info_impl(void *addr);
 };
-} // namespace dyn_lib_load
+} // namespace dyn_load_lib
 
 #endif
