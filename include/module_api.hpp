@@ -70,14 +70,17 @@ public:
   module_api &operator=(const module_api &other) = delete;
 
 public:
-  void set_value(std::unique_ptr<block> value);
-
-  void set_exception(std::exception_ptr exception);
-
   template <typename... t_args>
-  std::unique_ptr<block> get_buffer(t_args &&...args) {
-    return std::make_unique(std::forward<t_args>(args)...); // TODO reuse buffer
+  std::unique_ptr<block> make_block(t_args &&...args) {
+    return std::make_unique<block>(
+        std::forward<t_args>(args)...); // TODO reuse buffer
   }
+
+  void set_block(std::unique_ptr<block> block);
+
+  void set_error(std::exception_ptr error);
+
+  void hide();
 };
 
 #endif
