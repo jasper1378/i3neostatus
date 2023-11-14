@@ -1,57 +1,26 @@
 #include <iostream>
-#include <thread>
 
-#include "dyn_lib_load.hpp"
+#include "dyn_load_lib.hpp"
+#include "dyn_load_module.hpp"
 #include "i3bar_protocol.hpp"
 #include "module_api.hpp"
 #include "module_base.hpp"
 #include "thread_comm.hpp"
 
-void producer(thread_comm::producer<int> &&p) {
-  for (int i{0}; i < 10; ++i) {
-    p.set_value(std::make_unique<int>(i));
-    std::this_thread::sleep_for(std::chrono::seconds{1});
-  }
-  p.set_exception(std::make_exception_ptr(int{}));
-}
-
-void consumer(thread_comm::consumer<int> &&c) {
-  for (;;) {
-    c.wait();
-    try {
-      std::unique_ptr<int> p{c.get()};
-      std::cerr << *p << '\n';
-    } catch (...) {
-      std::cerr << "PURPOSEFUL ERROR\n";
-      return;
+int main(int argc, char *argv[]) {
+  if (argc != 2) {
+    std::cerr << "test module file path required\n";
+    std::exit(1);
+  } else {
+    auto test_mod{dyn_load_module(argv[1])};
+    auto tc_pair{thread_comm::make_thread_comm_pair<module_api::block>()};
+    module_api api{std::move(tc_pair.first)};
+    libconfigfile::map_node conf_in{};
+    module_api::config_out conf_out{
+        test_mod.second->init(std::move(api), std::move(conf_in))};
+    test_mod.second->run();
+    while (true) {
+      // TODO
     }
   }
-}
-
-void foo(thread_comm::shared_state_state::type sss) {
-  switch (sss) {
-  case thread_comm::shared_state_state::NONE: {
-    std::cerr << "NONE\n";
-  } break;
-  case thread_comm::shared_state_state::READ: {
-    std::cerr << "READ\n";
-  } break;
-  case thread_comm::shared_state_state::UNREAD: {
-    std::cerr << "UNREAD\n";
-  } break;
-  case thread_comm::shared_state_state::EXCEPTION: {
-    std::cerr << "EXCEPTION\n";
-  } break;
-  }
-}
-
-int main(int argc, char *argv[]) {
-  auto pair = thread_comm::make_thread_comm_pair<int>(
-      &foo, (thread_comm::shared_state_state::READ |
-             thread_comm::shared_state_state::UNREAD |
-             thread_comm::shared_state_state::EXCEPTION));
-  std::thread tp{producer, std::move(pair.first)};
-  std::thread tc{consumer, std::move(pair.second)};
-  tp.join();
-  tc.join();
 }
