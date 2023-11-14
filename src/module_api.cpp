@@ -26,10 +26,14 @@ module_api &module_api::operator=(module_api &&other) noexcept {
   return *this;
 }
 
-void module_api::set_value(std::unique_ptr<block> value) {
-  m_thread_comm_producer.set_value(std::move(value));
+void module_api::set_block(std::unique_ptr<block> block) {
+  m_thread_comm_producer.set_value(std::move(block));
 }
 
-void module_api::set_exception(std::exception_ptr exception) {
-  m_thread_comm_producer.set_exception(exception);
+void module_api::set_error(std::exception_ptr error) {
+  m_thread_comm_producer.set_exception(error);
+}
+
+void module_api::hide() {
+  // TODO
 }
