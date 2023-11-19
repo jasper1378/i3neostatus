@@ -14,6 +14,8 @@ module_api::config_out simple_date::init(module_api &&api,
   m_config = std::move(config);
 
   module_api::config_out ret_val{"simple_date", false};
+
+  return ret_val;
 }
 
 void simple_date::run() {
@@ -32,9 +34,17 @@ void simple_date::run() {
     char str[std::size("yyyy-mm-ddThh:mm:ssZ")];
     std::strftime(str, std::size(str), "%FT%TZ", std::localtime(&tnow));
 
-    module_api::block block{m_api.make_block({.full_text = str})};
-    m_api.set_value(std::move(block));
+    std::unique_ptr<module_api::block> block{m_api.make_block(module_api::block{
+        .full_text = str,
+    })};
+    m_api.set_block(std::move(block));
 
     std::this_thread::sleep_until(get_next_whole_second());
   }
+}
+
+extern "C" {
+module_base *allocator() { return new simple_date{}; }
+
+void deleter(module_base *m) { delete m; }
 }

@@ -57,6 +57,8 @@ private:
   thread_comm::producer<block> m_thread_comm_producer;
 
 public:
+  module_api();
+
   module_api(thread_comm::producer<block> &&thread_comm_producer);
 
   module_api(module_api &&other) noexcept;

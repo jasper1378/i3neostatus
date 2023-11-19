@@ -8,11 +8,32 @@
 #include <exception>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include <utility>
 #include <variant>
 
 namespace thread_comm {
 // TODO reuse buffer
+
+class error : public std::runtime_error {
+private:
+  using base_t = std::runtime_error;
+
+public:
+  error(const std::string &what_arg);
+  error(const char *what_arg);
+  error(const error &other);
+
+public:
+  virtual ~error() override;
+
+public:
+  error &operator=(const error &other);
+
+public:
+  virtual const char *what() const noexcept override;
+};
 
 namespace shared_state_state {
 using type = unsigned int;
@@ -33,9 +54,6 @@ template <typename t_value> class shared_state {
 public:
   using t_state_change_callback_func = void (*)(shared_state_state::type);
 
-public:
-  friend class shared_state_ptr<t_value>;
-
 private:
   std::atomic<shared_state_state::type> m_state;
   std::atomic<t_value *> m_value;
@@ -43,7 +61,7 @@ private:
   t_state_change_callback_func m_state_change_callback_func;
   shared_state_state::type m_state_change_subscribed_events;
 
-private:
+public:
   shared_state()
       : m_state{shared_state_state::READ}, m_value{nullptr},
         m_exception{nullptr}, m_state_change_callback_func{nullptr},
@@ -131,19 +149,11 @@ public:
 };
 
 template <typename t_value> class shared_state_ptr {
-public:
-  friend std::pair<producer<t_value>, consumer<t_value>>
-      make_thread_comm_pair<t_value>(
-          typename shared_state<t_value>::t_state_change_callback_func,
-          shared_state_state::type);
-  friend std::pair<producer<t_value>, consumer<t_value>>
-  make_thread_comm_pair<t_value>();
-
 private:
   shared_state<t_value> *m_shared_state;
   std::atomic<long> *m_use_count;
 
-private:
+public:
   shared_state_ptr() : m_shared_state{nullptr}, m_use_count{nullptr} {}
 
   shared_state_ptr(std::nullptr_t)
@@ -152,7 +162,6 @@ private:
   shared_state_ptr(shared_state<t_value> *ssp)
       : m_shared_state{ssp}, m_use_count{new std::atomic<long>{1}} {}
 
-public:
   shared_state_ptr(const shared_state_ptr &other)
       : m_shared_state{other.m_shared_state}, m_use_count{other.m_use_count} {
     if (m_use_count) {
@@ -232,7 +241,7 @@ public:
 
   explicit operator bool() const { return get() != nullptr; }
 
-private:
+public:
   template <typename... t_args>
   static shared_state_ptr<t_value> make_shared_state_ptr(t_args &&...args) {
     return shared_state_ptr<t_value>{
@@ -306,6 +315,8 @@ private:
   shared_state_ptr<t_value> m_shared_state_ptr;
 
 public:
+  producer() : m_shared_state_ptr{} {}
+
   producer(const shared_state_ptr<t_value> &ssp) : m_shared_state_ptr{ssp} {}
 
   producer(producer &&other) noexcept
@@ -323,16 +334,24 @@ public:
   producer &operator=(const producer &other) = delete;
 
 public:
+  bool valid() { return static_cast<bool>(m_shared_state_ptr); }
+
   void swap(producer &other) noexcept {
     using std::swap;
     swap(m_shared_state_ptr, other.m_shared_state_ptr);
   }
 
   void set_value(std::unique_ptr<t_value> value) {
+    if (!valid()) {
+      throw error{"no state"};
+    }
     m_shared_state_ptr->set_value(std::move(value));
   }
 
   void set_exception(std::exception_ptr exception) {
+    if (!valid()) {
+      throw error{"no state"};
+    }
     m_shared_state_ptr->set_exception(exception);
   }
 };
@@ -342,6 +361,8 @@ private:
   shared_state_ptr<t_value> m_shared_state_ptr;
 
 public:
+  consumer() : m_shared_state_ptr{} {}
+
   consumer(const shared_state_ptr<t_value> &ssp) : m_shared_state_ptr{ssp} {}
 
   consumer(consumer &&other) noexcept
@@ -359,14 +380,27 @@ public:
   consumer &operator=(const consumer &other) = delete;
 
 public:
+  bool valid() { return static_cast<bool>(m_shared_state_ptr); }
+
   void swap(consumer &other) noexcept {
     using std::swap;
     swap(m_shared_state_ptr, other.m_shared_state_ptr);
   }
 
-  std::unique_ptr<t_value> get() { return m_shared_state_ptr->get(); }
+  std::unique_ptr<t_value> get() {
+    if (!valid()) {
+      throw error{"no state"};
+    }
+    return m_shared_state_ptr->get();
+  }
 
-  void wait() { m_shared_state_ptr->wait(); }
+  void wait() {
+    if (!valid()) {
+      throw error{"no state"};
+    }
+
+    m_shared_state_ptr->wait();
+  }
 };
 
 template <typename t_value>
