@@ -11,6 +11,8 @@
 #include <string>
 #include <utility>
 
+module_api::module_api() : m_thread_comm_producer{} {}
+
 module_api::module_api(thread_comm::producer<block> &&thread_comm_producer)
     : m_thread_comm_producer{std::move(thread_comm_producer)} {}
 

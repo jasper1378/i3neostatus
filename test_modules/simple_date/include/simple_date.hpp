@@ -21,4 +21,9 @@ public:
   virtual void run() override;
 };
 
+extern "C" {
+module_base *allocator();
+void deleter(module_base *m);
+}
+
 #endif
