@@ -31,6 +31,7 @@ dyn_load_lib::lib::lib(const char *filename, dlopen_flags::type flags)
       (static_cast<bool>(flags & dlopen_flags::NOW))) {
     throw error{"flags must include exactly one of the constants LAZY or NOW"};
   } else {
+    dlerror();
     m_handle = dlopen(filename, flags);
     if (!m_handle) {
       throw error{std::string{"dlopen(): "} + dlerror()};
@@ -54,6 +55,7 @@ dyn_load_lib::lib::~lib() {
 dyn_load_lib::lib &dyn_load_lib::lib::operator=(lib &&other) {
   if (this != &other) {
     if (m_handle) {
+      dlerror();
       if (dlclose(m_handle) != 0) {
         throw error{std::string{"dlclose(): "} + dlerror()};
       }
@@ -66,6 +68,7 @@ dyn_load_lib::lib &dyn_load_lib::lib::operator=(lib &&other) {
 
 void *dyn_load_lib::lib::get_symbol_impl(void *handle, const char *symbol,
                                          const char *version /*= "\0"*/) {
+  dlerror();
   void *sym_addr{nullptr};
   sym_addr = ((version[0] == '\0') ? (dlsym(handle, symbol))
                                    : (dlvsym(handle, symbol, version)));
@@ -77,6 +80,7 @@ void *dyn_load_lib::lib::get_symbol_impl(void *handle, const char *symbol,
 }
 
 Dl_info dyn_load_lib::lib::get_info_impl(void *addr) {
+  dlerror();
   Dl_info ret_val;
   if (dladdr(addr, &ret_val) != 0) {
     throw error{std::string{"dladdr(): "} + dlerror()};
