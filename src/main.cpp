@@ -20,7 +20,9 @@ int main(int argc, char *argv[]) {
         test_mod.second->init(std::move(api), std::move(conf_in))};
     test_mod.second->run();
     while (true) {
-      // TODO
+      tc_pair.second.wait();
+      std::unique_ptr<module_api::block> new_block{tc_pair.second.get()};
+      std::cout << new_block->full_text << '\n';
     }
   }
 }
