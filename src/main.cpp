@@ -1,11 +1,12 @@
-#include <iostream>
-
 #include "dyn_load_lib.hpp"
 #include "dyn_load_module.hpp"
 #include "i3bar_protocol.hpp"
 #include "module_api.hpp"
 #include "module_base.hpp"
 #include "thread_comm.hpp"
+
+#include <iostream>
+#include <thread>
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -18,7 +19,7 @@ int main(int argc, char *argv[]) {
     libconfigfile::map_node conf_in{};
     module_api::config_out conf_out{
         test_mod.second->init(std::move(api), std::move(conf_in))};
-    test_mod.second->run();
+    std::thread thread{[&test_mod]() { test_mod.second->run(); }};
     while (true) {
       tc_pair.second.wait();
       std::unique_ptr<module_api::block> new_block{tc_pair.second.get()};
