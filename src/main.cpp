@@ -3,6 +3,7 @@
 #include "module_api.hpp"
 #include "module_base.hpp"
 #include "module_handle.hpp"
+#include "module_id.hpp"
 #include "thread_comm.hpp"
 
 #include <iostream>

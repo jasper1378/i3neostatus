@@ -4,6 +4,7 @@
 #include "dyn_load_lib.hpp"
 #include "module_api.hpp"
 #include "module_base.hpp"
+#include "module_id.hpp"
 #include "thread_comm.hpp"
 
 #include "libconfigfile.hpp"
@@ -13,11 +14,8 @@
 #include <thread>
 
 class module_handle {
-public:
-  using id_t = unsigned long;
-
 private:
-  id_t m_id;
+  module_id_t m_id;
   std::string m_name;
   std::string m_filename;
   bool m_click_events_enabled;
@@ -28,7 +26,7 @@ private:
   std::thread m_thread;
 
 public:
-  module_handle(id_t id, std::string &&filename,
+  module_handle(module_id_t id, std::string &&filename,
                 libconfigfile::map_node &&conf);
   module_handle(module_handle &&other) noexcept;
   module_handle(const module_handle &other) = delete;
