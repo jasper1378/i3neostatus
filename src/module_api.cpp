@@ -7,7 +7,6 @@
 
 #include <exception>
 #include <memory>
-#include <optional>
 #include <string>
 #include <utility>
 

@@ -8,7 +8,6 @@
 
 #include <exception>
 #include <memory>
-#include <optional>
 #include <string>
 
 class module_api {
@@ -20,38 +19,9 @@ public:
     bool click_events_enabled;
   };
 
-  struct block {
-    using pixel_count_t = i3bar_protocol::pixel_count_t;
-    std::string full_text;
-    std::optional<std::string> short_text;
-    std::optional<std::string> color;
-    std::optional<std::string> background;
-    std::optional<std::string> border;
-    std::optional<pixel_count_t> border_top;
-    std::optional<pixel_count_t> border_right;
-    std::optional<pixel_count_t> border_bottom;
-    std::optional<pixel_count_t> border_left;
-    std::optional<std::variant<pixel_count_t, std::string>> min_width;
-    std::optional<std::string> align;
-    std::optional<bool> urgent;
-    std::optional<bool> separator;
-    std::optional<pixel_count_t> separator_block_width;
-    std::optional<std::string> markup;
-  };
+  using block = struct i3bar_protocol::block::content;
 
-  struct click_event {
-    using pixel_count_t = i3bar_protocol::pixel_count_t;
-    pixel_count_t x;
-    pixel_count_t y;
-    int button;
-    pixel_count_t relative_x;
-    pixel_count_t relative_y;
-    pixel_count_t output_x;
-    pixel_count_t output_y;
-    pixel_count_t width;
-    pixel_count_t height;
-    std::vector<std::string> modifiers;
-  };
+  using click_event = struct i3bar_protocol::click_event::content;
 
 private:
   thread_comm::producer<block> m_thread_comm_producer;
