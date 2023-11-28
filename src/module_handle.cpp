@@ -3,6 +3,7 @@
 #include "dyn_load_lib.hpp"
 #include "module_api.hpp"
 #include "module_base.hpp"
+#include "module_error.hpp"
 #include "module_id.hpp"
 #include "thread_comm.hpp"
 
@@ -27,7 +28,7 @@ module_handle::module_handle(module_id_t id, std::string &&filename,
           module_base::deleter_func_str)};
   m_module = {mod_alloc(), mod_delete};
   if (!m_module) {
-    // TODO throw appropriate error: can't alloc module
+    throw module_error::out{id, "UNKNOWN", filename, "allocator() failed"};
   }
 
   std::pair<thread_comm::producer<module_api::block>,
