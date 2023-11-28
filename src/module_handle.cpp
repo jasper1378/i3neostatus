@@ -3,6 +3,7 @@
 #include "dyn_load_lib.hpp"
 #include "module_api.hpp"
 #include "module_base.hpp"
+#include "module_id.hpp"
 #include "thread_comm.hpp"
 
 #include "libconfigfile.hpp"
@@ -12,7 +13,7 @@
 #include <thread>
 #include <utility>
 
-module_handle::module_handle(id_t id, std::string &&filename,
+module_handle::module_handle(module_id_t id, std::string &&filename,
                              libconfigfile::map_node &&conf)
     : m_id{id}, m_name{}, m_filename{std::move(filename)},
       m_click_events_enabled{false},
