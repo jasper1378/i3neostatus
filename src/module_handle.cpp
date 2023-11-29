@@ -75,7 +75,7 @@ bool module_handle::get_click_events_enabled() const {
 }
 
 void module_handle::run() {
-  std::thread{[this]() { m_module->run(); }};
+  m_thread = std::thread{[this]() { m_module->run(); }};
 }
 
 thread_comm::consumer<module_api::block> &module_handle::get_comm() {
