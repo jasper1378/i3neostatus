@@ -32,7 +32,7 @@ void module_api::set_block(std::unique_ptr<block> block) {
 }
 
 void module_api::set_error(std::exception_ptr error) {
-  m_thread_comm_producer.set_exception(error);
+  m_thread_comm_producer.set_exception(std::move(error));
 }
 
 void module_api::hide() {

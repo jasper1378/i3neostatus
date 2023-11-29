@@ -118,7 +118,7 @@ static constexpr char g_k_json_array_closing_delimiter{']'};
 static constexpr char g_k_json_array_element_separator{','};
 
 void print_header(const header &output_value,
-                  std::ostream &ouput_stream = std::cout);
+                  std::ostream &output_stream = std::cout);
 void print_array_start(std::ostream &output_stream = std::cout);
 void print_statusline(const std::vector<block> &output_value,
                       std::ostream &output_stream = std::cout);

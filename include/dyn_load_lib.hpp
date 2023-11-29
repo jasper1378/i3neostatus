@@ -13,8 +13,8 @@ private:
   using base_t = std::runtime_error;
 
 public:
-  error(const std::string &what_arg);
-  error(const char *what_arg);
+  explicit error(const std::string &what_arg);
+  explicit error(const char *what_arg);
   error(const error &other);
 
 public:
@@ -41,9 +41,9 @@ enum {
 } // namespace dlopen_flags
 
 namespace dlsym_pseudohandles {
-using type = void *;
-static const type DEFAULT{RTLD_DEFAULT};
-static const type NEXT{RTLD_NEXT};
+using type = void *const;
+static type DEFAULT{RTLD_DEFAULT};
+static type NEXT{RTLD_NEXT};
 } // namespace dlsym_pseudohandles
 
 class lib {
@@ -66,7 +66,7 @@ public:
 public:
   template <typename T>
   T *get_symbol(const char *symbol, const char *version = "\0") const {
-    T *ret_val;
+    T *ret_val{nullptr};
     (*reinterpret_cast<void **>(&ret_val)) =
         get_symbol_impl(m_handle, symbol, version);
     return ret_val;
@@ -74,15 +74,15 @@ public:
 
   template <typename T>
   T *get_symbol(const std::string &symbol,
-                const std::string &version = "\0") const {
+                const std::string &version = "") const {
     return get_symbol<T>(symbol.c_str(), version.c_str());
   }
 
 public:
   template <typename T>
   static T *get_symbol(dlsym_pseudohandles::type handle, const char *symbol,
-                       const char *version = "\0") {
-    T *ret_val;
+                       const char *version = "") {
+    T *ret_val{nullptr};
     (*reinterpret_cast<void **>(&ret_val)) =
         get_symbol_impl(handle, symbol, version);
     return ret_val;
@@ -91,7 +91,7 @@ public:
   template <typename T>
   static T *get_symbol(dlsym_pseudohandles::type handle,
                        const std::string &symbol,
-                       const std::string &version = "\0") {
+                       const std::string &version = "") {
     return get_symbol<T>(handle, symbol.c_str(), version.c_str());
   }
 
