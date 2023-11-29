@@ -4,10 +4,13 @@
 #include "module_api.hpp"
 #include "module_base.hpp"
 
+#include <atomic>
+
 class simple_date : public module_base {
 private:
   module_api m_api;
   module_api::config_in m_config;
+  std::atomic<bool> m_suicide;
 
 public:
   simple_date();

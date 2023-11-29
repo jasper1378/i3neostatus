@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
   } else {
     module_handle test_mod{0, argv[1], {}};
     test_mod.run();
-    while (true) {
+    for (std::size_t i = 0; i < 5; ++i) {
       test_mod.get_comm().wait();
       std::unique_ptr<module_api::block> new_block{test_mod.get_comm().get()};
       std::cout << new_block->full_text << '\n';
