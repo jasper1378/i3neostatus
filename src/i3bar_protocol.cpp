@@ -50,7 +50,7 @@ i3bar_protocol::read_click_event(std::istream &input_stream /*= std::cin*/) {
     input_str.front() = g_k_space_char;
   }
 
-  boost::json::value bj_value{boost::json::parse(std::move(input_str))};
+  boost::json::value bj_value{boost::json::parse(input_str)};
 
   return boost::json::value_to<click_event>(std::move(bj_value));
 }
@@ -62,15 +62,15 @@ void boost::json::tag_invoke(const boost::json::value_from_tag &,
 
   bj_object.insert(std::make_pair(i3bar_protocol::header::k_version_str,
                                   std::int64_t{header.version}));
-  if (header.stop_signal.has_value() == true) {
+  if (header.stop_signal.has_value()) {
     bj_object.insert(std::make_pair(i3bar_protocol::header::k_stop_signal_str,
                                     std::int64_t{header.stop_signal.value()}));
   }
-  if (header.cont_signal.has_value() == true) {
+  if (header.cont_signal.has_value()) {
     bj_object.insert(std::make_pair(i3bar_protocol::header::k_cont_signal_str,
                                     std::int64_t{header.cont_signal.value()}));
   }
-  if (header.click_events.has_value() == true) {
+  if (header.click_events.has_value()) {
     bj_object.insert(std::make_pair(i3bar_protocol::header::k_click_events_str,
                                     bool{header.click_events.value()}));
   }
@@ -84,21 +84,18 @@ void boost::json::tag_invoke(const boost::json::value_from_tag &,
   boost::json::object bj_object{};
 
   bj_object.insert(std::make_pair(i3bar_protocol::header::k_version_str,
-                                  std::int64_t{std::move(header.version)}));
-  if (header.stop_signal.has_value() == true) {
-    bj_object.insert(
-        std::make_pair(i3bar_protocol::header::k_stop_signal_str,
-                       std::int64_t{std::move(header.stop_signal.value())}));
+                                  std::int64_t{header.version}));
+  if (header.stop_signal.has_value()) {
+    bj_object.insert(std::make_pair(i3bar_protocol::header::k_stop_signal_str,
+                                    std::int64_t{header.stop_signal.value()}));
   }
-  if (header.cont_signal.has_value() == true) {
-    bj_object.insert(
-        std::make_pair(i3bar_protocol::header::k_cont_signal_str,
-                       std::int64_t{std::move(header.cont_signal.value())}));
+  if (header.cont_signal.has_value()) {
+    bj_object.insert(std::make_pair(i3bar_protocol::header::k_cont_signal_str,
+                                    std::int64_t{header.cont_signal.value()}));
   }
-  if (header.click_events.has_value() == true) {
-    bj_object.insert(
-        std::make_pair(i3bar_protocol::header::k_click_events_str,
-                       bool{std::move(header.click_events.value())}));
+  if (header.click_events.has_value()) {
+    bj_object.insert(std::make_pair(i3bar_protocol::header::k_click_events_str,
+                                    bool{header.click_events.value()}));
   }
 
   bj_value = std::move(bj_object);
@@ -113,58 +110,58 @@ void boost::json::tag_invoke(const boost::json::value_from_tag &,
       std::make_pair(i3bar_protocol::block::content::k_full_text_str,
                      boost::json::string{block.content.full_text}));
 
-  if (block.id.name.has_value() == true) {
+  if (block.id.name.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::id::k_name_str,
                        boost::json::string{block.id.name.value()}));
   }
-  if (block.id.instance.has_value() == true) {
+  if (block.id.instance.has_value()) {
     bj_object.insert(std::make_pair(
         i3bar_protocol::block::id::k_instance_str,
         boost::json::string{std::to_string(block.id.instance.value())}));
   }
-  if (block.content.short_text.has_value() == true) {
+  if (block.content.short_text.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_short_text_str,
                        boost::json::string{block.content.short_text.value()}));
   }
-  if (block.content.color.has_value() == true) {
+  if (block.content.color.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_color_str,
                        boost::json::string{block.content.color.value()}));
   }
-  if (block.content.background.has_value() == true) {
+  if (block.content.background.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_background_str,
                        boost::json::string{block.content.background.value()}));
   }
-  if (block.content.border.has_value() == true) {
+  if (block.content.border.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_border_str,
                        boost::json::string{block.content.border.value()}));
   }
-  if (block.content.border_top.has_value() == true) {
+  if (block.content.border_top.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_border_top_str,
                        std::int64_t{block.content.border_top.value()}));
   }
-  if (block.content.border_right.has_value() == true) {
+  if (block.content.border_right.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_border_right_str,
                        std::int64_t{block.content.border_right.value()}));
   }
-  if (block.content.border_bottom.has_value() == true) {
+  if (block.content.border_bottom.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_border_bottom_str,
                        std::int64_t{block.content.border_bottom.value()}));
   }
-  if (block.content.border_left.has_value() == true) {
+  if (block.content.border_left.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_border_left_str,
                        std::int64_t{block.content.border_left.value()}));
   }
-  if (block.content.min_width.has_value() == true) {
-    decltype(block.content.min_width.value()) min_width_value{
+  if (block.content.min_width.has_value()) {
+    std::variant<i3bar_protocol::pixel_count_t, std::string> min_width_value{
         block.content.min_width.value()};
     switch (min_width_value.index()) {
     case 0: {
@@ -179,27 +176,27 @@ void boost::json::tag_invoke(const boost::json::value_from_tag &,
     } break;
     }
   }
-  if (block.content.align.has_value() == true) {
+  if (block.content.align.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_align_str,
                        boost::json::string{block.content.align.value()}));
   }
-  if (block.content.urgent.has_value() == true) {
+  if (block.content.urgent.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_urgent_str,
                        bool{block.content.urgent.value()}));
   }
-  if (block.content.separator.has_value() == true) {
+  if (block.content.separator.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_separator_str,
                        bool{block.content.separator.value()}));
   }
-  if (block.content.separator_block_width.has_value() == true) {
+  if (block.content.separator_block_width.has_value()) {
     bj_object.insert(std::make_pair(
         i3bar_protocol::block::content::k_separator_block_width_str,
         std::int64_t{block.content.separator_block_width.value()}));
   }
-  if (block.content.markup.has_value() == true) {
+  if (block.content.markup.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_markup_str,
                        boost::json::string{block.content.markup.value()}));
@@ -216,57 +213,57 @@ void boost::json::tag_invoke(const value_from_tag &, value &bj_value,
       std::make_pair(i3bar_protocol::block::content::k_full_text_str,
                      boost::json::string{std::move(block.content.full_text)}));
 
-  if (block.id.name.has_value() == true) {
+  if (block.id.name.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::id::k_name_str,
                        boost::json::string{std::move(block.id.name.value())}));
   }
-  if (block.id.instance.has_value() == true) {
+  if (block.id.instance.has_value()) {
     bj_object.insert(std::make_pair(
         i3bar_protocol::block::id::k_instance_str,
         boost::json::string{std::to_string(block.id.instance.value())}));
   }
-  if (block.content.short_text.has_value() == true) {
+  if (block.content.short_text.has_value()) {
     bj_object.insert(std::make_pair(
         i3bar_protocol::block::content::k_short_text_str,
         boost::json::string{std::move(block.content.short_text.value())}));
   }
-  if (block.content.color.has_value() == true) {
+  if (block.content.color.has_value()) {
     bj_object.insert(std::make_pair(
         i3bar_protocol::block::content::k_color_str,
         boost::json::string{std::move(block.content.color.value())}));
   }
-  if (block.content.background.has_value() == true) {
+  if (block.content.background.has_value()) {
     bj_object.insert(std::make_pair(
         i3bar_protocol::block::content::k_background_str,
         boost::json::string{std::move(block.content.background.value())}));
   }
-  if (block.content.border.has_value() == true) {
+  if (block.content.border.has_value()) {
     bj_object.insert(std::make_pair(
         i3bar_protocol::block::content::k_border_str,
         boost::json::string{std::move(block.content.border.value())}));
   }
-  if (block.content.border_top.has_value() == true) {
-    bj_object.insert(std::make_pair(
-        i3bar_protocol::block::content::k_border_top_str,
-        std::int64_t{std::move(block.content.border_top.value())}));
+  if (block.content.border_top.has_value()) {
+    bj_object.insert(
+        std::make_pair(i3bar_protocol::block::content::k_border_top_str,
+                       std::int64_t{block.content.border_top.value()}));
   }
-  if (block.content.border_right.has_value() == true) {
-    bj_object.insert(std::make_pair(
-        i3bar_protocol::block::content::k_border_right_str,
-        std::int64_t{std::move(block.content.border_right.value())}));
+  if (block.content.border_right.has_value()) {
+    bj_object.insert(
+        std::make_pair(i3bar_protocol::block::content::k_border_right_str,
+                       std::int64_t{block.content.border_right.value()}));
   }
-  if (block.content.border_bottom.has_value() == true) {
-    bj_object.insert(std::make_pair(
-        i3bar_protocol::block::content::k_border_bottom_str,
-        std::int64_t{std::move(block.content.border_bottom.value())}));
+  if (block.content.border_bottom.has_value()) {
+    bj_object.insert(
+        std::make_pair(i3bar_protocol::block::content::k_border_bottom_str,
+                       std::int64_t{block.content.border_bottom.value()}));
   }
-  if (block.content.border_left.has_value() == true) {
-    bj_object.insert(std::make_pair(
-        i3bar_protocol::block::content::k_border_left_str,
-        std::int64_t{std::move(block.content.border_left.value())}));
+  if (block.content.border_left.has_value()) {
+    bj_object.insert(
+        std::make_pair(i3bar_protocol::block::content::k_border_left_str,
+                       std::int64_t{block.content.border_left.value()}));
   }
-  if (block.content.min_width.has_value() == true) {
+  if (block.content.min_width.has_value()) {
     std::variant<i3bar_protocol::pixel_count_t, std::string> min_width_value{
         std::move(block.content.min_width.value())};
     switch (min_width_value.index()) {
@@ -282,27 +279,27 @@ void boost::json::tag_invoke(const value_from_tag &, value &bj_value,
     } break;
     }
   }
-  if (block.content.align.has_value() == true) {
+  if (block.content.align.has_value()) {
     bj_object.insert(std::make_pair(
         i3bar_protocol::block::content::k_align_str,
         boost::json::string{std::move(block.content.align.value())}));
   }
-  if (block.content.urgent.has_value() == true) {
+  if (block.content.urgent.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_urgent_str,
-                       bool{std::move(block.content.urgent.value())}));
+                       bool{block.content.urgent.value()}));
   }
-  if (block.content.separator.has_value() == true) {
+  if (block.content.separator.has_value()) {
     bj_object.insert(
         std::make_pair(i3bar_protocol::block::content::k_separator_str,
-                       bool{std::move(block.content.separator.value())}));
+                       bool{block.content.separator.value()}));
   }
-  if (block.content.separator_block_width.has_value() == true) {
+  if (block.content.separator_block_width.has_value()) {
     bj_object.insert(std::make_pair(
         i3bar_protocol::block::content::k_separator_block_width_str,
-        std::int64_t{std::move(block.content.separator_block_width.value())}));
+        std::int64_t{block.content.separator_block_width.value()}));
   }
-  if (block.content.markup.has_value() == true) {
+  if (block.content.markup.has_value()) {
     bj_object.insert(std::make_pair(
         i3bar_protocol::block::content::k_markup_str,
         boost::json::string{std::move(block.content.markup.value())}));
@@ -360,7 +357,7 @@ i3bar_protocol::click_event boost::json::tag_invoke(
                          const boost::json::array &bj_array) {
             std::vector<std::string> ret_val{};
             ret_val.reserve(bj_array.size());
-            for (auto p{bj_array.begin()}; p != bj_array.end(); ++p) {
+            for (const auto *p{bj_array.begin()}; p != bj_array.end(); ++p) {
               ret_val.emplace_back(
                   boost_json_string_to_std_string(p->as_string()));
             }

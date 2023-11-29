@@ -28,7 +28,7 @@ module_handle::module_handle(module_id_t id, std::string &&filename,
           module_base::deleter_func_str)};
   m_module = {mod_alloc(), mod_delete};
   if (!m_module) {
-    throw module_error::out{id, "UNKNOWN", filename, "allocator() failed"};
+    throw module_error::out{id, "UNKNOWN", m_filename, "allocator() failed"};
   }
 
   std::pair<thread_comm::producer<module_api::block>,

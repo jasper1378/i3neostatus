@@ -21,8 +21,8 @@ private:
   using base_t = std::runtime_error;
 
 public:
-  error(const std::string &what_arg);
-  error(const char *what_arg);
+  explicit error(const std::string &what_arg);
+  explicit error(const char *what_arg);
   error(const error &other);
 
 public:
@@ -96,7 +96,8 @@ public:
       t_value *old_value{m_value.exchange(value.release())};
       m_state.store(shared_state_state::UNREAD);
       m_state.notify_all();
-      if (m_state_change_subscribed_events & shared_state_state::UNREAD) {
+      if ((m_state_change_subscribed_events & shared_state_state::UNREAD) !=
+          0U) {
         m_state_change_callback_func(shared_state_state::UNREAD);
       }
       if (old_value) {
@@ -111,10 +112,11 @@ public:
 
   bool set_exception(std::exception_ptr exception) {
     if (m_state.load() != shared_state_state::EXCEPTION) {
-      m_exception = exception;
+      m_exception = std::move(exception);
       m_state.store(shared_state_state::EXCEPTION);
       m_state.notify_all();
-      if (m_state_change_subscribed_events & shared_state_state::EXCEPTION) {
+      if ((m_state_change_subscribed_events & shared_state_state::EXCEPTION) !=
+          0U) {
         m_state_change_callback_func(shared_state_state::EXCEPTION);
       }
       return true;
@@ -131,7 +133,7 @@ public:
     } break;
     case shared_state_state::UNREAD: {
       m_state.store(shared_state_state::READ);
-      if (m_state_change_subscribed_events & shared_state_state::READ) {
+      if ((m_state_change_subscribed_events & shared_state_state::READ) != 0U) {
         m_state_change_callback_func(shared_state_state::READ);
       }
       return std::unique_ptr<t_value>{m_value.exchange(nullptr)};
@@ -159,12 +161,12 @@ public:
   shared_state_ptr(std::nullptr_t)
       : m_shared_state{nullptr}, m_use_count{nullptr} {}
 
-  shared_state_ptr(shared_state<t_value> *ssp)
+  explicit shared_state_ptr(shared_state<t_value> *ssp)
       : m_shared_state{ssp}, m_use_count{new std::atomic<long>{1}} {}
 
   shared_state_ptr(const shared_state_ptr &other)
       : m_shared_state{other.m_shared_state}, m_use_count{other.m_use_count} {
-    if (m_use_count) {
+    if (m_use_count != nullptr) {
       ++(*m_use_count);
     }
   }
@@ -182,7 +184,7 @@ public:
       reset(nullptr);
       m_shared_state = other.m_shared_state;
       m_use_count = other.m_use_count;
-      if (m_use_count) {
+      if (m_use_count != nullptr) {
         ++(*m_use_count);
       }
     }
@@ -204,7 +206,7 @@ public:
   void reset() { reset(nullptr); }
 
   void reset(shared_state<t_value> *ssp) {
-    if (m_use_count) {
+    if (m_use_count != nullptr) {
       --(*m_use_count);
       if (*m_use_count == 0) {
         delete m_use_count;
@@ -232,7 +234,7 @@ public:
   shared_state<t_value> *operator->() const { return get(); }
 
   long use_count() const {
-    if (m_use_count) {
+    if (m_use_count != nullptr) {
       return m_use_count->load();
     } else {
       return 0;
@@ -317,7 +319,8 @@ private:
 public:
   producer() : m_shared_state_ptr{} {}
 
-  producer(const shared_state_ptr<t_value> &ssp) : m_shared_state_ptr{ssp} {}
+  explicit producer(const shared_state_ptr<t_value> &ssp)
+      : m_shared_state_ptr{ssp} {}
 
   producer(producer &&other) noexcept
       : m_shared_state_ptr{std::move(other.m_shared_state_ptr)} {}
@@ -363,7 +366,8 @@ private:
 public:
   consumer() : m_shared_state_ptr{} {}
 
-  consumer(const shared_state_ptr<t_value> &ssp) : m_shared_state_ptr{ssp} {}
+  explicit consumer(const shared_state_ptr<t_value> &ssp)
+      : m_shared_state_ptr{ssp} {}
 
   consumer(consumer &&other) noexcept
       : m_shared_state_ptr{std::move(other.m_shared_state_ptr)} {}
@@ -411,14 +415,14 @@ std::pair<producer<t_value>, consumer<t_value>> make_thread_comm_pair(
   shared_state_ptr<t_value> ssp{
       shared_state_ptr<t_value>::make_shared_state_ptr(
           state_change_callback_func, state_change_subscribed_events)};
-  return std::make_pair<producer<t_value>, consumer<t_value>>(ssp, ssp);
+  return std::make_pair(producer<t_value>{ssp}, consumer<t_value>{ssp});
 }
 
 template <typename t_value>
 std::pair<producer<t_value>, consumer<t_value>> make_thread_comm_pair() {
   shared_state_ptr<t_value> ssp{
       shared_state_ptr<t_value>::make_shared_state_ptr()};
-  return std::make_pair<producer<t_value>, consumer<t_value>>(ssp, ssp);
+  return std::make_pair(producer<t_value>{ssp}, consumer<t_value>{ssp});
 }
 
 } // namespace thread_comm

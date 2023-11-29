@@ -16,7 +16,7 @@ public:
   static constexpr std::string deleter_func_str{"deleter"};
 
 public:
-  virtual ~module_base();
+  virtual ~module_base() = default;
 
 public:
   virtual module_api::config_out init(module_api &&api,
