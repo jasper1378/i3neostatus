@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <iostream>
 #include <thread>
 
 simple_date::simple_date() : m_api{}, m_config{} {}
@@ -42,6 +43,8 @@ void simple_date::run() {
     std::this_thread::sleep_until(get_next_whole_second());
   }
 }
+
+void simple_date::term() { std::cerr << "simple_date::term()\n"; }
 
 extern "C" {
 module_base *allocator() { return new simple_date{}; }
