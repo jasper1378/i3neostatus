@@ -19,6 +19,8 @@ public:
                                       module_api::config_in &&config) override;
 
   virtual void run() override;
+
+  virtual void term() override;
 };
 
 extern "C" {
