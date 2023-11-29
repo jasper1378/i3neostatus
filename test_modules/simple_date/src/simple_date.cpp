@@ -5,7 +5,7 @@
 #include <iostream>
 #include <thread>
 
-simple_date::simple_date() : m_api{}, m_config{} {}
+simple_date::simple_date() : m_api{}, m_config{}, m_suicide{false} {}
 
 simple_date::~simple_date() {}
 
@@ -29,7 +29,7 @@ void simple_date::run() {
 
   std::this_thread::sleep_until(get_next_whole_second());
 
-  while (true) {
+  while (m_suicide.load() == false) {
     auto now{std::chrono::system_clock::now()};
     std::time_t tnow{std::chrono::system_clock::to_time_t(now)};
     char str[std::size("yyyy-mm-ddThh:mm:ssZ")];
@@ -44,7 +44,7 @@ void simple_date::run() {
   }
 }
 
-void simple_date::term() { std::cerr << "simple_date::term()\n"; }
+void simple_date::term() { m_suicide.store(true); }
 
 extern "C" {
 module_base *allocator() { return new simple_date{}; }
