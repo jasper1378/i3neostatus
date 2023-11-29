@@ -50,7 +50,10 @@ module_handle::module_handle(module_handle &&other) noexcept
       m_lib{std::move(other.m_lib)}, m_module{std::move(other.m_module)},
       m_comm{std::move(other.m_comm)}, m_thread{std::move(other.m_thread)} {}
 
-module_handle::~module_handle() { m_module->term(); }
+module_handle::~module_handle() {
+  m_module->term();
+  m_thread.join();
+}
 
 module_handle &module_handle::operator=(module_handle &&other) noexcept {
   if (this != &other) {
