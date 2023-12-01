@@ -5,12 +5,16 @@
 #include "module_base.hpp"
 
 #include <atomic>
+#include <string>
 
 class simple_date : public module_base {
 private:
+  static constexpr std::string k_name{"simple_date"};
+
   module_api m_api;
   module_api::config_in m_config;
   std::atomic<bool> m_suicide;
+  std::string m_format;
 
 public:
   simple_date();

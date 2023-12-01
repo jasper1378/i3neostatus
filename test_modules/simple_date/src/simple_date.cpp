@@ -1,11 +1,15 @@
 #include "simple_date.hpp"
 
+#include <atomic>
 #include <chrono>
 #include <ctime>
-#include <iostream>
+#include <exception>
+#include <stdexcept>
+#include <string>
 #include <thread>
 
-simple_date::simple_date() : m_api{}, m_config{}, m_suicide{false} {}
+simple_date::simple_date()
+    : m_api{}, m_config{}, m_suicide{false}, m_format{} {}
 
 simple_date::~simple_date() {}
 
@@ -14,9 +18,17 @@ module_api::config_out simple_date::init(module_api &&api,
   m_api = std::move(api);
   m_config = std::move(config);
 
-  module_api::config_out ret_val{"simple_date", false};
+  if (libconfigfile::node_ptr<libconfigfile::node> np;
+      ((m_config.size() == 1 && m_config.contains("format")) &&
+       ((np = m_config.at("format"))->get_node_type() ==
+        libconfigfile::node_type::STRING))) {
+    m_format = libconfigfile::node_to_base(
+        *libconfigfile::node_ptr_cast<libconfigfile::string_node>(np));
+  } else {
+    throw std::runtime_error{"expected 'format' string in config"};
+  }
 
-  return ret_val;
+  return {k_name, false};
 }
 
 void simple_date::run() {
@@ -27,21 +39,45 @@ void simple_date::run() {
         std::chrono::seconds{1}};
   }};
 
+  std::size_t buf_size{128};
+  char *buf{nullptr};
+
+  auto set_buf_to_size{[&buf_size, &buf](std::size_t new_size) -> void {
+    if (buf != nullptr) {
+      free(buf);
+    }
+    if ((buf = (char *)malloc(sizeof(char) * new_size)) == nullptr) {
+      throw std::runtime_error{"malloc() failled"};
+    }
+    buf_size = new_size;
+  }};
+
   std::this_thread::sleep_until(get_next_whole_second());
 
+  set_buf_to_size(128);
+
   while (m_suicide.load() == false) {
+
     auto now{std::chrono::system_clock::now()};
     std::time_t tnow{std::chrono::system_clock::to_time_t(now)};
-    char str[std::size("yyyy-mm-ddThh:mm:ssZ")];
-    std::strftime(str, std::size(str), "%FT%TZ", std::localtime(&tnow));
+
+    while (true) {
+      if (std::strftime(buf, buf_size, m_format.c_str(),
+                        std::localtime(&tnow)) == 0) {
+        set_buf_to_size(buf_size * 2);
+      } else {
+        break;
+      }
+    }
 
     std::unique_ptr<module_api::block> block{m_api.make_block(module_api::block{
-        .full_text = str,
+        .full_text = buf,
     })};
     m_api.set_block(std::move(block));
 
     std::this_thread::sleep_until(get_next_whole_second());
   }
+  free(buf);
 }
 
 void simple_date::term() { m_suicide.store(true); }

@@ -39,10 +39,16 @@ module_handle::module_handle(module_id_t id, std::string &&filename,
   module_api mod_api{m_thread_comm_producer};
   m_thread_comm_consumer = std::move(tc_pair.second);
 
-  module_api::config_out conf_out{
-      m_module->init(std::move(mod_api), std::move(conf))};
-  m_name = std::move(conf_out.m_name);
-  m_click_events_enabled = conf_out.click_events_enabled;
+  try {
+    module_api::config_out conf_out{
+        m_module->init(std::move(mod_api), std::move(conf))};
+    m_name = std::move(conf_out.m_name);
+    m_click_events_enabled = conf_out.click_events_enabled;
+  } catch (const std::exception &ex) {
+    throw module_error::in{m_id, "UNKNOWN", m_filename, ex.what()};
+  } catch (...) {
+    throw module_error::in{m_id, "UNKNOWN", m_filename, "UNKNOWN"};
+  }
 }
 
 module_handle::module_handle(module_handle &&other) noexcept
@@ -84,7 +90,17 @@ bool module_handle::get_click_events_enabled() const {
 }
 
 void module_handle::run() {
-  m_thread = std::thread{[this]() { m_module->run(); }};
+  m_thread = std::thread{[this]() {
+    try {
+      m_module->run();
+    } catch (const std::exception &ex) {
+      m_thread_comm_producer.set_exception(std::make_exception_ptr(
+          module_error::in{m_id, m_name, m_filename, ex.what()}));
+    } catch (...) {
+      m_thread_comm_producer.set_exception(std::make_exception_ptr(
+          module_error::in{m_id, m_name, m_filename, "UNKNOWN"}));
+    }
+  }};
 }
 
 thread_comm::consumer<module_api::block> &module_handle::get_comm() {

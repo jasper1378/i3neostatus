@@ -13,7 +13,10 @@ int main(int argc, char *argv[]) {
     std::cerr << "test module file path required\n";
     std::exit(1);
   } else {
-    module_handle test_mod{0, argv[1], {}};
+    libconfigfile::map_node config{
+        {"format",
+         libconfigfile::make_node_ptr<libconfigfile::string_node>("%FT%TZ")}};
+    module_handle test_mod{0, argv[1], std::move(config)};
     test_mod.run();
     for (std::size_t i = 0; i < 5; ++i) {
       test_mod.get_comm().wait();
