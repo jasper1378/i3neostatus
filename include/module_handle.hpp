@@ -20,9 +20,10 @@ private:
   std::string m_filename;
   bool m_click_events_enabled;
 
-  dyn_load_lib::lib m_lib;
+  dyn_load_lib::lib m_dyn_lib;
   std::unique_ptr<module_base, module_base::deleter_func_ptr_t> m_module;
-  thread_comm::consumer<module_api::block> m_comm;
+  thread_comm::producer<module_api::block> m_thread_comm_producer;
+  thread_comm::consumer<module_api::block> m_thread_comm_consumer;
   std::thread m_thread;
 
 public:

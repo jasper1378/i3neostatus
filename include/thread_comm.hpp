@@ -322,19 +322,27 @@ public:
   explicit producer(const shared_state_ptr<t_value> &ssp)
       : m_shared_state_ptr{ssp} {}
 
+  producer(const producer &other)
+      : m_shared_state_ptr{other.m_shared_state_ptr} {}
+
   producer(producer &&other) noexcept
       : m_shared_state_ptr{std::move(other.m_shared_state_ptr)} {}
 
-  producer(const producer &other) = delete;
-
   ~producer(){};
 
-  producer &operator=(producer &&other) noexcept {
-    m_shared_state_ptr = std::move(other.m_shared_state_ptr);
+  producer &operator=(const producer &other) {
+    if (this != &other) {
+      m_shared_state_ptr = other.m_shared_state_ptr;
+    }
     return *this;
   }
 
-  producer &operator=(const producer &other) = delete;
+  producer &operator=(producer &&other) noexcept {
+    if (this != &other) {
+      m_shared_state_ptr = std::move(other.m_shared_state_ptr);
+    }
+    return *this;
+  }
 
 public:
   bool valid() { return static_cast<bool>(m_shared_state_ptr); }
@@ -369,19 +377,27 @@ public:
   explicit consumer(const shared_state_ptr<t_value> &ssp)
       : m_shared_state_ptr{ssp} {}
 
+  consumer(const consumer &other)
+      : m_shared_state_ptr{other.m_shared_state_ptr} {}
+
   consumer(consumer &&other) noexcept
       : m_shared_state_ptr{std::move(other.m_shared_state_ptr)} {}
 
-  consumer(const consumer &other) = delete;
-
   ~consumer(){};
 
-  consumer &operator=(consumer &&other) noexcept {
-    m_shared_state_ptr = std::move(other.m_shared_state_ptr);
+  consumer &operator=(const consumer &other) {
+    if (this != &other) {
+      m_shared_state_ptr = other.m_shared_state_ptr;
+    }
     return *this;
   }
 
-  consumer &operator=(const consumer &other) = delete;
+  consumer &operator=(consumer &&other) noexcept {
+    if (this != &other) {
+      m_shared_state_ptr = std::move(other.m_shared_state_ptr);
+    }
+    return *this;
+  }
 
 public:
   bool valid() { return static_cast<bool>(m_shared_state_ptr); }
