@@ -13,9 +13,9 @@ private:
   using base_t = std::runtime_error;
 
 public:
-  in(const module_id_t id, const std::string &name, const std::string &filename,
-     const std::string &what_arg);
-  in(const module_id_t id, const char *name, const char *filename,
+  in(const module_id_t id, const std::string &name,
+     const std::string &file_path, const std::string &what_arg);
+  in(const module_id_t id, const char *name, const char *file_path,
      const char *what_arg);
   in(const in &other);
 
@@ -35,8 +35,8 @@ private:
 
 public:
   out(const module_id_t id, const std::string &name,
-      const std::string &filename, const std::string &what_arg);
-  out(const module_id_t id, const char *name, const char *filename,
+      const std::string &file_path, const std::string &what_arg);
+  out(const module_id_t id, const char *name, const char *file_path,
       const char *what_arg);
   out(const out &other);
 

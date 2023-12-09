@@ -2,6 +2,7 @@
 #define DYN_LOAD_LIB_HPP
 
 #include <exception>
+#include <filesystem>
 #include <stdexcept>
 #include <string>
 
@@ -51,8 +52,9 @@ private:
   void *m_handle;
 
 public:
-  lib(const char *filename, dlopen_flags::type flags);
-  lib(const std::string &filename, dlopen_flags::type flags);
+  lib(const char *file_path, dlopen_flags::type flags);
+  lib(const std::string &file_path, dlopen_flags::type flags);
+  lib(const std::filesystem::path &file_path, dlopen_flags::type flags);
   lib(lib &&other) noexcept;
   lib(const lib &other) = delete;
 
