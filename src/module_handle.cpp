@@ -29,7 +29,7 @@ module_handle::module_handle(module_id_t id, std::string &&file_path,
           module_base::deleter_func_str)};
   m_module = {mod_alloc(), mod_delete};
   if (!m_module) {
-    throw module_error::out{m_id, "UNKNOWN", m_file_path, "allocator() failed"};
+    throw module_error{m_id, "UNKNOWN", m_file_path, "allocator() failed"};
   }
 
   std::pair<thread_comm::producer<module_api::block>,
@@ -45,9 +45,9 @@ module_handle::module_handle(module_id_t id, std::string &&file_path,
     m_name = std::move(conf_out.m_name);
     m_click_events_enabled = conf_out.click_events_enabled;
   } catch (const std::exception &ex) {
-    throw module_error::in{m_id, "UNKNOWN", m_file_path, ex.what()};
+    throw module_error{m_id, "UNKNOWN", m_file_path, ex.what()};
   } catch (...) {
-    throw module_error::in{m_id, "UNKNOWN", m_file_path, "UNKNOWN"};
+    throw module_error{m_id, "UNKNOWN", m_file_path, "UNKNOWN"};
   }
 }
 
@@ -95,10 +95,10 @@ void module_handle::run() {
       m_module->run();
     } catch (const std::exception &ex) {
       m_thread_comm_producer.set_exception(std::make_exception_ptr(
-          module_error::in{m_id, m_name, m_file_path, ex.what()}));
+          module_error{m_id, m_name, m_file_path, ex.what()}));
     } catch (...) {
       m_thread_comm_producer.set_exception(std::make_exception_ptr(
-          module_error::in{m_id, m_name, m_file_path, "UNKNOWN"}));
+          module_error{m_id, m_name, m_file_path, "UNKNOWN"}));
     }
   }};
 }
