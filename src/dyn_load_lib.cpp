@@ -28,15 +28,10 @@ const char *dyn_load_lib::error::what() const noexcept {
 
 dyn_load_lib::lib::lib(const char *file_path, dlopen_flags::type flags)
     : m_handle{nullptr} {
-  if ((static_cast<bool>(flags & dlopen_flags::LAZY)) ==
-      (static_cast<bool>(flags & dlopen_flags::NOW))) {
-    throw error{"flags must include exactly one of the constants LAZY or NOW"};
-  } else {
-    dlerror();
-    m_handle = dlopen(filename, static_cast<int>(flags));
-    if (m_handle == nullptr) {
-      throw error{std::string{"dlopen(): "} + dlerror()};
-    }
+  dlerror();
+  m_handle = dlopen(file_path, static_cast<int>(flags));
+  if (m_handle == nullptr) {
+    throw error{std::string{"dlopen(): "} + dlerror()};
   }
 }
 
