@@ -21,7 +21,7 @@ module_api::config_out simple_date::init(module_api &&api,
   if (libconfigfile::node_ptr<libconfigfile::node> np;
       ((m_config.size() == 1 && m_config.contains("format")) &&
        ((np = m_config.at("format"))->get_node_type() ==
-        libconfigfile::node_type::STRING))) {
+        libconfigfile::node_type::String))) {
     m_format = libconfigfile::node_to_base(
         *libconfigfile::node_ptr_cast<libconfigfile::string_node>(np));
   } else {
