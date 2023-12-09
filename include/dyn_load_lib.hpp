@@ -31,13 +31,13 @@ public:
 namespace dlopen_flags {
 using type = unsigned int;
 enum {
-  LAZY = RTLD_LAZY,
-  NOW = RTLD_NOW,
-  GLOBAL = RTLD_GLOBAL,
-  LOCAL = RTLD_LOCAL,
-  NODELETE = RTLD_NODELETE,
-  NOLOAD = RTLD_NOLOAD,
-  DEEPBIND = RTLD_DEEPBIND,
+  lazy = RTLD_LAZY,
+  now = RTLD_NOW,
+  global = RTLD_GLOBAL,
+  local = RTLD_LOCAL,
+  nodelete = RTLD_NODELETE,
+  noload = RTLD_NOLOAD,
+  deepbind = RTLD_DEEPBIND,
 };
 } // namespace dlopen_flags
 
