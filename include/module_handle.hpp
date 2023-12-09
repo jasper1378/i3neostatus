@@ -15,7 +15,7 @@
 
 class module_handle {
 private:
-  module_id_t m_id;
+  module_id::type m_id;
   std::string m_name;
   std::string m_file_path;
   bool m_click_events_enabled;
@@ -27,7 +27,7 @@ private:
   std::thread m_thread;
 
 public:
-  module_handle(module_id_t id, std::string &&file_path,
+  module_handle(module_id::type id, std::string &&file_path,
                 libconfigfile::map_node &&conf);
   module_handle(module_handle &&other) noexcept;
   module_handle(const module_handle &other) = delete;

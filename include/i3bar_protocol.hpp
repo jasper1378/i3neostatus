@@ -30,7 +30,7 @@ struct header {
 struct block {
   struct id {
     std::optional<std::string> name;
-    std::optional<module_id_t> instance;
+    std::optional<module_id::type> instance;
 
     static constexpr std::string k_name_str{"name"};
     static constexpr std::string k_instance_str{"instance"};
@@ -77,7 +77,7 @@ struct block {
 struct click_event {
   struct id {
     std::string name;
-    module_id_t instance;
+    module_id::type instance;
 
     static constexpr std::string k_name_str{"name"};
     static constexpr std::string k_instance_str{"instance"};

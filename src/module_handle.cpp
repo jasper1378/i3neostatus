@@ -14,7 +14,7 @@
 #include <thread>
 #include <utility>
 
-module_handle::module_handle(module_id_t id, std::string &&file_path,
+module_handle::module_handle(module_id::type id, std::string &&file_path,
                              libconfigfile::map_node &&conf)
     : m_id{id}, m_name{}, m_file_path{std::move(file_path)},
       m_click_events_enabled{false},
