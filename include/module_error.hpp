@@ -7,48 +7,25 @@
 #include <stdexcept>
 #include <string>
 
-namespace module_error {
-class in : public std::runtime_error {
+class module_error : public std::runtime_error {
 private:
   using base_t = std::runtime_error;
 
 public:
-  in(const module_id_t id, const std::string &name,
-     const std::string &file_path, const std::string &what_arg);
-  in(const module_id_t id, const char *name, const char *file_path,
-     const char *what_arg);
-  in(const in &other);
+  module_error(const module_id_t id, const std::string &name,
+               const std::string &file_path, const std::string &what_arg);
+  module_error(const module_id_t id, const char *name,
+               const char *file_path, const char *what_arg);
+  module_error(const module_error &other);
 
 public:
-  virtual ~in() override;
+  virtual ~module_error() override;
 
 public:
-  in &operator=(const in &other);
-
-public:
-  virtual const char *what() const noexcept override;
-};
-
-class out : public std::runtime_error {
-private:
-  using base_t = std::runtime_error;
-
-public:
-  out(const module_id_t id, const std::string &name,
-      const std::string &file_path, const std::string &what_arg);
-  out(const module_id_t id, const char *name, const char *file_path,
-      const char *what_arg);
-  out(const out &other);
-
-public:
-  virtual ~out() override;
-
-public:
-  out &operator=(const out &other);
+  module_error &operator=(const module_error &other);
 
 public:
   virtual const char *what() const noexcept override;
 };
-} // namespace module_error
 
 #endif
