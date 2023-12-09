@@ -38,10 +38,10 @@ public:
 namespace shared_state_state {
 using type = unsigned int;
 enum : type {
-  NONE = 0b000,
-  READ = 0b001,
-  UNREAD = 0b010,
-  EXCEPTION = 0b100,
+  none = 0b000,
+  read = 0b001,
+  unread = 0b010,
+  exception = 0b100,
 };
 
 } // namespace shared_state_state
@@ -63,13 +63,13 @@ private:
 
 public:
   shared_state()
-      : m_state{shared_state_state::READ}, m_value{nullptr},
+      : m_state{shared_state_state::read}, m_value{nullptr},
         m_exception{nullptr}, m_state_change_callback_func{nullptr},
-        m_state_change_subscribed_events{shared_state_state::NONE} {}
+        m_state_change_subscribed_events{shared_state_state::none} {}
 
   shared_state(t_state_change_callback_func state_change_callback_func,
                shared_state_state::type state_change_subscribed_events)
-      : m_state{shared_state_state::READ}, m_value{nullptr},
+      : m_state{shared_state_state::read}, m_value{nullptr},
         m_exception{nullptr},
         m_state_change_callback_func{state_change_callback_func},
         m_state_change_subscribed_events{state_change_subscribed_events} {}
@@ -79,7 +79,7 @@ public:
   shared_state(shared_state &&other) = delete;
 
   ~shared_state() {
-    m_state.store(shared_state_state::READ);
+    m_state.store(shared_state_state::read);
     if (m_value.load()) {
       delete m_value.load();
       m_value.store(nullptr);
@@ -92,13 +92,13 @@ public:
 
 public:
   bool set_value(std::unique_ptr<t_value> value) {
-    if (m_state.load() != shared_state_state::EXCEPTION) {
+    if (m_state.load() != shared_state_state::exception) {
       t_value *old_value{m_value.exchange(value.release())};
-      m_state.store(shared_state_state::UNREAD);
+      m_state.store(shared_state_state::unread);
       m_state.notify_all();
-      if ((m_state_change_subscribed_events & shared_state_state::UNREAD) !=
+      if ((m_state_change_subscribed_events & shared_state_state::unread) !=
           0U) {
-        m_state_change_callback_func(shared_state_state::UNREAD);
+        m_state_change_callback_func(shared_state_state::unread);
       }
       if (old_value) {
         delete old_value;
@@ -111,13 +111,13 @@ public:
   }
 
   bool set_exception(std::exception_ptr exception) {
-    if (m_state.load() != shared_state_state::EXCEPTION) {
+    if (m_state.load() != shared_state_state::exception) {
       m_exception = std::move(exception);
-      m_state.store(shared_state_state::EXCEPTION);
+      m_state.store(shared_state_state::exception);
       m_state.notify_all();
-      if ((m_state_change_subscribed_events & shared_state_state::EXCEPTION) !=
+      if ((m_state_change_subscribed_events & shared_state_state::exception) !=
           0U) {
-        m_state_change_callback_func(shared_state_state::EXCEPTION);
+        m_state_change_callback_func(shared_state_state::exception);
       }
       return true;
     } else {
@@ -127,18 +127,18 @@ public:
 
   std::unique_ptr<t_value> get() {
     switch (m_state.load()) {
-    case shared_state_state::READ: {
+    case shared_state_state::read: {
       wait();
       return get();
     } break;
-    case shared_state_state::UNREAD: {
-      m_state.store(shared_state_state::READ);
-      if ((m_state_change_subscribed_events & shared_state_state::READ) != 0U) {
-        m_state_change_callback_func(shared_state_state::READ);
+    case shared_state_state::unread: {
+      m_state.store(shared_state_state::read);
+      if ((m_state_change_subscribed_events & shared_state_state::read) != 0U) {
+        m_state_change_callback_func(shared_state_state::read);
       }
       return std::unique_ptr<t_value>{m_value.exchange(nullptr)};
     } break;
-    case shared_state_state::EXCEPTION: {
+    case shared_state_state::exception: {
       std::rethrow_exception(m_exception);
     } break;
     default: {
@@ -147,7 +147,7 @@ public:
     }
   }
 
-  void wait() { m_state.wait(shared_state_state::READ); }
+  void wait() { m_state.wait(shared_state_state::read); }
 };
 
 template <typename t_value> class shared_state_ptr {
