@@ -10,6 +10,7 @@
 #include "thread_comm.hpp"
 
 #include <iostream>
+#include <vector>
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -17,13 +18,17 @@ int main(int argc, char *argv[]) {
     std::exit(1);
   } else {
     config_file::parsed config{config_file::read(argv[1])};
-    std::vector<module_handle> handles{};
-    handles.reserve(config.modules.size());
+    if (config.modules.size() > module_id::max) {
+      throw std::runtime_error{"too many modules! (max is " +
+                               std::to_string(module_id::max) + ")"};
+    }
+    std::vector<module_handle> modules{};
+    modules.reserve(config.modules.size());
 
-    for (size_t i = 0; i < config.modules.size(); ++i) {
-      handles.emplace_back(i, config.modules[i].file_path,
-                           std::move(config.modules[i].config));
-      handles[i].run();
+    for (module_id::type i = 0; i < config.modules.size(); ++i) {
+      // modules.emplace_back(i, config.modules[i].file_path,
+      //                      std::move(config.modules[i].config));
+      // modules[i].run();
       // for (std::size_t i = 0; i < 5; ++i) {
       //   handles[i].get_comm().wait();
       //   std::unique_ptr<module_api::block> new_block{

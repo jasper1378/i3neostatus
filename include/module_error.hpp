@@ -12,9 +12,9 @@ private:
   using base_t = std::runtime_error;
 
 public:
-  module_error(const module_id_t id, const std::string &name,
+  module_error(const module_id::type id, const std::string &name,
                const std::string &file_path, const std::string &what_arg);
-  module_error(const module_id_t id, const char *name,
+  module_error(const module_id::type id, const char *name,
                const char *file_path, const char *what_arg);
   module_error(const module_error &other);
 
