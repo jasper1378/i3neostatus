@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 
 #include <exception>
+#include <filesystem>
 #include <stdexcept>
 #include <string>
 
@@ -25,7 +26,7 @@ const char *dyn_load_lib::error::what() const noexcept {
   return base_t::what();
 }
 
-dyn_load_lib::lib::lib(const char *filename, dlopen_flags::type flags)
+dyn_load_lib::lib::lib(const char *file_path, dlopen_flags::type flags)
     : m_handle{nullptr} {
   if ((static_cast<bool>(flags & dlopen_flags::LAZY)) ==
       (static_cast<bool>(flags & dlopen_flags::NOW))) {
@@ -39,8 +40,12 @@ dyn_load_lib::lib::lib(const char *filename, dlopen_flags::type flags)
   }
 }
 
-dyn_load_lib::lib::lib(const std::string &filename, dlopen_flags::type flags)
-    : lib{filename.c_str(), flags} {}
+dyn_load_lib::lib::lib(const std::string &file_path, dlopen_flags::type flags)
+    : lib{file_path.c_str(), flags} {}
+
+dyn_load_lib::lib::lib(const std::filesystem::path &file_path,
+                       dlopen_flags::type flags)
+    : lib{file_path.c_str(), flags} {}
 
 dyn_load_lib::lib::lib(lib &&other) noexcept : m_handle{other.m_handle} {
   other.m_handle = nullptr;

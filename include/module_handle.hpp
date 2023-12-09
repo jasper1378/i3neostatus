@@ -17,7 +17,7 @@ class module_handle {
 private:
   module_id_t m_id;
   std::string m_name;
-  std::string m_filename;
+  std::string m_file_path;
   bool m_click_events_enabled;
 
   dyn_load_lib::lib m_dyn_lib;
@@ -27,7 +27,7 @@ private:
   std::thread m_thread;
 
 public:
-  module_handle(module_id_t id, std::string &&filename,
+  module_handle(module_id_t id, std::string &&file_path,
                 libconfigfile::map_node &&conf);
   module_handle(module_handle &&other) noexcept;
   module_handle(const module_handle &other) = delete;
@@ -41,7 +41,7 @@ public:
 
 public:
   std::string get_name() const;
-  std::string get_filename() const;
+  std::string get_file_path() const;
   bool get_click_events_enabled() const;
 
   thread_comm::consumer<module_api::block> &get_comm();
