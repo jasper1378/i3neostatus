@@ -9,10 +9,13 @@
 #include "module_id.hpp"
 #include "thread_comm.hpp"
 
+#include <atomic>
 #include <iostream>
 #include <vector>
 
 int main(int argc, char *argv[]) {
+  std::atomic<module_id::type> last_updated_module{module_id::null};
+
   if (argc != 2) {
     std::cerr << "config file path required\n";
     std::exit(1);
@@ -26,8 +29,13 @@ int main(int argc, char *argv[]) {
     modules.reserve(config.modules.size());
 
     for (module_id::type i = 0; i < config.modules.size(); ++i) {
-      // modules.emplace_back(i, config.modules[i].file_path,
-      //                      std::move(config.modules[i].config));
+      modules.emplace_back(
+          i, std::move(config.modules[i].file_path),
+          std::move(config.modules[i].config),
+          thread_comm::t_state_change_callback_func{
+              [&last_updated_module, i](thread_comm::shared_state_state::type)
+                  -> void { last_updated_module.store(i); }});
+
       // modules[i].run();
       // for (std::size_t i = 0; i < 5; ++i) {
       //   handles[i].get_comm().wait();

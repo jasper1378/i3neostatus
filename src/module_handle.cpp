@@ -14,8 +14,22 @@
 #include <thread>
 #include <utility>
 
-module_handle::module_handle(module_id::type id, std::string &&file_path,
+module_handle::module_handle(const module_id::type id, std::string &&file_path,
                              libconfigfile::map_node &&conf)
+    : module_handle{id, std::move(file_path), std::move(conf),
+                    thread_comm::make_pair<module_api::block>()} {}
+
+module_handle::module_handle(
+    const module_id::type id, std::string &&file_path,
+    libconfigfile::map_node &&conf,
+    thread_comm::t_state_change_callback_func state_change_callback_func)
+    : module_handle{id, std::move(file_path), std::move(conf),
+                    thread_comm::make_pair<module_api::block>(
+                        state_change_callback_func)} {}
+
+module_handle::module_handle(const module_id::type id, std::string &&file_path,
+                             libconfigfile::map_node &&conf,
+                             thread_comm::t_pair<module_api::block> &&tc_pair)
     : m_id{id}, m_name{}, m_file_path{std::move(file_path)},
       m_click_events_enabled{false},
       m_dyn_lib{m_file_path, dyn_load_lib::dlopen_flags::lazy},
@@ -32,9 +46,6 @@ module_handle::module_handle(module_id::type id, std::string &&file_path,
     throw module_error{m_id, "UNKNOWN", m_file_path, "allocator() failed"};
   }
 
-  std::pair<thread_comm::producer<module_api::block>,
-            thread_comm::consumer<module_api::block>>
-      tc_pair{thread_comm::make_thread_comm_pair<module_api::block>()};
   m_thread_comm_producer = std::move(tc_pair.first);
   module_api mod_api{m_thread_comm_producer};
   m_thread_comm_consumer = std::move(tc_pair.second);
@@ -50,7 +61,6 @@ module_handle::module_handle(module_id::type id, std::string &&file_path,
     throw module_error{m_id, "UNKNOWN", m_file_path, "UNKNOWN"};
   }
 }
-
 module_handle::module_handle(module_handle &&other) noexcept
     : m_id{other.m_id}, m_name{std::move(other.m_name)},
       m_file_path{std::move(other.m_file_path)},

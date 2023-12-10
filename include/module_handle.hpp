@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <utility>
 
 class module_handle {
 private:
@@ -27,10 +28,19 @@ private:
   std::thread m_thread;
 
 public:
-  module_handle(module_id::type id, std::string &&file_path,
+  module_handle(const module_id::type id, std::string &&file_path,
                 libconfigfile::map_node &&conf);
+  module_handle(
+      const module_id::type id, std::string &&file_path,
+      libconfigfile::map_node &&conf,
+      thread_comm::t_state_change_callback_func state_change_callback_func);
   module_handle(module_handle &&other) noexcept;
   module_handle(const module_handle &other) = delete;
+
+private:
+  module_handle(const module_id::type id, std::string &&file_path,
+                libconfigfile::map_node &&conf,
+                thread_comm::t_pair<module_api::block> &&tc_pair);
 
 public:
   ~module_handle();

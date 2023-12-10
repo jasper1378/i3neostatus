@@ -45,33 +45,32 @@ enum : type {
 };
 
 } // namespace shared_state_state
+
+using t_state_change_callback = void (*)(shared_state_state::type);
+
 template <typename t_value> class shared_state;
 template <typename t_value> class shared_state_ptr;
 template <typename t_value> class producer;
 template <typename t_value> class consumer;
 
 template <typename t_value> class shared_state {
-public:
-  using t_state_change_callback_func = void (*)(shared_state_state::type);
-
 private:
   std::atomic<shared_state_state::type> m_state;
   std::atomic<t_value *> m_value;
   std::exception_ptr m_exception;
-  t_state_change_callback_func m_state_change_callback_func;
+  t_state_change_callback m_state_change_callback;
   shared_state_state::type m_state_change_subscribed_events;
 
 public:
   shared_state()
       : m_state{shared_state_state::read}, m_value{nullptr},
-        m_exception{nullptr}, m_state_change_callback_func{nullptr},
+        m_exception{nullptr}, m_state_change_callback{nullptr},
         m_state_change_subscribed_events{shared_state_state::none} {}
 
-  shared_state(t_state_change_callback_func state_change_callback_func,
+  shared_state(t_state_change_callback state_change_callback,
                shared_state_state::type state_change_subscribed_events)
       : m_state{shared_state_state::read}, m_value{nullptr},
-        m_exception{nullptr},
-        m_state_change_callback_func{state_change_callback_func},
+        m_exception{nullptr}, m_state_change_callback{state_change_callback},
         m_state_change_subscribed_events{state_change_subscribed_events} {}
 
   shared_state(const shared_state &other) = delete;
@@ -98,7 +97,7 @@ public:
       m_state.notify_all();
       if ((m_state_change_subscribed_events & shared_state_state::unread) !=
           0U) {
-        m_state_change_callback_func(shared_state_state::unread);
+        m_state_change_callback(shared_state_state::unread);
       }
       if (old_value) {
         delete old_value;
@@ -117,7 +116,7 @@ public:
       m_state.notify_all();
       if ((m_state_change_subscribed_events & shared_state_state::exception) !=
           0U) {
-        m_state_change_callback_func(shared_state_state::exception);
+        m_state_change_callback(shared_state_state::exception);
       }
       return true;
     } else {
@@ -134,7 +133,7 @@ public:
     case shared_state_state::unread: {
       m_state.store(shared_state_state::read);
       if ((m_state_change_subscribed_events & shared_state_state::read) != 0U) {
-        m_state_change_callback_func(shared_state_state::read);
+        m_state_change_callback(shared_state_state::read);
       }
       return std::unique_ptr<t_value>{m_value.exchange(nullptr)};
     } break;
@@ -424,18 +423,21 @@ public:
 };
 
 template <typename t_value>
-std::pair<producer<t_value>, consumer<t_value>> make_thread_comm_pair(
-    typename shared_state<t_value>::t_state_change_callback_func
-        state_change_callback_func,
-    shared_state_state::type state_change_subscribed_events) {
+using t_pair = std::pair<producer<t_value>, consumer<t_value>>;
+
+template <typename t_value>
+t_pair<t_value>
+make_pair(t_state_change_callback state_change_callback,
+          shared_state_state::type state_change_subscribed_events =
+              shared_state_state::none | shared_state_state::read |
+              shared_state_state::unread | shared_state_state::exception) {
   shared_state_ptr<t_value> ssp{
       shared_state_ptr<t_value>::make_shared_state_ptr(
-          state_change_callback_func, state_change_subscribed_events)};
+          state_change_callback, state_change_subscribed_events)};
   return std::make_pair(producer<t_value>{ssp}, consumer<t_value>{ssp});
 }
 
-template <typename t_value>
-std::pair<producer<t_value>, consumer<t_value>> make_thread_comm_pair() {
+template <typename t_value> t_pair<t_value> make_pair() {
   shared_state_ptr<t_value> ssp{
       shared_state_ptr<t_value>::make_shared_state_ptr()};
   return std::make_pair(producer<t_value>{ssp}, consumer<t_value>{ssp});
