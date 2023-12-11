@@ -19,13 +19,17 @@ module_handle::module_handle(const module_id::type id, std::string &&file_path,
     : module_handle{id, std::move(file_path), std::move(conf),
                     thread_comm::make_pair<module_api::block>()} {}
 
-module_handle::module_handle(
-    const module_id::type id, std::string &&file_path,
-    libconfigfile::map_node &&conf,
-    thread_comm::t_state_change_callback state_change_callback_func)
-    : module_handle{id, std::move(file_path), std::move(conf),
-                    thread_comm::make_pair<module_api::block>(
-                        state_change_callback_func)} {}
+module_handle::
+    module_handle(const module_id::type id, std::string &&file_path,
+                  libconfigfile::map_node &&conf,
+                  const thread_comm::state_change_callback
+                      state_change_callback,
+                  const thread_comm::
+                      shared_state_state::type state_change_subscribed_events /*= thread_comm::shared_state_state::all*/)
+    : module_handle{
+          id, std::move(file_path), std::move(conf),
+          thread_comm::make_pair<module_api::block>(
+              state_change_callback, state_change_subscribed_events)} {}
 
 module_handle::module_handle(const module_id::type id, std::string &&file_path,
                              libconfigfile::map_node &&conf,
