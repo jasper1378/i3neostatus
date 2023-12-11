@@ -42,11 +42,15 @@ enum : type {
   read = 0b001,
   unread = 0b010,
   exception = 0b100,
+  all = read | unread | exception,
 };
 
 } // namespace shared_state_state
 
-using t_state_change_callback = void (*)(shared_state_state::type);
+struct state_change_callback {
+  void (*func)(shared_state_state::type, void *);
+  void *userdata;
+};
 
 template <typename t_value> class shared_state;
 template <typename t_value> class shared_state_ptr;
@@ -58,16 +62,16 @@ private:
   std::atomic<shared_state_state::type> m_state;
   std::atomic<t_value *> m_value;
   std::exception_ptr m_exception;
-  t_state_change_callback m_state_change_callback;
+  state_change_callback m_state_change_callback;
   shared_state_state::type m_state_change_subscribed_events;
 
 public:
   shared_state()
       : m_state{shared_state_state::read}, m_value{nullptr},
-        m_exception{nullptr}, m_state_change_callback{nullptr},
+        m_exception{nullptr}, m_state_change_callback{nullptr, nullptr},
         m_state_change_subscribed_events{shared_state_state::none} {}
 
-  shared_state(t_state_change_callback state_change_callback,
+  shared_state(struct state_change_callback state_change_callback,
                shared_state_state::type state_change_subscribed_events)
       : m_state{shared_state_state::read}, m_value{nullptr},
         m_exception{nullptr}, m_state_change_callback{state_change_callback},
@@ -97,7 +101,8 @@ public:
       m_state.notify_all();
       if ((m_state_change_subscribed_events & shared_state_state::unread) !=
           0U) {
-        m_state_change_callback(shared_state_state::unread);
+        m_state_change_callback.func(shared_state_state::unread,
+                                     m_state_change_callback.userdata);
       }
       if (old_value) {
         delete old_value;
@@ -116,7 +121,8 @@ public:
       m_state.notify_all();
       if ((m_state_change_subscribed_events & shared_state_state::exception) !=
           0U) {
-        m_state_change_callback(shared_state_state::exception);
+        m_state_change_callback.func(shared_state_state::exception,
+                                     m_state_change_callback.userdata);
       }
       return true;
     } else {
@@ -133,7 +139,8 @@ public:
     case shared_state_state::unread: {
       m_state.store(shared_state_state::read);
       if ((m_state_change_subscribed_events & shared_state_state::read) != 0U) {
-        m_state_change_callback(shared_state_state::read);
+        m_state_change_callback.func(shared_state_state::read,
+                                     m_state_change_callback.userdata);
       }
       return std::unique_ptr<t_value>{m_value.exchange(nullptr)};
     } break;
@@ -427,10 +434,9 @@ using t_pair = std::pair<producer<t_value>, consumer<t_value>>;
 
 template <typename t_value>
 t_pair<t_value>
-make_pair(t_state_change_callback state_change_callback,
+make_pair(struct state_change_callback state_change_callback,
           shared_state_state::type state_change_subscribed_events =
-              shared_state_state::none | shared_state_state::read |
-              shared_state_state::unread | shared_state_state::exception) {
+              shared_state_state::all) {
   shared_state_ptr<t_value> ssp{
       shared_state_ptr<t_value>::make_shared_state_ptr(
           state_change_callback, state_change_subscribed_events)};
