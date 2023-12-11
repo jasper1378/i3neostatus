@@ -29,12 +29,8 @@ int main(int argc, char *argv[]) {
     modules.reserve(config.modules.size());
 
     for (module_id::type i = 0; i < config.modules.size(); ++i) {
-      modules.emplace_back(
-          i, std::move(config.modules[i].file_path),
-          std::move(config.modules[i].config),
-          thread_comm::t_state_change_callback_func{
-              [&last_updated_module, i](thread_comm::shared_state_state::type)
-                  -> void { last_updated_module.store(i); }});
+      modules.emplace_back(i, std::move(config.modules[i].file_path),
+                           std::move(config.modules[i].config));
 
       // modules[i].run();
       // for (std::size_t i = 0; i < 5; ++i) {
