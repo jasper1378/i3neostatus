@@ -33,7 +33,7 @@ public:
   module_handle(
       const module_id::type id, std::string &&file_path,
       libconfigfile::map_node &&conf,
-      thread_comm::t_state_change_callback_func state_change_callback_func);
+      thread_comm::t_state_change_callback state_change_callback_func);
   module_handle(module_handle &&other) noexcept;
   module_handle(const module_handle &other) = delete;
 
