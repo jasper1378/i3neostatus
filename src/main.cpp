@@ -14,31 +14,79 @@
 #include <vector>
 
 int main(int argc, char *argv[]) {
-  std::atomic<module_id::type> last_updated_module{module_id::null};
-
   if (argc != 2) {
     std::cerr << "config file path required\n";
     std::exit(1);
   } else {
+
     config_file::parsed config{config_file::read(argv[1])};
     if (config.modules.size() > module_id::max) {
       throw std::runtime_error{"too many modules! (max is " +
                                std::to_string(module_id::max) + ")"};
     }
-    std::vector<module_handle> modules{};
-    modules.reserve(config.modules.size());
+    const module_id::type module_count{config.modules.size()};
 
-    for (module_id::type i = 0; i < config.modules.size(); ++i) {
-      modules.emplace_back(i, std::move(config.modules[i].file_path),
-                           std::move(config.modules[i].config));
+    std::vector<module_handle> module_handles{};
+    module_handles.reserve(module_count);
 
-      // modules[i].run();
-      // for (std::size_t i = 0; i < 5; ++i) {
-      //   handles[i].get_comm().wait();
-      //   std::unique_ptr<module_api::block> new_block{
-      //       handles[i].get_comm().get()};
-      //   std::cout << new_block->full_text << '\n';
-      // }
+    std::atomic<module_id::type> module_last_update{module_id::null};
+    struct module_update {
+      module_id::type id;
+      std::atomic<bool> has_update;
+      std::atomic<module_id::type> *last_update;
+
+      module_update() = default;
+      ~module_update() = default;
+      module_update(module_id::type id, std::atomic<bool> has_update,
+                    std::atomic<module_id::type> *last_update)
+          : id{id}, has_update{has_update.load()}, last_update{last_update} {}
+      module_update(const module_update &other)
+          : id{other.id}, has_update{other.has_update.load()},
+            last_update{other.last_update} {}
+      module_update &operator=(const module_update &other) {
+        if (this != &other) {
+          id = other.id;
+          has_update.store(other.has_update.load());
+          last_update = other.last_update;
+        }
+        return *this;
+      }
+    };
+    std::vector<module_update> module_updates{};
+    module_updates.reserve(module_count);
+
+    const auto module_callback{
+        []([[maybe_unused]] thread_comm::shared_state_state::type state,
+           void *userdata) -> void {
+          module_update *mu{static_cast<module_update *>(userdata)};
+          mu->has_update.store(true);
+          mu->last_update->store(mu->id);
+          mu->last_update->notify_one();
+        }};
+
+    for (module_id::type i = 0; i < module_count; ++i) {
+      module_updates.emplace_back(i, false, &module_last_update);
+      module_handles.emplace_back(
+          i, std::move(config.modules[i].file_path),
+          std::move(config.modules[i].config),
+          thread_comm::state_change_callback{
+              module_callback, static_cast<void *>(&module_updates.back())});
+      module_handles.back().run();
+    }
+
+    while (true) {
+      module_last_update.wait(module_id::null);
+      module_last_update.store(module_id::null);
+
+      for (module_id::type i{0}; i < module_count; ++i) {
+        bool expected{true};
+        module_updates[i].has_update.compare_exchange_strong(expected, false);
+        if (expected) {
+          std::unique_ptr<module_api::block> block{
+              module_handles[i].get_comm().get()};
+          std::cout << block->full_text << '\n';
+        }
+      }
     }
   }
 }
