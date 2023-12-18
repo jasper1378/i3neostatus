@@ -9,10 +9,10 @@
 
 #include "libconfigfile.hpp"
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <thread>
-#include <utility>
 
 class module_handle {
 private:
@@ -20,6 +20,7 @@ private:
   std::string m_name;
   std::string m_file_path;
   bool m_click_events_enabled;
+  module_api::runtime_settings m_runtime_settings;
 
   dyn_load_lib::lib m_dyn_lib;
   std::unique_ptr<module_base, module_base::deleter_func_ptr_t> m_module;
@@ -29,9 +30,20 @@ private:
 
 public:
   module_handle(const module_id::type id, std::string &&file_path,
-                libconfigfile::map_node &&conf);
-  module_handle(const module_id::type id, std::string &&file_path,
                 libconfigfile::map_node &&conf,
+                module_api::runtime_settings &&runtime_settings);
+  module_handle(const module_id::type id, const std::string &file_path,
+                const libconfigfile::map_node &conf,
+                const module_api::runtime_settings &runtime_settings);
+  module_handle(const module_id::type id, std::string &&file_path,
+                libconfigfile::map_node &&conf, module_api::runtime_settings &&,
+                const thread_comm::state_change_callback state_change_callback,
+                const thread_comm::shared_state_state::type
+                    state_change_subscribed_events =
+                        thread_comm::shared_state_state::all);
+  module_handle(const module_id::type id, const std::string &file_path,
+                const libconfigfile::map_node &conf,
+                const module_api::runtime_settings &,
                 const thread_comm::state_change_callback state_change_callback,
                 const thread_comm::shared_state_state::type
                     state_change_subscribed_events =
@@ -42,6 +54,11 @@ public:
 private:
   module_handle(const module_id::type id, std::string &&file_path,
                 libconfigfile::map_node &&conf,
+                module_api::runtime_settings &&runtime_settings,
+                thread_comm::t_pair<module_api::block> &&tc_pair);
+  module_handle(const module_id::type id, const std::string &file_path,
+                const libconfigfile::map_node &conf,
+                const module_api::runtime_settings &runtime_settings,
                 thread_comm::t_pair<module_api::block> &&tc_pair);
 
 public:
@@ -51,11 +68,16 @@ public:
   module_handle &operator=(module_handle &&other) noexcept;
   module_handle &operator=(const module_handle &other) = delete;
 
+private:
+  void do_ctor(libconfigfile::map_node &&conf,
+               thread_comm::t_pair<module_api::block> &&tc_pair);
+
 public:
   std::string get_name() const;
   std::string get_file_path() const;
   bool get_click_events_enabled() const;
 
+  module_api::runtime_settings &get_runtime_settings();
   thread_comm::consumer<module_api::block> &get_comm();
 
   void run();

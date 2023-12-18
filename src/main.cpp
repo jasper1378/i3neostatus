@@ -11,6 +11,7 @@
 
 #include <atomic>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 int main(int argc, char *argv[]) {
@@ -35,15 +36,30 @@ int main(int argc, char *argv[]) {
       std::atomic<bool> has_update;
       std::atomic<module_id::type> *last_update;
 
-      module_update() = default;
-      ~module_update() = default;
-      module_update(module_id::type id, std::atomic<bool> has_update,
-                    std::atomic<module_id::type> *last_update)
+      module_update(module_id::type id = {}, std::atomic<bool> has_update = {},
+                    std::atomic<module_id::type> *last_update = {})
           : id{id}, has_update{has_update.load()}, last_update{last_update} {}
+
       module_update(const module_update &other)
           : id{other.id}, has_update{other.has_update.load()},
             last_update{other.last_update} {}
+
+      module_update(module_update &&other)
+          : id{other.id}, has_update{other.has_update.load()},
+            last_update{other.last_update} {}
+
+      ~module_update() = default;
+
       module_update &operator=(const module_update &other) {
+        if (this != &other) {
+          id = other.id;
+          has_update.store(other.has_update.load());
+          last_update = other.last_update;
+        }
+        return *this;
+      }
+
+      module_update &operator=(module_update &&other) {
         if (this != &other) {
           id = other.id;
           has_update.store(other.has_update.load());
@@ -68,7 +84,7 @@ int main(int argc, char *argv[]) {
       module_updates.emplace_back(i, false, &module_last_update);
       module_handles.emplace_back(
           i, std::move(config.modules[i].file_path),
-          std::move(config.modules[i].config),
+          std::move(config.modules[i].config), module_api::runtime_settings{},
           thread_comm::state_change_callback{
               module_callback, static_cast<void *>(&module_updates.back())});
       module_handles.back().run();
