@@ -23,15 +23,32 @@ public:
 
   using click_event = struct i3bar_protocol::click_event::content;
 
+  struct runtime_settings {
+    std::atomic<bool> hidden;
+
+    runtime_settings(std::atomic<bool> hidden = {}) : hidden{hidden.load()} {};
+
+    runtime_settings(const runtime_settings &other);
+    runtime_settings(runtime_settings &&other) noexcept;
+
+    ~runtime_settings() = default;
+
+    runtime_settings &operator=(const runtime_settings &other);
+    runtime_settings &operator=(runtime_settings &&other) noexcept;
+  };
+
 private:
   thread_comm::producer<block> m_thread_comm_producer;
+  runtime_settings *m_runtime_settings;
 
 public:
   module_api();
 
-  explicit module_api(const thread_comm::producer<block> &thread_comm_producer);
+  module_api(const thread_comm::producer<block> &thread_comm_producer,
+             runtime_settings *runtime_settings);
 
-  explicit module_api(thread_comm::producer<block> &&thread_comm_producer);
+  module_api(thread_comm::producer<block> &&thread_comm_producer,
+             runtime_settings *runtime_settings);
 
   module_api(module_api &&other) noexcept;
 
