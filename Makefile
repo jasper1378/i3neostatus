@@ -16,7 +16,7 @@ SOURCE_FILE_EXT := .cpp
 SUBMODULE_DIR := ./submodules
 INCLUDE_DIRS := ./include
 HEADER_FILE_EXT := .hpp
-LIBRARIES := boost_json
+LIBRARIES :=
 INSTALL_PATH := /usr/local
 
 ##########
