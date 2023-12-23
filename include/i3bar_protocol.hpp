@@ -3,8 +3,7 @@
 
 #include "module_id.hpp"
 
-#include <boost/json.hpp>
-
+#include <concepts>
 #include <iostream>
 #include <optional>
 #include <string>
@@ -111,35 +110,54 @@ struct click_event {
   content content;
 };
 
-static constexpr char g_k_newline_char{'\n'};
-static constexpr char g_k_space_char{' '};
-static constexpr char g_k_json_array_opening_delimiter{'['};
-static constexpr char g_k_json_array_closing_delimiter{']'};
-static constexpr char g_k_json_array_element_separator{','};
+namespace json_constants {
+static constexpr char g_k_newline{'\n'};
+static constexpr char g_k_space{' '};
+static constexpr char g_k_escape_leader{'\\'};
+static constexpr char g_k_name_value_separator{':'};
+static constexpr char g_k_element_separator{','};
+static constexpr char g_k_string_delimiter{'"'};
+static constexpr char g_k_object_opening_delimiter{'{'};
+static constexpr char g_k_object_closing_delimiter{'}'};
+static constexpr char g_k_array_opening_delimiter{'['};
+static constexpr char g_k_array_closing_delimiter{']'};
+} // namespace json_constants
 
-void print_header(const header &output_value,
-                  std::ostream &output_stream = std::cout);
-void print_array_start(std::ostream &output_stream = std::cout);
-void print_statusline(const std::vector<block> &output_value,
-                      std::ostream &output_stream = std::cout);
-void read_array_start(std::istream &input_stream = std::cin);
+void print_header(const header &value, std::ostream &stream = std::cout);
+void init_statusline(std::ostream &stream = std::cout);
+void print_statusline(const std::vector<block> &value,
+                      std::ostream &stream = std::cout);
+void print_statusline(const std::pair<block, std::size_t> &value,
+                      std::vector<std::string> &cache,
+                      std::ostream &stream = std::cout);
+void print_statusline(const std::vector<std::pair<block, std::size_t>> &value,
+                      std::vector<std::string> &cache,
+                      std::ostream &stream = std::cout);
+void init_click_event(std::istream &input_stream = std::cin);
 click_event read_click_event(std::istream &input_stream = std::cin);
-}; // namespace i3bar_protocol
 
-namespace boost {
-namespace json {
-void tag_invoke(const value_from_tag &, value &bj_value,
-                const i3bar_protocol::header &header);
-void tag_invoke(const value_from_tag &, value &bj_value,
-                i3bar_protocol::header &&header);
-void tag_invoke(const value_from_tag &, value &bj_value,
-                const i3bar_protocol::block &block);
-void tag_invoke(const value_from_tag &, value &bj_value,
-                i3bar_protocol::block &&block);
-i3bar_protocol::click_event
-tag_invoke(const value_to_tag<i3bar_protocol::click_event> &,
-           const value &bj_value);
-}; // namespace json
-}; // namespace boost
+namespace impl {
+void print_statusline(const std::vector<std::string> &value,
+                      std::ostream &stream = std::cout);
 
+std::string serialize_header(const header &header);
+std::string serialize_block(const block &block);
+
+std::string
+serialize_name_value(const std::pair<std::string, std::string> &name_value);
+std::string serialize_object(
+    const std::vector<std::pair<std::string, std::string>> &object);
+std::string serialize_array(const std::vector<std::string> &array);
+std::string serialize_number(auto number)
+  requires(std::integral<decltype(number)> ||
+           std::floating_point<decltype(number)>)
+{
+  return std::to_string(number);
+}
+std::string serialize_string(const std::string &string);
+std::string serialize_bool(const bool b);
+
+click_event parse_click_event(const std::string &click_event);
+} // namespace impl
+} // namespace i3bar_protocol
 #endif
