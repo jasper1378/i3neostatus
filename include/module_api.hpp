@@ -17,6 +17,7 @@ public:
   struct config_out {
     std::string m_name;
     bool click_events_enabled;
+    static const std::string k_valid_name_chars;
   };
 
   using block = struct i3bar_protocol::block::content;

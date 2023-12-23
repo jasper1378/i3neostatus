@@ -10,6 +10,9 @@
 #include <string>
 #include <utility>
 
+const std::string module_api::config_out::k_valid_name_chars{
+    "abcdefghijklmnopqrstuvqxyzABCDEFGHIJKLMNOPQRSTUVQXYZ_-"};
+
 module_api::runtime_settings::runtime_settings(const runtime_settings &other)
     : hidden{other.hidden.load()} {}
 

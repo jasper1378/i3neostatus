@@ -134,6 +134,15 @@ void module_handle::do_ctor(libconfigfile::map_node &&conf,
     module_api::config_out conf_out{
         m_module->init(std::move(mod_api), std::move(conf))};
     m_name = std::move(conf_out.m_name);
+
+    if (m_name.empty()) {
+      throw module_error{m_id, m_name, m_file_path, "empty name"};
+    } else if (m_name.find_first_not_of(
+                   module_api::config_out::k_valid_name_chars) !=
+               std::string::npos) {
+      throw module_error{m_id, m_name, m_file_path,
+                         "invalid character in name"};
+    }
     m_click_events_enabled = conf_out.click_events_enabled;
   } catch (const std::exception &ex) {
     throw module_error{m_id, "UNKNOWN", m_file_path, ex.what()};
