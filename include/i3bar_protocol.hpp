@@ -34,6 +34,7 @@ struct block {
     static constexpr std::string k_name_str{"name"};
     static constexpr std::string k_instance_str{"instance"};
   };
+  using struct_id = struct id;
 
   struct content {
     std::string full_text;
@@ -68,6 +69,7 @@ struct block {
     static const std::string k_separator_block_width_str;
     static constexpr std::string k_markup_str{"markup"};
   };
+  using struct_content = struct content;
 
   id id;
   content content;
@@ -81,6 +83,7 @@ struct click_event {
     static constexpr std::string k_name_str{"name"};
     static constexpr std::string k_instance_str{"instance"};
   };
+  using struct_id = struct id;
 
   struct content {
     pixel_count_t x;
@@ -105,9 +108,10 @@ struct click_event {
     static constexpr std::string k_height_str{"height"};
     static constexpr std::string k_modifiers_str{"modifiers"};
   };
+  using struct_content = struct content;
 
-  id id;
-  content content;
+  struct id id;
+  struct content content;
 };
 
 namespace json_constants {
