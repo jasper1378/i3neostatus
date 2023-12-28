@@ -2,8 +2,6 @@
 
 #include "misc.hpp"
 
-#include <boost/json.hpp>
-
 #include <charconv>
 #include <iostream>
 #include <limits>
@@ -242,10 +240,12 @@ i3bar_protocol::impl::serialize_array(const std::vector<std::string> &array) {
   ret_val += json_constants::g_k_array_opening_delimiter;
 
   for (std::size_t i{0}; i < array.size(); ++i) {
-    if (i != 0) {
-      ret_val += json_constants::g_k_element_separator;
+    if (!array[i].empty()) {
+      if ((i != 0) && (!array[i - 1].empty())) {
+        ret_val += json_constants::g_k_element_separator;
+      }
+      ret_val += array[i];
     }
-    ret_val += array[i];
   }
 
   ret_val += json_constants::g_k_array_closing_delimiter;
@@ -303,6 +303,7 @@ std::string i3bar_protocol::impl::serialize_string(const std::string &string) {
       pos_prev = pos + 1;
     }
   }
+  ret_val += string.substr(pos_prev);
 
   ret_val += json_constants::g_k_string_delimiter;
 
@@ -372,7 +373,7 @@ i3bar_protocol::impl::parse_click_event(const std::string &click_event) {
             find_first_not_digit(str, value_begin_pos)};
         continue_from_pos = value_end_pos + 1;
         return substr_view(str, value_begin_pos, value_end_pos);
-      }}; // TODO test
+      }};
 
   std::string name_buf;
   name_buf.resize(misc::constexpr_minmax::max(
