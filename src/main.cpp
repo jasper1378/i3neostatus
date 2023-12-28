@@ -9,6 +9,8 @@
 #include "module_id.hpp"
 #include "thread_comm.hpp"
 
+#include <csignal>
+
 #include <atomic>
 #include <iostream>
 #include <utility>
@@ -90,6 +92,10 @@ int main(int argc, char *argv[]) {
       module_handles.back().run();
     }
 
+    i3bar_protocol::print_header({1, SIGSTOP, SIGCONT, true}, std::cout);
+    i3bar_protocol::init_statusline(std::cout);
+    std::vector<std::string> i3bar_protocol_cache(module_count);
+
     while (true) {
       module_last_update.wait(module_id::null);
       module_last_update.store(module_id::null);
@@ -98,9 +104,15 @@ int main(int argc, char *argv[]) {
         bool expected{true};
         module_updates[i].has_update.compare_exchange_strong(expected, false);
         if (expected) {
-          std::unique_ptr<module_api::block> block{
+          std::unique_ptr<module_api::block> block_content{
               module_handles[i].get_comm().get()};
-          std::cout << block->full_text << '\n';
+          std::pair<i3bar_protocol::block, module_id::type> updated_block{
+              {i3bar_protocol::block::struct_id{module_handles[i].get_name(),
+                                                i},
+               *block_content},
+              i};
+          i3bar_protocol::print_statusline(updated_block, i3bar_protocol_cache,
+                                           std::cout);
         }
       }
     }
