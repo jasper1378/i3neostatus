@@ -129,13 +129,13 @@ static constexpr char g_k_array_closing_delimiter{']'};
 
 void print_header(const header &value, std::ostream &stream = std::cout);
 void init_statusline(std::ostream &stream = std::cout);
-void print_statusline(const std::vector<block> &value,
+void print_statusline(const std::vector<block> &value, bool hide_empty = true,
                       std::ostream &stream = std::cout);
 void print_statusline(const std::pair<block, std::size_t> &value,
-                      std::vector<std::string> &cache,
+                      std::vector<std::string> &cache, bool hide_emtpy = true,
                       std::ostream &stream = std::cout);
 void print_statusline(const std::vector<std::pair<block, std::size_t>> &value,
-                      std::vector<std::string> &cache,
+                      std::vector<std::string> &cache, bool hide_empty = true,
                       std::ostream &stream = std::cout);
 void init_click_event(std::istream &input_stream = std::cin);
 click_event read_click_event(std::istream &input_stream = std::cin);
