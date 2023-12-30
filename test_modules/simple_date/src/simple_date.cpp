@@ -71,7 +71,7 @@ void simple_date::run() {
     std::unique_ptr<module_api::block> block{m_api.make_block(module_api::block{
         .full_text = buf,
     })};
-    m_api.set_block(std::move(block));
+    m_api.put_block(std::move(block));
 
     std::this_thread::sleep_until(get_next_whole_second());
   }

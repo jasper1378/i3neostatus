@@ -91,7 +91,7 @@ public:
   shared_state &operator=(shared_state &&other) = delete;
 
 public:
-  bool set_value(std::unique_ptr<t_value> value) {
+  bool put_value(std::unique_ptr<t_value> value) {
     if (m_state.load() != shared_state_state::exception) {
       t_value *old_value{m_value.exchange(value.release())};
       m_state.store(shared_state_state::unread);
@@ -110,7 +110,7 @@ public:
     }
   }
 
-  bool set_exception(std::exception_ptr exception) {
+  bool put_exception(std::exception_ptr exception) {
     if (m_state.load() != shared_state_state::exception) {
       m_exception = std::move(exception);
       m_state.store(shared_state_state::exception);
@@ -352,18 +352,18 @@ public:
     swap(m_shared_state_ptr, other.m_shared_state_ptr);
   }
 
-  void set_value(std::unique_ptr<t_value> value) {
+  void put_value(std::unique_ptr<t_value> value) {
     if (!valid()) {
       throw error{"no state"};
     }
-    m_shared_state_ptr->set_value(std::move(value));
+    m_shared_state_ptr->put_value(std::move(value));
   }
 
-  void set_exception(std::exception_ptr exception) {
+  void put_exception(std::exception_ptr exception) {
     if (!valid()) {
       throw error{"no state"};
     }
-    m_shared_state_ptr->set_exception(exception);
+    m_shared_state_ptr->put_exception(exception);
   }
 };
 
