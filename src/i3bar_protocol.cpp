@@ -32,12 +32,16 @@ void i3bar_protocol::init_statusline(std::ostream &stream /*= std::cout*/) {
 }
 
 void i3bar_protocol::print_statusline(const std::vector<block> &value,
+                                      bool hide_empty /*= true*/,
                                       std::ostream &stream /*= std::cout*/) {
   impl::print_statusline(
-      [&value]() -> std::vector<std::string> {
+      [&value, &hide_empty]() -> std::vector<std::string> {
         std::vector<std::string> ret_val;
         for (std::size_t i{0}; i < ret_val.size(); ++i) {
-          ret_val.emplace_back(impl::serialize_block(value[i]));
+          ret_val.emplace_back(
+              ((value[i].content.full_text.empty() && hide_empty)
+                   ? ("")
+                   : (impl::serialize_block(value[i]))));
         }
         return ret_val;
       }(),
@@ -46,16 +50,22 @@ void i3bar_protocol::print_statusline(const std::vector<block> &value,
 
 void i3bar_protocol::print_statusline(
     const std::pair<block, std::size_t> &value, std::vector<std::string> &cache,
-    std::ostream &stream /*= std::cout*/) {
-  cache[value.second] = impl::serialize_block(value.first);
+    bool hide_empty /* = true*/, std::ostream &stream /*= std::cout*/) {
+  cache[value.second] = ((value.first.content.full_text.empty() && hide_empty)
+                             ? ("")
+                             : (impl::serialize_block(value.first)));
   impl::print_statusline(cache, stream);
 }
 
 void i3bar_protocol::print_statusline(
     const std::vector<std::pair<block, std::size_t>> &value,
-    std::vector<std::string> &cache, std::ostream &stream /*= std::cout*/) {
+    std::vector<std::string> &cache, bool hide_empty /*= true*/,
+    std::ostream &stream /*= std::cout*/) {
   for (std::size_t i{0}; i < value.size(); ++i) {
-    cache[value[i].second] = impl::serialize_block(value[i].first);
+    cache[value[i].second] =
+        ((value[i].first.content.full_text.empty() && hide_empty)
+             ? ("")
+             : (impl::serialize_block(value[i].first)));
   }
   impl::print_statusline(cache, stream);
 }
