@@ -1,9 +1,10 @@
 #ifndef THREAD_COMM_HPP
 #define THREAD_COMM_HPP
 
+#include <generic_callback.hpp>
+
 #include <atomic>
 #include <compare>
-#include <concepts>
 #include <cstddef>
 #include <exception>
 #include <iostream>
@@ -11,7 +12,6 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
-#include <variant>
 
 namespace thread_comm {
 // TODO reuse buffer
@@ -47,10 +47,7 @@ enum : type {
 
 } // namespace shared_state_state
 
-struct state_change_callback {
-  void (*func)(shared_state_state::type, void *);
-  void *userdata;
-};
+using state_change_callback = generic_callback<shared_state_state::type>;
 
 template <typename t_value> class shared_state;
 template <typename t_value> class shared_state_ptr;
@@ -71,7 +68,7 @@ public:
         m_exception{nullptr}, m_state_change_callback{nullptr, nullptr},
         m_state_change_subscribed_events{shared_state_state::none} {}
 
-  shared_state(struct state_change_callback state_change_callback,
+  shared_state(state_change_callback state_change_callback,
                shared_state_state::type state_change_subscribed_events)
       : m_state{shared_state_state::read}, m_value{nullptr},
         m_exception{nullptr}, m_state_change_callback{state_change_callback},
@@ -101,8 +98,7 @@ public:
       m_state.notify_all();
       if ((m_state_change_subscribed_events & shared_state_state::unread) !=
           0U) {
-        m_state_change_callback.func(shared_state_state::unread,
-                                     m_state_change_callback.userdata);
+        m_state_change_callback.call(shared_state_state::unread);
       }
       if (old_value) {
         delete old_value;
@@ -121,8 +117,7 @@ public:
       m_state.notify_all();
       if ((m_state_change_subscribed_events & shared_state_state::exception) !=
           0U) {
-        m_state_change_callback.func(shared_state_state::exception,
-                                     m_state_change_callback.userdata);
+        m_state_change_callback.call(shared_state_state::exception);
       }
       return true;
     } else {
@@ -139,8 +134,7 @@ public:
     case shared_state_state::unread: {
       m_state.store(shared_state_state::read);
       if ((m_state_change_subscribed_events & shared_state_state::read) != 0U) {
-        m_state_change_callback.func(shared_state_state::read,
-                                     m_state_change_callback.userdata);
+        m_state_change_callback.call(shared_state_state::read);
       }
       return std::unique_ptr<t_value>{m_value.exchange(nullptr)};
     } break;
@@ -434,7 +428,7 @@ using t_pair = std::pair<producer<t_value>, consumer<t_value>>;
 
 template <typename t_value>
 t_pair<t_value>
-make_pair(struct state_change_callback state_change_callback,
+make_pair(const state_change_callback &state_change_callback,
           shared_state_state::type state_change_subscribed_events =
               shared_state_state::all) {
   shared_state_ptr<t_value> ssp{
