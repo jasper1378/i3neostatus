@@ -1,6 +1,7 @@
 #include "module_handle.hpp"
 
 #include "dyn_load_lib.hpp"
+#include "generic_callback.hpp"
 #include "module_api.hpp"
 #include "module_base.hpp"
 #include "module_error.hpp"
@@ -32,36 +33,55 @@ module_handle::
     module_handle(const module_id::type id, std::string &&file_path,
                   libconfigfile::map_node &&conf,
                   module_api::runtime_settings &&runtime_settings,
-                  const thread_comm::state_change_callback
-                      state_change_callback,
-                  const thread_comm::
-                      shared_state_state::type state_change_subscribed_events /*= thread_comm::shared_state_state::all*/)
+                   const state_change_callback
+                      state_change_callback)
     : module_handle{
           id, std::move(file_path), std::move(conf),
           std::move(runtime_settings),
           thread_comm::make_pair<module_api::block>(
-              state_change_callback, state_change_subscribed_events)} {}
+              m_s_thread_comm_state_change_callback, state_change_subscribed_events)} {}
 
 module_handle::
     module_handle(const module_id::type id, const std::string &file_path,
                   const libconfigfile::map_node &conf,
                   const module_api::runtime_settings &runtime_settings,
-                  const thread_comm::state_change_callback
-                      state_change_callback,
-                  const thread_comm::
-                      shared_state_state::type state_change_subscribed_events /*= thread_comm::shared_state_state::all*/)
+                  const state_change_callback
+                      state_change_callback)
     : module_handle{
           id, file_path, conf, runtime_settings,
           thread_comm::make_pair<module_api::block>(
-              state_change_callback, state_change_subscribed_events)} {}
+              m_s_thread_comm_state_change_callback, state_change_subscribed_events)} {}
+decltype(thread_comm::state_change_callback::func)
+    module_handle::m_s_thread_comm_state_change_callback{
+        [](void *userdata,
+           thread_comm::shared_state_state::type state) -> void {
+          state_change_callback *scc{
+              static_cast<state_change_callback *>(userdata)};
+          switch (state) {
+          case thread_comm::shared_state_state::none: {
+          } break;
+          case thread_comm::shared_state_state::read: {
+          } break;
+          case thread_comm::shared_state_state::unread: {
+            scc->call(state_change_type::new_block);
+          } break;
+          case thread_comm::shared_state_state::exception: {
+            scc->call(state_change_type::new_exception);
+          } break;
+          default: {
+          } break;
+          }
+        }};
 
 module_handle::module_handle(const module_id::type id, std::string &&file_path,
                              libconfigfile::map_node &&conf,
                              module_api::runtime_settings &&runtime_settings,
-                             thread_comm::t_pair<module_api::block> &&tc_pair)
+                             thread_comm::t_pair<module_api::block> &&tc_pair
+                             state_change_callback &&state_change_callback)
     : m_id{id}, m_name{}, m_file_path{std::move(file_path)},
       m_click_events_enabled{false},
       m_runtime_settings{std::move(runtime_settings)},
+      m_state_change_callback{std::move(state_change_callback)},
       m_dyn_lib{m_file_path, dyn_load_lib::dlopen_flags::lazy},
       m_module{nullptr, nullptr}, m_thread_comm_producer{},
       m_thread_comm_consumer{}, m_thread{} {
@@ -72,10 +92,12 @@ module_handle::module_handle(
     const module_id::type id, const std::string &file_path,
     const libconfigfile::map_node &conf,
     const module_api::runtime_settings &runtime_settings,
-    thread_comm::t_pair<module_api::block> &&tc_pair)
+    thread_comm::t_pair<module_api::block> &&tc_pair,
+                             const state_change_callback &state_change_callback)
     : m_id{id}, m_name{}, m_file_path{std::move(file_path)},
       m_click_events_enabled{false},
       m_runtime_settings{std::move(runtime_settings)},
+      m_state_change_callback{state_change_callback},
       m_dyn_lib{m_file_path, dyn_load_lib::dlopen_flags::lazy},
       m_module{nullptr, nullptr}, m_thread_comm_producer{},
       m_thread_comm_consumer{}, m_thread{} {
@@ -87,6 +109,7 @@ module_handle::module_handle(module_handle &&other) noexcept
       m_file_path{std::move(other.m_file_path)},
       m_click_events_enabled{other.m_click_events_enabled},
       m_runtime_settings{std::move(other.m_runtime_settings)},
+      m_state_change_callback{std::move(other.m_state_change_callback)},
       m_dyn_lib{std::move(other.m_dyn_lib)},
       m_module{std::move(other.m_module)},
       m_thread_comm_producer{std::move(other.m_thread_comm_producer)},
@@ -104,6 +127,7 @@ module_handle &module_handle::operator=(module_handle &&other) noexcept {
     m_name = std::move(other.m_name);
     m_file_path = std::move(other.m_file_path);
     m_click_events_enabled = other.m_click_events_enabled;
+    m_state_change_callback = std::move(other.m_state_change_callback);
     m_dyn_lib = std::move(other.m_dyn_lib);
     m_module = std::move(other.m_module);
     m_thread_comm_producer = std::move(other.m_thread_comm_producer);
@@ -126,6 +150,12 @@ void module_handle::do_ctor(libconfigfile::map_node &&conf,
     throw module_error{m_id, "UNKNOWN", m_file_path, "allocator() failed"};
   }
 
+  thread_comm::t_pair<module_api::block> tc_pair{
+      thread_comm::make_pair<module_api::block>(
+          {m_s_thread_comm_state_change_callback,
+           static_cast<void *>(&m_state_change_callback)},
+          thread_comm::shared_state_state::unread |
+              thread_comm::shared_state_state::exception)};
   m_thread_comm_producer = std::move(tc_pair.first);
   module_api mod_api{m_thread_comm_producer, &m_runtime_settings};
   m_thread_comm_consumer = std::move(tc_pair.second);

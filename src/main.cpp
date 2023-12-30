@@ -74,8 +74,7 @@ int main(int argc, char *argv[]) {
     module_updates.reserve(module_count);
 
     const auto module_callback{
-        []([[maybe_unused]] thread_comm::shared_state_state::type state,
-           void *userdata) -> void {
+        [](void *userdata, module_handle::state_change_type state) -> void {
           module_update *mu{static_cast<module_update *>(userdata)};
           mu->has_update.store(true);
           mu->last_update->store(mu->id);
@@ -87,7 +86,7 @@ int main(int argc, char *argv[]) {
       module_handles.emplace_back(
           i, std::move(config.modules[i].file_path),
           std::move(config.modules[i].config), module_api::runtime_settings{},
-          thread_comm::state_change_callback{
+          module_handle::state_change_callback{
               module_callback, static_cast<void *>(&module_updates.back())});
       module_handles.back().run();
     }
