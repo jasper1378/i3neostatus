@@ -52,8 +52,6 @@ void simple_date::run() {
     buf_size = new_size;
   }};
 
-  std::this_thread::sleep_until(get_next_whole_second());
-
   set_buf_to_size(128);
 
   while (m_suicide.load() == false) {
