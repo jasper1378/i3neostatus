@@ -168,10 +168,10 @@ void module_handle::run() {
     try {
       m_module->run();
     } catch (const std::exception &ex) {
-      m_thread_comm_producer.set_exception(std::make_exception_ptr(
+      m_thread_comm_producer.put_exception(std::make_exception_ptr(
           module_error{m_id, m_name, m_file_path, ex.what()}));
     } catch (...) {
-      m_thread_comm_producer.set_exception(std::make_exception_ptr(
+      m_thread_comm_producer.put_exception(std::make_exception_ptr(
           module_error{m_id, m_name, m_file_path, "UNKNOWN"}));
     }
   }};
