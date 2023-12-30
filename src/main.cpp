@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
       module_updates.emplace_back(i, false, &module_last_update);
       module_handles.emplace_back(
           i, std::move(config.modules[i].file_path),
-          std::move(config.modules[i].config), module_api::runtime_settings{},
+          std::move(config.modules[i].config),
           module_handle::state_change_callback{
               module_callback, static_cast<void *>(&module_updates.back())});
       module_handles.back().run();
@@ -93,24 +93,30 @@ int main(int argc, char *argv[]) {
 
     i3bar_protocol::print_header({1, SIGSTOP, SIGCONT, true}, std::cout);
     i3bar_protocol::init_statusline(std::cout);
-    std::vector<std::string> i3bar_protocol_cache(module_count);
+    std::vector<std::string> i3bar_cache(module_count);
 
     while (true) {
       module_last_update.wait(module_id::null);
       module_last_update.store(module_id::null);
 
       for (module_id::type i{0}; i < module_count; ++i) {
-        bool expected{true};
-        module_updates[i].has_update.compare_exchange_strong(expected, false);
-        if (expected) {
-          std::unique_ptr<module_api::block> block_content{
-              module_handles[i].get_comm().get()};
+        bool has_update{true};
+        module_updates[i].has_update.compare_exchange_strong(has_update, false);
+        if (has_update) {
+          std::unique_ptr<module_api::block> block_content{nullptr};
+          try {
+            block_content = module_handles[i].get_comm().get();
+          } catch (const std::exception &ex) {
+            throw module_error{module_handles[i].get_id(),
+                               module_handles[i].get_name(),
+                               module_handles[i].get_file_path(), ex.what()};
+          }
           std::pair<i3bar_protocol::block, module_id::type> updated_block{
               {i3bar_protocol::block::struct_id{module_handles[i].get_name(),
-                                                i},
+                                                module_handles[i].get_id()},
                *block_content},
               i};
-          i3bar_protocol::print_statusline(updated_block, i3bar_protocol_cache,
+          i3bar_protocol::print_statusline(updated_block, i3bar_cache, true,
                                            std::cout);
         }
       }
