@@ -8,13 +8,13 @@
 #include <cstddef>
 #include <exception>
 #include <iostream>
-#include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <variant>
 
 namespace thread_comm {
-// TODO reuse buffer
 
 class error : public std::runtime_error {
 private:
@@ -56,53 +56,51 @@ template <typename t_value> class consumer;
 
 template <typename t_value> class shared_state {
 private:
-  std::atomic<shared_state_state::type> m_state;
-  std::atomic<t_value *> m_value;
-  std::exception_ptr m_exception;
+  std::atomic<shared_state_state::type>
+      m_state; // TODO do we need this if using callbacks?
+
+  std::variant<t_value, std::exception_ptr> m_value_or_exception;
+  std::mutex m_value_or_exception_mtx;
+
   state_change_callback m_state_change_callback;
   shared_state_state::type m_state_change_subscribed_events;
 
 public:
   shared_state()
-      : m_state{shared_state_state::read}, m_value{nullptr},
-        m_exception{nullptr}, m_state_change_callback{nullptr, nullptr},
+      : m_state{shared_state_state::read}, m_value_or_exception{},
+        m_value_or_exception_mtx{}, m_state_change_callback{nullptr, nullptr},
         m_state_change_subscribed_events{shared_state_state::none} {}
 
-  shared_state(state_change_callback state_change_callback,
-               shared_state_state::type state_change_subscribed_events)
-      : m_state{shared_state_state::read}, m_value{nullptr},
-        m_exception{nullptr}, m_state_change_callback{state_change_callback},
+  shared_state(const state_change_callback &state_change_callback,
+               const shared_state_state::type state_change_subscribed_events)
+      : m_state{shared_state_state::read}, m_value_or_exception{},
+        m_value_or_exception_mtx{},
+        m_state_change_callback{state_change_callback},
         m_state_change_subscribed_events{state_change_subscribed_events} {}
 
   shared_state(const shared_state &other) = delete;
 
   shared_state(shared_state &&other) = delete;
 
-  ~shared_state() {
-    m_state.store(shared_state_state::read);
-    if (m_value.load()) {
-      delete m_value.load();
-      m_value.store(nullptr);
-    }
-  }
+  ~shared_state() {}
 
   shared_state &operator=(const shared_state &other) = delete;
 
   shared_state &operator=(shared_state &&other) = delete;
 
 public:
-  bool put_value(std::unique_ptr<t_value> value) {
+  bool put_value(const t_value &value) {
     if (m_state.load() != shared_state_state::exception) {
-      t_value *old_value{m_value.exchange(value.release())};
+      {
+        std::lock_guard<std::mutex> lock_m_value_or_exception_mtx{
+            m_value_or_exception_mtx};
+        m_value_or_exception = value;
+      }
       m_state.store(shared_state_state::unread);
       m_state.notify_all();
       if ((m_state_change_subscribed_events & shared_state_state::unread) !=
           0U) {
         m_state_change_callback.call(shared_state_state::unread);
-      }
-      if (old_value) {
-        delete old_value;
-        old_value = nullptr;
       }
       return true;
     } else {
@@ -110,9 +108,50 @@ public:
     }
   }
 
-  bool put_exception(std::exception_ptr exception) {
+  bool put_value(t_value &&value) {
     if (m_state.load() != shared_state_state::exception) {
-      m_exception = std::move(exception);
+      {
+        std::lock_guard<std::mutex> lock_m_value_or_exception_mtx{
+            m_value_or_exception_mtx};
+        m_value_or_exception = std::move(value);
+      }
+      m_state.store(shared_state_state::unread);
+      m_state.notify_all();
+      if ((m_state_change_subscribed_events & shared_state_state::unread) !=
+          0U) {
+        m_state_change_callback.call(shared_state_state::unread);
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool put_exception(const std::exception_ptr &exception) {
+    if (m_state.load() != shared_state_state::exception) {
+      {
+        std::lock_guard<std::mutex> lock_m_value_or_exception_mtx{
+            m_value_or_exception_mtx};
+        m_value_or_exception = exception;
+      }
+      m_state.store(shared_state_state::exception);
+      m_state.notify_all();
+      if ((m_state_change_subscribed_events & shared_state_state::exception) !=
+          0U) {
+        m_state_change_callback.call(shared_state_state::exception);
+      }
+    } else {
+      return false;
+    }
+  }
+
+  bool put_exception(std::exception_ptr &&exception) {
+    if (m_state.load() != shared_state_state::exception) {
+      {
+        std::lock_guard<std::mutex> lock_m_value_or_exception_mtx{
+            m_value_or_exception_mtx};
+        m_value_or_exception = std::move(exception);
+      }
       m_state.store(shared_state_state::exception);
       m_state.notify_all();
       if ((m_state_change_subscribed_events & shared_state_state::exception) !=
@@ -125,24 +164,32 @@ public:
     }
   }
 
-  std::unique_ptr<t_value> get() {
+  t_value get() {
     switch (m_state.load()) {
     case shared_state_state::read: {
       wait();
       return get();
     } break;
     case shared_state_state::unread: {
+      std::unique_lock<std::mutex> lock_m_value_or_exception_mtx{
+          m_value_or_exception_mtx};
+      t_value ret_val{std::get<t_value>(std::move(m_value_or_exception))};
+      lock_m_value_or_exception_mtx.unlock();
       m_state.store(shared_state_state::read);
       if ((m_state_change_subscribed_events & shared_state_state::read) != 0U) {
         m_state_change_callback.call(shared_state_state::read);
       }
-      return std::unique_ptr<t_value>{m_value.exchange(nullptr)};
+      return ret_val;
     } break;
     case shared_state_state::exception: {
-      std::rethrow_exception(m_exception);
+      std::lock_guard<std::mutex> lock_m_value_or_exception_mtx{
+          m_value_or_exception_mtx};
+      std::rethrow_exception(
+          std::get<std::exception_ptr>(m_value_or_exception));
     } break;
     default: {
-      return nullptr;
+      // TODO FIXME
+      throw error{"TODO FIXME"};
     } break;
     }
   }
@@ -352,18 +399,36 @@ public:
     swap(m_shared_state_ptr, other.m_shared_state_ptr);
   }
 
-  void put_value(std::unique_ptr<t_value> value) {
+  bool put_value(const t_value &value) {
     if (!valid()) {
       throw error{"no state"};
+    } else {
+      return m_shared_state_ptr->put_value(value);
     }
-    m_shared_state_ptr->put_value(std::move(value));
   }
 
-  void put_exception(std::exception_ptr exception) {
+  bool put_value(t_value &&value) {
     if (!valid()) {
       throw error{"no state"};
+    } else {
+      return m_shared_state_ptr->put_value(std::move(value));
     }
-    m_shared_state_ptr->put_exception(exception);
+  }
+
+  bool put_exception(const std::exception_ptr &exception) {
+    if (!valid()) {
+      throw error{"no state"};
+    } else {
+      return m_shared_state_ptr->put_exception(exception);
+    }
+  }
+
+  bool put_exception(std::exception_ptr &&exception) {
+    if (!valid()) {
+      throw error{"no state"};
+    } else {
+      return m_shared_state_ptr->put_exception(std::move(exception));
+    }
   }
 };
 
@@ -407,19 +472,20 @@ public:
     swap(m_shared_state_ptr, other.m_shared_state_ptr);
   }
 
-  std::unique_ptr<t_value> get() {
+  t_value get() {
     if (!valid()) {
       throw error{"no state"};
+    } else {
+      return m_shared_state_ptr->get();
     }
-    return m_shared_state_ptr->get();
   }
 
   void wait() {
     if (!valid()) {
       throw error{"no state"};
+    } else {
+      m_shared_state_ptr->wait();
     }
-
-    m_shared_state_ptr->wait();
   }
 };
 
@@ -442,7 +508,6 @@ template <typename t_value> t_pair<t_value> make_pair() {
       shared_state_ptr<t_value>::make_shared_state_ptr()};
   return std::make_pair(producer<t_value>{ssp}, consumer<t_value>{ssp});
 }
-
 } // namespace thread_comm
 
 #endif

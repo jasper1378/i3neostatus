@@ -33,10 +33,18 @@ module_api &module_api::operator=(module_api &&other) noexcept {
   return *this;
 }
 
-void module_api::put_block(std::unique_ptr<block> block) {
+void module_api::put_block(const block &block) {
+  m_thread_comm_producer.put_value(block);
+}
+
+void module_api::put_block(block &&block) {
   m_thread_comm_producer.put_value(std::move(block));
 }
 
-void module_api::put_error(std::exception_ptr error) {
+void module_api::put_error(const std::exception_ptr &error) {
+  m_thread_comm_producer.put_exception(error);
+}
+
+void module_api::put_error(std::exception_ptr &&error) {
   m_thread_comm_producer.put_exception(std::move(error));
 }

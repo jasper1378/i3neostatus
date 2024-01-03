@@ -16,6 +16,23 @@
 #include <utility>
 #include <vector>
 
+class Timer // TODO XXX
+{
+private:
+  // Type aliases to make accessing nested type easier
+  using Clock = std::chrono::steady_clock;
+  using Second = std::chrono::duration<double, std::ratio<1>>;
+
+  std::chrono::time_point<Clock> m_beg{Clock::now()};
+
+public:
+  void reset() { m_beg = Clock::now(); }
+
+  double elapsed() const {
+    return std::chrono::duration_cast<Second>(Clock::now() - m_beg).count();
+  }
+};
+
 int main(int argc, char *argv[]) {
   if (argc != 2) {
     std::cerr << "config file path required\n";
@@ -103,7 +120,7 @@ int main(int argc, char *argv[]) {
         bool has_update{true};
         module_updates[i].has_update.compare_exchange_strong(has_update, false);
         if (has_update) {
-          std::unique_ptr<module_api::block> block_content{nullptr};
+          module_api::block block_content{};
           try {
             block_content = module_handles[i].get_comm().get();
           } catch (const std::exception &ex) {
@@ -114,7 +131,7 @@ int main(int argc, char *argv[]) {
           std::pair<i3bar_protocol::block, module_id::type> updated_block{
               {i3bar_protocol::block::struct_id{module_handles[i].get_name(),
                                                 module_handles[i].get_id()},
-               *block_content},
+               block_content},
               i};
           i3bar_protocol::print_statusline(updated_block, i3bar_cache, true,
                                            std::cout);
