@@ -41,15 +41,11 @@ public:
   module_api &operator=(const module_api &other) = delete;
 
 public:
-  template <typename... t_args>
-  std::unique_ptr<block> make_block(t_args &&...args) {
-    return std::make_unique<block>(
-        std::forward<t_args>(args)...); // TODO reuse buffer
-  }
+  void put_block(const block &block);
+  void put_block(block &&block);
 
-  void put_block(std::unique_ptr<block> block);
-
-  void put_error(std::exception_ptr error);
+  void put_error(const std::exception_ptr &error);
+  void put_error(std::exception_ptr &&error);
 };
 
 #endif
