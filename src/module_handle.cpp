@@ -22,17 +22,15 @@ decltype(thread_comm::state_change_callback::func)
           state_change_callback *scc{
               static_cast<state_change_callback *>(userdata)};
           switch (state) {
-          case thread_comm::shared_state_state::none: {
-          } break;
-          case thread_comm::shared_state_state::read: {
-          } break;
-          case thread_comm::shared_state_state::unread: {
+          case thread_comm::shared_state_state::null:
+          case thread_comm::shared_state_state::empty:
+          default:
+            break;
+          case thread_comm::shared_state_state::value: {
             scc->call(state_change_type::new_block);
           } break;
           case thread_comm::shared_state_state::exception: {
             scc->call(state_change_type::new_exception);
-          } break;
-          default: {
           } break;
           }
         }};
@@ -108,7 +106,7 @@ void module_handle::do_ctor(libconfigfile::map_node &&conf) {
       thread_comm::make_pair<module_api::block>(
           {m_s_thread_comm_state_change_callback,
            static_cast<void *>(&m_state_change_callback)},
-          thread_comm::shared_state_state::unread |
+          thread_comm::shared_state_state::value |
               thread_comm::shared_state_state::exception)};
   m_thread_comm_producer = std::move(tc_pair.first);
   module_api mod_api{
