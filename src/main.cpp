@@ -1,3 +1,4 @@
+#include "click_event_listener.hpp"
 #include "config_file.hpp"
 #include "i3bar_protocol.hpp"
 #include "module_error.hpp"
@@ -179,6 +180,11 @@ int main(int argc, char *argv[]) {
       any_click_events_enabled = any_click_events_enabled ||
                                  module_handles[i].get_click_events_enabled();
       module_handles.back().run();
+    }
+
+    click_event_listener click_event_listener{&module_handles, &std::cin};
+    if (any_click_events_enabled) {
+      click_event_listener.run();
     }
 
     i3bar_protocol::print_header(
