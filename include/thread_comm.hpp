@@ -153,7 +153,7 @@ public:
     }
   }
 
-  t_value get() {
+  std::variant<t_value, std::exception_ptr> get() {
     std::unique_lock<std::mutex> lock_m_value_or_exception_mtx{
         m_value_or_exception_mtx, std::defer_lock_t{}};
     while (true) {
@@ -164,19 +164,31 @@ public:
         wait();
         continue;
       } break;
-      case static_cast<std::size_t>(value_or_exception_idx::value): {
-        t_value ret_val{
-            std::get<static_cast<std::size_t>(value_or_exception_idx::value)>(
-                std::move(m_value_or_exception))};
+      case static_cast<std::size_t>(value_or_exception_idx::value):
+      case static_cast<std::size_t>(value_or_exception_idx::exception): {
+        std::variant<t_value, std::exception_ptr> ret_val{
+            [this]() -> std::variant<t_value, std::exception_ptr> {
+              switch (m_value_or_exception.index()) {
+              case static_cast<std::size_t>(value_or_exception_idx::value): {
+                return std::get<static_cast<std::size_t>(
+                    value_or_exception_idx::value)>(
+                    std::move(m_value_or_exception));
+              } break;
+              case static_cast<std::size_t>(
+                  value_or_exception_idx::exception): {
+                return std::get<static_cast<std::size_t>(
+                    value_or_exception_idx::exception)>(
+                    std::move(m_value_or_exception));
+              } break;
+              default: { // impossible
+                return {};
+              }
+              }
+            }()};
         m_value_or_exception = std::monostate{};
         lock_m_value_or_exception_mtx.unlock();
         maybe_call_callback(shared_state_state::empty);
         return ret_val;
-      } break;
-      case static_cast<std::size_t>(value_or_exception_idx::exception): {
-        std::rethrow_exception(
-            std::get<static_cast<std::size_t>(
-                value_or_exception_idx::exception)>(m_value_or_exception));
       } break;
       }
     }
@@ -475,7 +487,7 @@ public:
     swap(m_shared_state_ptr, other.m_shared_state_ptr);
   }
 
-  t_value get() {
+  std::variant<t_value, std::exception_ptr> get() {
     if (!valid()) {
       throw error{"no state"};
     } else {
