@@ -27,7 +27,7 @@ private:
   module_id::type m_id;
   std::string m_name;
   std::string m_file_path;
-  bool m_click_events;
+  bool m_click_events_enabled;
   state_change_callback m_state_change_callback;
   dyn_load_lib::lib m_dyn_lib;
   std::unique_ptr<module_base, module_base::deleter_func_ptr_t> m_module;
@@ -65,6 +65,7 @@ public:
   module_id::type get_id() const;
   const std::string &get_name() const;
   const std::string &get_file_path() const;
+  bool get_click_events_enabled() const;
 
   thread_comm::consumer<module_api::block> &get_comm();
 };

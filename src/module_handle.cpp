@@ -38,7 +38,8 @@ decltype(thread_comm::state_change_callback::func)
 module_handle::module_handle(const module_id::type id, std::string &&file_path,
                              libconfigfile::map_node &&conf,
                              state_change_callback &&state_change_callback)
-    : m_id{id}, m_name{}, m_file_path{std::move(file_path)}, m_click_events{},
+    : m_id{id}, m_name{}, m_file_path{std::move(file_path)},
+      m_click_events_enabled{},
       m_state_change_callback{std::move(state_change_callback)},
       m_dyn_lib{m_file_path, dyn_load_lib::dlopen_flags::lazy},
       m_module{nullptr, nullptr}, m_thread_comm_producer{},
@@ -50,7 +51,7 @@ module_handle::module_handle(const module_id::type id,
                              const std::string &file_path,
                              const libconfigfile::map_node &conf,
                              const state_change_callback &state_change_callback)
-    : m_id{id}, m_name{}, m_file_path{file_path}, m_click_events{},
+    : m_id{id}, m_name{}, m_file_path{file_path}, m_click_events_enabled{},
       m_state_change_callback{state_change_callback},
       m_dyn_lib{m_file_path, dyn_load_lib::dlopen_flags::lazy},
       m_module{nullptr, nullptr}, m_thread_comm_producer{},
@@ -61,7 +62,7 @@ module_handle::module_handle(const module_id::type id,
 module_handle::module_handle(module_handle &&other) noexcept
     : m_id{other.m_id}, m_name{std::move(other.m_name)},
       m_file_path{std::move(other.m_file_path)},
-      m_click_events{other.m_click_events},
+      m_click_events_enabled{other.m_click_events_enabled},
       m_state_change_callback{std::move(other.m_state_change_callback)},
       m_dyn_lib{std::move(other.m_dyn_lib)},
       m_module{std::move(other.m_module)},
@@ -79,7 +80,7 @@ module_handle &module_handle::operator=(module_handle &&other) noexcept {
     m_id = other.m_id;
     m_name = std::move(other.m_name);
     m_file_path = std::move(other.m_file_path);
-    m_click_events = other.m_click_events;
+    m_click_events_enabled = other.m_click_events_enabled;
     m_state_change_callback = std::move(other.m_state_change_callback);
     m_dyn_lib = std::move(other.m_dyn_lib);
     m_module = std::move(other.m_module);
@@ -118,7 +119,7 @@ void module_handle::do_ctor(libconfigfile::map_node &&conf) {
     module_api::config_out conf_out{
         m_module->init(std::move(mod_api), std::move(conf))};
     m_name = std::move(conf_out.name);
-    m_click_events = conf_out.click_events;
+    m_click_events_enabled = conf_out.click_events_enabled;
 
     if (m_name.empty()) {
       throw module_error{m_id, m_name, m_file_path, "empty name"};
@@ -154,6 +155,10 @@ module_id::type module_handle::get_id() const { return m_id; }
 const std::string &module_handle::get_name() const { return m_name; }
 
 const std::string &module_handle::get_file_path() const { return m_file_path; }
+
+bool module_handle::get_click_events_enabled() const {
+  return m_click_events_enabled;
+}
 
 thread_comm::consumer<module_api::block> &module_handle::get_comm() {
   return m_thread_comm_consumer;
