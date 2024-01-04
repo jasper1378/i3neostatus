@@ -9,7 +9,6 @@
 #include <type_traits>
 
 namespace misc {
-static constexpr std::string g_k_program_name{"i3neostatus"};
 
 namespace constexpr_minmax {
 template <typename T> consteval auto max(const T &t) { return t; }
