@@ -150,6 +150,10 @@ void module_handle::run() {
   }};
 }
 
+void module_handle::send_click_event(module_api::click_event &&click_event) {
+  m_module->on_click_event(std::move(click_event));
+}
+
 module_id::type module_handle::get_id() const { return m_id; }
 
 const std::string &module_handle::get_name() const { return m_name; }
