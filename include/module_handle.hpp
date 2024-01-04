@@ -62,6 +62,8 @@ private:
 public:
   void run();
 
+  void send_click_event(module_api::click_event &&click_event);
+
   module_id::type get_id() const;
   const std::string &get_name() const;
   const std::string &get_file_path() const;
