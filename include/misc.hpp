@@ -28,8 +28,11 @@ namespace constexpr_hash_string {
 // at compile time
 
 constexpr std::size_t hash(const std::string &str);
+constexpr std::size_t hash(const char *str);
 
 namespace impl {
+static constexpr std::size_t g_k_default_seed{0xc70f6907UL};
+
 template <std::size_t sizeof_size_t> struct hash {
   static constexpr std::size_t do_hash(const char *ptr, std::size_t len,
                                        std::size_t seed);
@@ -45,6 +48,7 @@ template <> struct hash<8> {
                                        std::size_t sed);
 };
 
+inline constexpr std::size_t strlen(const char *str);
 inline std::size_t unaligned_load(const char *p);
 template <typename T = void>
 inline constexpr std::size_t unaligned_load_c(const char *p);
@@ -53,8 +57,16 @@ inline constexpr std::size_t shift_mix(std::size_t v);
 } // namespace impl
 
 constexpr std::size_t hash(const std::string &str) {
+  return impl::hash<sizeof(std::size_t)>::do_hash(str.data(), str.size(),
+                                                  impl::g_k_default_seed);
+}
+
+constexpr std::size_t hash(const char *str) {
   return impl::hash<sizeof(std::size_t)>::do_hash(
-      str.data(), str.size(), static_cast<std::size_t>(0xc70f6907UL));
+      str,
+      ((std::is_constant_evaluated()) ? (impl::strlen(str))
+                                      : (std::strlen(str))),
+      impl::g_k_default_seed);
 }
 
 template <std::size_t sizeof_size_t>
@@ -134,6 +146,14 @@ constexpr std::size_t impl::hash<8>::do_hash(const char *ptr, std::size_t len,
   hash = shift_mix(hash) * mul;
   hash = shift_mix(hash);
   return hash;
+}
+
+inline constexpr std::size_t impl::strlen(const char *str) {
+  const char *end{str};
+  while (*end != '\0') {
+    ++end;
+  }
+  return end - str;
 }
 
 inline std::size_t impl::unaligned_load(const char *p) {
