@@ -1,5 +1,8 @@
 #include "simple_date.hpp"
 
+#include "module_api.hpp"
+#include "module_base.hpp"
+
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
