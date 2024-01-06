@@ -1,6 +1,6 @@
 #include "config_file.hpp"
 
-#include "misc.hpp"
+#include "program_constants.hpp"
 
 #include <cstdlib>
 #include <exception>
@@ -57,7 +57,8 @@ config_file::parsed config_file::read(const std::filesystem::path &file_path) {
 
 config_file::parsed config_file::read() {
   static const std::string file_name_short{"config"};
-  static const std::string file_name_long{misc::g_k_program_name + ".conf"};
+  static const std::string file_name_long{program_constants::g_k_name +
+                                          ".conf"};
 
   static const char *env_home{std::getenv("HOME")};
   if (env_home == nullptr) {
