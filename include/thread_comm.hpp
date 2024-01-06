@@ -1,7 +1,7 @@
 #ifndef THREAD_COMM_HPP
 #define THREAD_COMM_HPP
 
-#include <generic_callback.hpp>
+#include "generic_callback.hpp"
 
 #include <atomic>
 #include <compare>
