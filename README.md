@@ -1,7 +1,27 @@
 # i3neostatus
 
-## Notice
-This repository is in the process of being converted from a collection of blocklets for [i3blocks](https://github.com/vivien/i3blocks) to a complete [i3status](https://github.com/i3/i3status) alternative. In the meantime, you should probably avoid using it.
+## About
+i3neostatus is a powerful and modular i3status replacement.
+
+## Installation
+Acquire the sources
+```
+$ git clone https://github.com/jasper1378/i3neostatus.git
+$ cd i3neostatus
+```
+Build
+```
+$ make
+```
+Install
+```
+$ make install
+```
+
+## Usage
+i3neostatus is a replacement for i3status that provides a way to display a status line on bars that support the i3bar protocol. Unlike i3status, the design of i3neostatus emphasizes support for third-party modules and asynchronous updates. i3neostatus aims to posses full feature parity with i3status (and then some) while maintaining a high degree of efficiency.
+
+### Command-line options
 
 ## License
 See [LICENSE.md](LICENSE.md) for details.
