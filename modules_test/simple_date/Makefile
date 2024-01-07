@@ -10,7 +10,7 @@ RELEASE_LINK_FLAGS :=
 DEBUG_LINK_FLAGS :=
 SOURCE_FILE_EXT := .cpp
 HEADER_FILE_EXT := .hpp
-SOURCE_DIRS := ./src
+SOURCE_DIRS := ./source
 # TODO FIXME vvv
 INCLUDE_DIRS := ./include ../../include ../../submodules/libconfigfile/include
 SUBMODULE_DIR := ./submodules
