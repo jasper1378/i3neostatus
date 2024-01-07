@@ -125,11 +125,15 @@ config_file::parsed config_file::impl::read(
         } break;
         };
       }};
+
   const auto error_helper_invalid_option{
       [file_path](const std::string &option) -> error {
-        return error{"invalid option :\"" + option + "\"", file_path};
+        return error{"invalid option: \"" + option + "\"", file_path};
       }};
-
+  const auto error_helper_missing_option{
+      [file_path](const std::string &option) -> error {
+        return error{"missing option: \"" + option + "\"", file_path};
+      }};
   const auto error_helper_invalid_data_type_for{
       [&file_path, &libconfigfile_node_ptr_type_to_str](
           const std::string &option,
@@ -146,6 +150,8 @@ config_file::parsed config_file::impl::read(
                          libconfigfile_node_ptr_type_to_str(valid_type) + ")",
                      file_path};
       }};
+
+  static constexpr char nested_option_separator_char{'/'};
 
   if (!std::filesystem::exists(file_path)) {
     throw error{"configuration file does not exist", file_path};
@@ -192,7 +198,9 @@ config_file::parsed config_file::impl::read(
                             std::move(ptr3->second))));
                   } else {
                     throw error_helper_invalid_data_type_for(
-                        ptr3->first, libconfigfile::node_type::String);
+                        (option_str_modules + nested_option_separator_char +
+                         ptr3->first),
+                        libconfigfile::node_type::String);
                   }
                 } else if (ptr3->first == option_str_modules_config) {
                   if (ptr3->second->get_node_type() ==
@@ -203,11 +211,21 @@ config_file::parsed config_file::impl::read(
                             std::move(ptr3->second)));
                   } else {
                     throw error_helper_invalid_data_type_for(
-                        ptr3->first, libconfigfile::node_type::Map);
+                        (option_str_modules + nested_option_separator_char +
+                         ptr3->first),
+                        libconfigfile::node_type::Map);
                   }
                 } else {
-                  throw error_helper_invalid_option(ptr3->first);
+                  throw error_helper_invalid_option(
+                      (option_str_modules + nested_option_separator_char +
+                       ptr3->first));
                 }
+              }
+              if (parsed.modules[std::distance(ptr1_array->begin(), ptr2)]
+                      .file_path.empty()) {
+                throw error_helper_missing_option(
+                    (option_str_modules + nested_option_separator_char +
+                     option_str_modules_path));
               }
             } else {
               throw error_helper_invalid_data_type_in(
