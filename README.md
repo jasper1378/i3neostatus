@@ -37,6 +37,23 @@ i3neostatus is a replacement for i3status that provides a way to display a statu
         3. `~/.i3neostatus.conf`
         4. `/etc/i3neostatus.conf`
 
+### Configuration
+
+The basic idea of i3neostatus is that you can specify which "modules" should be used. You can then configure each module with its own section. Note that i3neostatus uses the [libconfigfile](https://github.com/jasper1378/libconfigfile) syntax specification for its configuration file. Each module specified must have a `path` string.
+
+#### Sample configuration
+
+```
+general = {
+};
+
+modules = [
+];
+```
+
+### Available modules
+
+### Module development
 
 Please note that the wording of some parts of this documentation has been lifted from i3status due to the similarity in functionality and my hatred for writing documentation :) .
 
