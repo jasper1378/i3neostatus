@@ -34,9 +34,6 @@ constexpr std::size_t hash(const char *str);
 namespace impl {
 static constexpr std::size_t g_k_default_seed{0xc70f6907UL};
 
-constexpr std::size_t do_hash(const std::string &str);
-constexpr std::size_t do_hash(const char *str);
-
 template <std::size_t sizeof_size_t> struct hash {
   static constexpr std::size_t do_hash(const char *ptr, std::size_t len,
                                        std::size_t seed);
@@ -61,29 +58,13 @@ inline constexpr std::size_t shift_mix(std::size_t v);
 } // namespace impl
 
 constexpr std::size_t hash(const std::string &str) {
-  return impl::do_hash(str);
+  return impl::hash<sizeof(std::size_t)>::do_hash(str.data(), str.size(),
+                                                  impl::g_k_default_seed);
 }
 
-constexpr std::size_t hash(const char *str) { return impl::do_hash(str); }
-
-constexpr std::size_t impl::do_hash(const std::string &str) {
-  if (std::is_constant_evaluated()) {
-    return impl::hash<sizeof(std::size_t)>::do_hash(str.data(), str.size(),
-                                                    impl::g_k_default_seed);
-  } else {
-    std::hash<std::string> hash{};
-    return hash(str);
-  }
-}
-
-constexpr std::size_t impl::do_hash(const char *str) {
-  if (std::is_constant_evaluated()) {
-    return impl::hash<sizeof(std::size_t)>::do_hash(str, impl::strlen(str),
-                                                    impl::g_k_default_seed);
-  } else {
-    std::hash<std::string_view> hash{};
-    return hash(std::string_view{str});
-  }
+constexpr std::size_t hash(const char *str) {
+  return impl::hash<sizeof(std::size_t)>::do_hash(str, impl::strlen(str),
+                                                  impl::g_k_default_seed);
 }
 
 template <std::size_t sizeof_size_t>
