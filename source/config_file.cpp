@@ -94,9 +94,13 @@ config_file::parsed config_file::read() {
   }
 }
 
-config_file::parsed config_file::impl::read(
+config_file::parsed config_file::impl::read(const std::string &file_path) {
 
-    const std::string &file_path) {
+  static const std::filesystem::path builtin_module_install_path{
+      program_constants::g_k_install_path / "lib"};
+  static constexpr char builtin_module_prefix_remove{'_'};
+  static constexpr std::string builtin_module_suffix_add{".so"};
+
   static constexpr std::string option_str_general{"general"};
   static constexpr std::string option_str_modules{"modules"};
   static constexpr std::string option_str_modules_path{"path"};
@@ -191,11 +195,19 @@ config_file::parsed config_file::impl::read(
                 if (ptr3->first == option_str_modules_path) {
                   if (ptr3->second->get_node_type() ==
                       libconfigfile::node_type::String) {
-                    parsed.modules[std::distance(ptr1_array->begin(), ptr2)]
-                        .file_path = libconfigfile::node_to_base(
+                    std::string file_path{libconfigfile::node_to_base(
                         std::move(*libconfigfile::node_ptr_cast<
                                   libconfigfile::string_node>(
-                            std::move(ptr3->second))));
+                            std::move(ptr3->second))))};
+                    if (file_path.front() == builtin_module_prefix_remove) {
+                      parsed.modules[std::distance(ptr1_array->begin(), ptr2)]
+                          .file_path =
+                          (builtin_module_install_path /
+                           (file_path.substr(1) + builtin_module_suffix_add));
+                    } else {
+                      parsed.modules[std::distance(ptr1_array->begin(), ptr2)]
+                          .file_path = std::move(file_path);
+                    }
                   } else {
                     throw error_helper_invalid_data_type_for(
                         (option_str_modules + nested_option_separator_char +

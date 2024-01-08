@@ -21,6 +21,10 @@ INSTALL_PATH := /usr/local
 
 ##########
 
+COMPILE_FLAGS += -DMAKE_INSTALL_PATH="\"$(INSTALL_PATH)\""
+
+##########
+
 SHELL := /bin/bash
 
 .SUFFIXES:
