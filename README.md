@@ -163,9 +163,18 @@ Currently no modules have been implemented :)
 
 ### Bar support
 
-Currently, i3neostatus only supports bars using the i3bar protocol. Support for dzen2, xmobar, and lemonbar may be implemented in the future.
+Currently, i3neostatus only supports bars using the i3bar protocol. Support for dzen2, xmobar, and lemonbar, etc. may be implemented in the future.
 
 ### Module development
+
+i3neostatus aims to deliver first-class support for third-party modules by simplifying development while still allowing a great degree of freedom. Modules are C++ shared objects that are then loaded by i3neostatus at runtime. The "built-in" modules that i3neostatus ships with are implemented identically to any third-party module, meaning that they can be used a reference during the development of your own module.
+
+The following will walk you through the development process step-by-step.
+
+Note that i3neostatus uses (libconfigfile)[https://github.com/jasper1378/libconfigfile] to interface with its configuration file. If you wish for your module to be user-configurable, an understanding of this library is recommended.
+
+Start by including the `i3neostatus/module_dev.hpp` header file. If i3neostatus has been installed to your system, this header should be found in `/usr/local/include` or something similar. This header contains all the declarations needed to interface with i3neostatus, including access to `libconfigfile`.
+
 
 ### Misc
 
