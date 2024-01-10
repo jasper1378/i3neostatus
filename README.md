@@ -47,6 +47,8 @@ Currently, there are no options implemented in `general`.
 
 Each element (map) in the modules section must contain a `path` option (string) which specifies the location of the module binary to load. This location may be substituted for the name of a built-in module prefixed with a underscore. Each element may also contain a `config` option (map) which will be forwarded to that module.
 
+Note that tildes in file paths handled by the i3neostatus itself will be resolved.
+
 #### Sample configuration
 
 ```
