@@ -55,6 +55,8 @@ parsed read(const std::filesystem::path &file_path);
 parsed read();
 
 namespace impl {
+std::string resolve_path(const std::string &file_path);
+std::string resolve_path(std::string &&file_path);
 parsed read(const std::string &file_path);
 libconfigfile::node_ptr<libconfigfile::map_node>
 libcf_parse_file_wrapper(const std::string &file_path);

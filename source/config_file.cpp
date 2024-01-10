@@ -1,5 +1,6 @@
 #include "config_file.hpp"
 
+#include "misc.hpp"
 #include "program_constants.hpp"
 
 #include <cstdlib>
@@ -44,15 +45,15 @@ config_file::error &config_file::error::operator=(const error &other) {
 const char *config_file::error::what() const noexcept { return base_t::what(); }
 
 config_file::parsed config_file::read(const char *file_path) {
-  return impl::read(file_path);
+  return impl::read(impl::resolve_path(file_path));
 }
 
 config_file::parsed config_file::read(const std::string &file_path) {
-  return impl::read(file_path);
+  return impl::read(impl::resolve_path(file_path));
 }
 
 config_file::parsed config_file::read(const std::filesystem::path &file_path) {
-  return impl::read(file_path.string());
+  return impl::read(impl::resolve_path(file_path.string()));
 }
 
 config_file::parsed config_file::read() {
@@ -94,8 +95,23 @@ config_file::parsed config_file::read() {
   }
 }
 
-config_file::parsed config_file::impl::read(const std::string &file_path) {
+std::string config_file::impl::resolve_path(const std::string &file_path) {
+  if (misc::resolve_tilde::would_resolve_tilde(file_path)) {
+    return misc::resolve_tilde::resolve_tilde(file_path);
+  } else {
+    return file_path;
+  }
+}
 
+std::string config_file::impl::resolve_path(std::string &&file_path) {
+  if (misc::resolve_tilde::would_resolve_tilde(file_path)) {
+    return misc::resolve_tilde::resolve_tilde(file_path);
+  } else {
+    return file_path;
+  }
+}
+
+config_file::parsed config_file::impl::read(const std::string &file_path) {
   static const std::filesystem::path builtin_module_install_path{
       program_constants::g_k_install_path / "lib"};
   static constexpr char builtin_module_prefix_remove{'_'};
@@ -131,11 +147,11 @@ config_file::parsed config_file::impl::read(const std::string &file_path) {
       }};
 
   const auto error_helper_invalid_option{
-      [file_path](const std::string &option) -> error {
+      [&file_path](const std::string &option) -> error {
         return error{"invalid option: \"" + option + "\"", file_path};
       }};
   const auto error_helper_missing_option{
-      [file_path](const std::string &option) -> error {
+      [&file_path](const std::string &option) -> error {
         return error{"missing option: \"" + option + "\"", file_path};
       }};
   const auto error_helper_invalid_data_type_for{
@@ -195,18 +211,21 @@ config_file::parsed config_file::impl::read(const std::string &file_path) {
                 if (ptr3->first == option_str_modules_path) {
                   if (ptr3->second->get_node_type() ==
                       libconfigfile::node_type::String) {
-                    std::string file_path{libconfigfile::node_to_base(
+                    std::string module_file_path{libconfigfile::node_to_base(
                         std::move(*libconfigfile::node_ptr_cast<
                                   libconfigfile::string_node>(
                             std::move(ptr3->second))))};
-                    if (file_path.front() == builtin_module_prefix_remove) {
+                    if (module_file_path.front() ==
+                        builtin_module_prefix_remove) {
                       parsed.modules[std::distance(ptr1_array->begin(), ptr2)]
                           .file_path =
-                          (builtin_module_install_path /
-                           (file_path.substr(1) + builtin_module_suffix_add));
+                          resolve_path(builtin_module_install_path /
+                                       (module_file_path.substr(1) +
+                                        builtin_module_suffix_add));
                     } else {
                       parsed.modules[std::distance(ptr1_array->begin(), ptr2)]
-                          .file_path = std::move(file_path);
+                          .file_path =
+                          resolve_path(std::move(module_file_path));
                     }
                   } else {
                     throw error_helper_invalid_data_type_for(
