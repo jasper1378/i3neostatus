@@ -10,6 +10,10 @@
 #include <type_traits>
 
 namespace misc {
+namespace resolve_tilde {
+bool would_resolve_tilde(const std::string &str);
+std::string resolve_tilde(const std::string &str);
+} // namespace resolve_tilde
 
 namespace constexpr_minmax {
 template <typename T> consteval auto max(const T &t) { return t; }
