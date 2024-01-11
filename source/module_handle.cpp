@@ -71,7 +71,15 @@ module_handle::module_handle(module_handle &&other) noexcept
       m_thread{std::move(other.m_thread)} {}
 
 module_handle::~module_handle() {
-  m_module->term();
+  try {
+    m_module->term();
+  } catch (const std::exception &ex) {
+    m_thread_comm_producer.put_exception(std::make_exception_ptr(
+        module_error{m_id, m_name, m_file_path, ex.what()}));
+  } catch (...) {
+    m_thread_comm_producer.put_exception(std::make_exception_ptr(
+        module_error{m_id, m_name, m_file_path, "UNKNOWN"}));
+  }
   m_thread.join();
 }
 
