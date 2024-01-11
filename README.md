@@ -226,7 +226,7 @@ There are four main data structures that will be passed between i3neostatus and 
 
 `module_api::config_in` represents the user configuration of your module (see [Configuration](#configuration)). It is an alias for `libconfigfile::map_node`.
 
-`module_api::config_out` represents the information about your module that will be passed back to i3neostatus. It is a `struct` containing the following members.
+`module_api::config_out` represents the information about your module that will be passed back to i3neostatus. It is a struct containing the following members.
 ```cpp
 struct config_out {
     std::string name // The name of your module (valid characters are [A-Za-z_-])
@@ -234,7 +234,7 @@ struct config_out {
 };
 ```
 
-`module_api::block` represents a unit information that will be displayed on the status line. The fields of this `struct` correspond to the fields of the same name in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
+`module_api::block` represents a unit information that will be displayed on the status line. The fields of this struct correspond to the fields of the same name in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
 ```cpp
 struct block {
     std::string full_text;
@@ -255,7 +255,7 @@ struct block {
 };
 ```
 
-`module_api::click_event` represents the information sent when a user clicks on a block. The fields of this `struct` correspond to the fields of the same name in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
+`module_api::click_event` represents the information sent when a user clicks on a block. The fields of this struct correspond to the fields of the same name in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
 ```cpp
 struct click_event {
     pixel_count_t x;
@@ -270,6 +270,8 @@ struct click_event {
     std::vector<std::string> modifiers;
 };
 ```
+
+Note that the `pixel_count_t` data type in the above structs is an alias for a signed integer type (currently `long`).
 
 When fully completed, your module should look something like the following.
 
