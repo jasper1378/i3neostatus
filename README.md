@@ -204,8 +204,8 @@ Your module class must be default constructible. It's recommended that this cons
 
 ```cpp
 class module_test : public module_base {
-  public:
-    module_test();
+public:
+  module_test();
 };
 ```
 
@@ -213,8 +213,8 @@ Just like any other child class, your module class must have a virtual destructo
 
 ```cpp
 class module_test : public module_base {
-  public:
-    virtual ~module_test();
+public:
+  virtual ~module_test();
 };
 ```
 
@@ -229,49 +229,93 @@ There are four main data structures that will be passed between i3neostatus and 
 `module_api::config_out` represents the information about your module that will be passed back to i3neostatus. It is a struct containing the following members.
 ```cpp
 struct config_out {
-    std::string name // The name of your module (valid characters are [A-Za-z_-])
-    bool click_events_enabled // Whether click events will be sent to your module
+  std::string name // The name of your module (valid characters are [A-Za-z_-])
+  bool click_events_enabled // Whether click events will be sent to your module
 };
 ```
 
-`module_api::block` represents a unit information that will be displayed on the status line. The fields of this struct correspond to the fields of the same name in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
+`module_api::block` represents a unit of information that will be displayed on the status line. The fields of this struct correspond to the fields of the same name in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
 ```cpp
 struct block {
-    std::string full_text;
-    std::optional<std::string> short_text;
-    std::optional<std::string> color;
-    std::optional<std::string> background;
-    std::optional<std::string> border;
-    std::optional<pixel_count_t> border_top;
-    std::optional<pixel_count_t> border_right;
-    std::optional<pixel_count_t> border_bottom;
-    std::optional<pixel_count_t> border_left;
-    std::optional<std::variant<pixel_count_t, std::string>> min_width;
-    std::optional<std::string> align;
-    std::optional<bool> urgent;
-    std::optional<bool> separator;
-    std::optional<pixel_count_t> separator_block_width;
-    std::optional<std::string> markup;
+  std::string full_text;
+  std::optional<std::string> short_text;
+  std::optional<std::string> color;
+  std::optional<std::string> background;
+  std::optional<std::string> border;
+  std::optional<pixel_count_t> border_top;
+  std::optional<pixel_count_t> border_right;
+  std::optional<pixel_count_t> border_bottom;
+  std::optional<pixel_count_t> border_left;
+  std::optional<std::variant<pixel_count_t, std::string>> min_width;
+  std::optional<std::string> align;
+  std::optional<bool> urgent;
+  std::optional<bool> separator;
+  std::optional<pixel_count_t> separator_block_width;
+  std::optional<std::string> markup;
 };
 ```
 
 `module_api::click_event` represents the information sent when a user clicks on a block. The fields of this struct correspond to the fields of the same name in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
 ```cpp
 struct click_event {
-    pixel_count_t x;
-    pixel_count_t y;
-    int button;
-    pixel_count_t relative_x;
-    pixel_count_t relative_y;
-    pixel_count_t output_x;
-    pixel_count_t output_y;
-    pixel_count_t width;
-    pixel_count_t height;
-    std::vector<std::string> modifiers;
+  pixel_count_t x;
+  pixel_count_t y;
+  int button;
+  pixel_count_t relative_x;
+  pixel_count_t relative_y;
+  pixel_count_t output_x;
+  pixel_count_t output_y;
+  pixel_count_t width;
+  pixel_count_t height;
+  std::vector<std::string> modifiers;
 };
 ```
 
 Note that the `pixel_count_t` data type in the above structs is an alias for a signed integer type (currently `long`).
+
+The `module_api` class is default constructible and movable, but not copyable. Your module should never have to create a new instance of `module_api`.
+
+There are two primary API functions that will be called by your module.
+
+The first is `module_api::put_block()`, which is used by your module to post new information to the status line.
+```cpp
+void module_api::put_block(const block& block);
+void module_apu::put_block(block&& block);
+```
+
+The second is `module_api::put_error()`, which is used by your module to communicate an error to i3neostatus. Note that once `module_api::put_error()` has been called, no further calls to `module_api::put_block()` or `module_api::put_exception()` should be made.
+```cpp
+void module_api::put_error(const std::exception_ptr& error);
+void module_api::put_error(std::exception_ptr&& error);
+```
+
+Returning to your module, there are several virtual functions in `module_base` that must be overriden by your class. Any exceptions thrown in these functions will be handled appropriately (as if by `module_api::put_error()`).
+
+The first is `init()`, which should verify user configuration and initialize your module.
+```cpp
+class module_test : public module_base {
+private:
+  module_api m_api;
+
+public:
+  virtual module_api::config_out init(module_api &&api, module_api::config_in &&config) override {
+    // store API instance
+    m_api = std::move(api);
+
+    // verify user configuration
+    if (...)
+        // ...
+    } else {
+      throw std::runtime_error{"invalid configuration"};
+    }
+
+    // return module information
+    return {"module_test", true};
+  }
+};
+```
+
+The next is `run()`, which is the main update loop of your module. TODO
 
 When fully completed, your module should look something like the following.
 
