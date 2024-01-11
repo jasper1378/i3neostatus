@@ -228,41 +228,47 @@ There are four main data structures that will be passed between i3neostatus and 
 
 `module_api::config_out` represents the information about your module that will be passed back to i3neostatus. It is a `struct` containing the following members.
 ```cpp
-std::string name // The name of your module (valid characters are [A-Za-z_-])
-bool click_events_enabled // Whether click events will be sent to your module
+struct config_out {
+    std::string name // The name of your module (valid characters are [A-Za-z_-])
+    bool click_events_enabled // Whether click events will be sent to your module
+};
 ```
 
 `module_api::block` represents a unit information that will be displayed on the status line. The fields of this `struct` correspond to the fields of the same name in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
 ```cpp
-std::string full_text;
-std::optional<std::string> short_text;
-std::optional<std::string> color;
-std::optional<std::string> background;
-std::optional<std::string> border;
-std::optional<pixel_count_t> border_top;
-std::optional<pixel_count_t> border_right;
-std::optional<pixel_count_t> border_bottom;
-std::optional<pixel_count_t> border_left;
-std::optional<std::variant<pixel_count_t, std::string>> min_width;
-std::optional<std::string> align;
-std::optional<bool> urgent;
-std::optional<bool> separator;
-std::optional<pixel_count_t> separator_block_width;
-std::optional<std::string> markup;
+struct block {
+    std::string full_text;
+    std::optional<std::string> short_text;
+    std::optional<std::string> color;
+    std::optional<std::string> background;
+    std::optional<std::string> border;
+    std::optional<pixel_count_t> border_top;
+    std::optional<pixel_count_t> border_right;
+    std::optional<pixel_count_t> border_bottom;
+    std::optional<pixel_count_t> border_left;
+    std::optional<std::variant<pixel_count_t, std::string>> min_width;
+    std::optional<std::string> align;
+    std::optional<bool> urgent;
+    std::optional<bool> separator;
+    std::optional<pixel_count_t> separator_block_width;
+    std::optional<std::string> markup;
+};
 ```
 
 `module_api::click_event` represents the information sent when a user clicks on a block. The fields of this `struct` correspond to the fields of the same name in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
 ```cpp
-pixel_count_t x;
-pixel_count_t y;
-int button;
-pixel_count_t relative_x;
-pixel_count_t relative_y;
-pixel_count_t output_x;
-pixel_count_t output_y;
-pixel_count_t width;
-pixel_count_t height;
-std::vector<std::string> modifiers;
+struct click_event {
+    pixel_count_t x;
+    pixel_count_t y;
+    int button;
+    pixel_count_t relative_x;
+    pixel_count_t relative_y;
+    pixel_count_t output_x;
+    pixel_count_t output_y;
+    pixel_count_t width;
+    pixel_count_t height;
+    std::vector<std::string> modifiers;
+};
 ```
 
 When fully completed, your module should look something like the following.
