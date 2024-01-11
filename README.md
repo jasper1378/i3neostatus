@@ -45,7 +45,7 @@ The configuration file has two main sections: `general` (map), which contains gl
 
 Currently, there are no options implemented in `general`.
 
-Each element (map) in the modules section must contain a `path` option (string) which specifies the location of the module binary to load. This location may be substituted for the name of a built-in module prefixed with a underscore. Each element may also contain a `config` option (map) which will be forwarded to that module.
+Each element (map) in the modules section must contain a `path` option (string) which specifies the location of the module binary to load. This location may be substituted for the name of a built-in module prefixed with a underscore. Each element may also contain a `config` option (map) which will be forwarded to that module as its configuration.
 
 Note that tildes in file paths handled by the i3neostatus itself will be resolved.
 
@@ -175,6 +175,90 @@ Note that i3neostatus uses (libconfigfile)[https://github.com/jasper1378/libconf
 
 Start by including the `i3neostatus/module_dev.hpp` header file. If i3neostatus has been installed to your system, this header should be found in `/usr/local/include` or something similar. This header contains all the declarations needed to interface with i3neostatus, including access to `libconfigfile`.
 
+```cpp
+#include <i3neostatus/module_dev.hpp>
+```
+
+The basic structure of a module is a class that inherits from `module_base`.
+
+```cpp
+class module_test : public module_base {
+};
+```
+
+Before we start implementing the `module_test` class, i3neostatus needs a way to create and destroy instances of your module. This is accomplished by defining a pair of allocator and deleter functions in the global namespace of your module. Note that these functions are wrapped in an `extern "C"` block to prevent name mangling issues when i3neostatus loads you module.
+
+```cpp
+extern "C" {
+module_base* allocator() {
+  return new module_test{};
+}
+
+void deleter(module_base *m) {
+  delete m;
+}
+}
+```
+
+Your module class must be default constructible. It's recommended that this constructor does little to nothing; proper initialization of your module will be preformed later.
+
+```cpp
+class module_test : public module_base {
+  public:
+    module_test();
+};
+```
+
+Just like any other child class, your module class must have a virtual destructor. It's recommended that this destructor does little to nothing; proper termination of your module will be preformed earlier.
+
+```cpp
+class module_test : public module_base {
+  public:
+    virtual ~module_test();
+};
+```
+
+Your module class does not need to be copyable or movable, these operations will never be preformed.
+
+The primary way your module will communicate with i3neostatus is through the `module_api` class. Your module will receive an instance of this class during its initialization. Thus, we should familiarize ourselves with its interface before proceeding further.
+
+There are four main data structures that will be passed between i3neostatus and your module.
+
+`module_api::config_in` represents the user configuration of your module (see [Configuration](#configuration)). It is an alias for `libconfigfile::map_node`.
+
+`module_api::config_out` represents the information about your module that will be passed back to i3neostatus. It is a `struct` containing the following members.
+- `std::string name`
+    - 
+- `bool click_events_enabled`
+    -
+
+
+When fully completed, your module should look something like the following.
+
+```cpp
+// module_test.cpp
+
+#include <i3neostatus/module_dev.hpp>
+
+class module_test : public module_base {
+  public:
+    module_test() {
+    }
+
+    virtual ~module_test() {
+    }
+};
+
+extern "C" {
+module_base* allocator() {
+  return new module_test{};
+}
+
+void deleter(module_base *m) {
+  delete m;
+}
+}
+```
 
 ### Misc
 
