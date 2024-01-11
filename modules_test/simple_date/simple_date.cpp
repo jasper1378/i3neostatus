@@ -32,7 +32,6 @@ private:
 
 private:
   module_api m_api;
-  module_api::config_in m_config;
   std::string m_format;
   std::atomic<const std::string *> m_color;
   state m_state;
@@ -41,8 +40,8 @@ private:
 
 public:
   simple_date()
-      : m_api{}, m_config{}, m_format{}, m_color{&m_k_color_a},
-        m_state{state::cont}, m_state_mtx{}, m_state_cv{} {}
+      : m_api{}, m_format{}, m_color{&m_k_color_a}, m_state{state::cont},
+        m_state_mtx{}, m_state_cv{} {}
 
   virtual ~simple_date() {}
 
@@ -50,11 +49,10 @@ public:
   virtual module_api::config_out init(module_api &&api,
                                       module_api::config_in &&config) override {
     m_api = std::move(api);
-    m_config = std::move(config);
 
     if (libconfigfile::node_ptr<libconfigfile::node> np;
-        ((m_config.size() == 1 && m_config.contains("format")) &&
-         ((np = m_config.at("format"))->get_node_type() ==
+        ((config.size() == 1 && config.contains("format")) &&
+         ((np = config.at("format"))->get_node_type() ==
           libconfigfile::node_type::String))) {
       m_format = libconfigfile::node_to_base(
           *libconfigfile::node_ptr_cast<libconfigfile::string_node>(np));
