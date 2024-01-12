@@ -535,7 +535,7 @@ void deleter(module_base *m) {
 }
 ```
 
-The final step is to compile your module to a shared object that can be loaded by i3neostatus. If using GCC, the following command should do the trick.
+The final step is to compile your module to a shared object that can be loaded by i3neostatus. i3neostatus uses C++20, your module should as well. If using GCC, the following command should do the trick.
 ```
 g++ -std=c++20 -Wall -Wextra -g -O2 -fPIC -shared module_test.cpp -o module_test
 ```
