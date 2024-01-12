@@ -173,6 +173,8 @@ The following will walk you through the development process step-by-step.
 
 Note that i3neostatus uses (libconfigfile)[https://github.com/jasper1378/libconfigfile] to interface with its configuration file. If you wish for your module to be user-configurable, an understanding of this library is recommended.
 
+Throughout the following `module_test` will serve as a stand-in for the name of your module.
+
 Start by including the `i3neostatus/module_dev.hpp` header file. If i3neostatus has been installed to your system, this header should be found in `/usr/local/include` or something similar. This header contains all the declarations needed to interface with i3neostatus, including access to `libconfigfile`.
 
 ```cpp
@@ -293,6 +295,10 @@ Returning to your module, there are several virtual functions in `module_base` t
 
 The first is `init()`, which should verify user configuration and initialize your module.
 ```cpp
+#include <exception>
+#include <stdexcept>
+#include <utility>
+
 class module_test : public module_base {
 private:
   module_api m_api;
@@ -303,7 +309,7 @@ public:
     m_api = std::move(api);
 
     // verify user configuration
-    if (...)
+    if (...) {
         // ...
     } else {
       throw std::runtime_error{"invalid configuration"};
@@ -315,22 +321,207 @@ public:
 };
 ```
 
-The next is `run()`, which is the main update loop of your module. TODO
+The next is `run()`, which is the main update loop of your module. This function will be executed concurrently in its own thread by i3neostatus.
+```cpp
+#include <utility>
+
+class module_test : public module_base {
+private:
+  module_api m_api;
+
+public:
+  virtual void run() override {
+    while (true) {
+      // wait for new info
+      // get new info
+
+      // post new info
+      module_api::block block{/*new info*/};
+      m_api.put_block(std::move(block));
+    }
+  }
+};
+```
+
+Then we have `term()`, which should signal `run()` to exit and preform any needed cleanup. Due to the nature of i3neostatus (typically runs until your computer is shut off), it is not guaranteed that this function will be called.
+```cpp
+class module_test : public module_base {
+public:
+  virtual void term() override {
+    // signal run() to exit
+    // cleanup
+  }
+};
+```
+
+Finally, there is `on_click_event()`, which will be called when someone clicks on your module.
+```cpp
+class module_test : public module_base {
+  virtual void on_click_event(module_api::click_event &&click_event) override {
+    // do something based on click event
+  }
+};
+```
+
+Because `run()` will be executed concurrently, some level of synchronization will likely be required in your module. Note that is is guaranteed that `init()` will exit before `run` is called and that `module_api::put_block()`/`module_api::put_error()` can be called simultaneously from multiple threads. The synchronization mechanism should at least provide a means for `term()` to signal `run()` to exit. You might also wish for `on_click_event()` to be able to wake `run()` to preform an update immediately. Though synchronization can be implemented however you wish, the following example provides a starting point.
+```cpp
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
+#include <utility>
+
+class module_test : public module_base {
+private:
+  enum class state {
+    cont,
+    wait,
+    stop,
+  };
+
+private:
+  state m_state;
+  std::mutex m_state_mtx;
+  std::condition_variable m_state_cv;
+
+public:
+  module_test()
+    : m_state{state::cont}, m_state_mtx{}, m_state_cv{}
+  {}
+
+public:
+  virtual void run() override {
+    while (true) {
+      // get new info
+
+      // post new info
+      module_api::block block{/*new info*/};
+      m_api.put_block(std::move(block));
+
+      // sleep for 1 second or until woken up to continue or exit
+      std::unique_lock<std::mutex> lock_m_state_mtx{m_state_mtx};
+      m_state = state::wait;
+      m_state_cv.wait_for(
+        lock_m_state_mtx, std::chrono::seconds{1},
+        [this]() -> bool { return m_state != state::wait; });
+     if (m_state == state::stop) {
+       break;
+     } else {
+       m_state = state::cont;
+     }
+    }
+  }
+
+  virtual void term() override {
+    // signal run() to exit
+    {
+      std::lock_guard<std::mutex> lock_m_state_mtx{m_state_mtx};
+      m_state = state::stop;
+    }
+    m_state_cv.notify_all();
+
+    // cleanup
+  }
+
+  virtual void on_click_event(module_api::click_event&& click_event) override  {
+    // do something based on click event
+
+    // signal run() to continue
+    {
+      std::lock_guard<std::mutex> lock_m_state_mtx{m_state_mtx};
+      m_state = state::cont;
+    }
+    m_state_cv.notify_all();
+  }
+};
+```
 
 When fully completed, your module should look something like the following.
-
 ```cpp
 // module_test.cpp
 
 #include <i3neostatus/module_dev.hpp>
 
+#include <chrono>
+#include <condition_variable>
+#include <exception>
+#include <mutex>
+#include <stdexcept>
+#include <utility>
+
 class module_test : public module_base {
-  public:
-    module_test() {
+private:
+  enum class state {
+    cont,
+    wait,
+    stop,
+  };
+
+private:
+  module_api m_api;
+  state m_state;
+  std::mutex m_state_mtx;
+  std::condition_variable m_state_cv;
+
+public:
+  module_test()
+    : m_api{}, m_state{state::cont}, m_state_mtx{}, m_state_cv{}
+  {}
+
+  virtual ~module_test() {
+  }
+
+public:
+  virtual module_api::config_out init(module_api&& api, module_api::config_in&& config) override {
+    m_api = std::move(api);
+
+    if (...) {
+      // verify configuration
+    } else {
+      throw std::runtime_error{"invalid configuration"};
     }
 
-    virtual ~module_test() {
+    return {"module_test", true};
+  }
+
+  virtual void run() override {
+    while (true) {
+      // get new info
+
+      module_api::block block{/*new info*/};
+      m_api.put_block(std::move(block));
+
+      std::unique_lock<std::mutex> lock_m_state_mtx{m_state_mtx};
+      m_state = state::wait;
+      m_state_cv.wait_for(
+        lock_m_state_mtx, std::chrono::seconds{1},
+        [this]() -> bool { return m_state != state::wait; });
+     if (m_state == state::stop) {
+       break;
+     } else {
+       m_state = state::cont;
+     }
     }
+  }
+
+  virtual void term() override {
+    {
+      std::lock_guard<std::mutex> lock_m_state_mtx{m_state_mtx};
+      m_state = state::stop;
+    }
+    m_state_cv.notify_all();
+
+    // cleanup
+  }
+
+  virtual void on_click_event(module_api::click_event&& click_event) override {
+    // do something based on click event
+
+    {
+      std::lock_guard<std::mutex> lock_m_state_mtx{m_state_mtx};
+      m_state = state::cont;
+    }
+    m_state_cv.notify_all();
+  }
 };
 
 extern "C" {
@@ -343,6 +534,13 @@ void deleter(module_base *m) {
 }
 }
 ```
+
+The final step is to compile your module to a shared object that can be loaded by i3neostatus. If using GCC, the following command should do the trick.
+```
+g++ -std=c++20 -Wall -Wextra -g -O2 -fPIC -shared module_test.cpp -o module_test
+```
+For more complex projects, I recommend using the Makefile found here: [generic-makefile/C++/library/Makefile](https://github.com/jasper1378/generic-makefile/blob/main/C%2B%2B/library/Makefile).
+This binary can be placed anywhere, however, `/usr/local/lib/i3neostatus_modules/module_test` is recommended for consistency between third-party modules.
 
 ### Misc
 
