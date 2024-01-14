@@ -15,8 +15,8 @@
 #include <thread>
 #include <utility>
 
-decltype(thread_comm::state_change_callback::func)
-    module_handle::m_s_thread_comm_state_change_callback{
+const decltype(thread_comm::state_change_callback::func)
+    module_handle::m_k_thread_comm_state_change_callback{
         [](void *userdata,
            thread_comm::shared_state_state::type state) -> void {
           state_change_callback *scc{
@@ -35,6 +35,11 @@ decltype(thread_comm::state_change_callback::func)
           }
         }};
 
+const thread_comm::shared_state_state::type
+    module_handle::m_k_state_change_subscribed_events{
+        thread_comm::shared_state_state::value |
+        thread_comm::shared_state_state::exception};
+
 module_handle::module_handle(const module_id::type id, std::string &&file_path,
                              libconfigfile::map_node &&conf,
                              state_change_callback &&state_change_callback)
@@ -42,8 +47,18 @@ module_handle::module_handle(const module_id::type id, std::string &&file_path,
       m_click_events_enabled{},
       m_state_change_callback{std::move(state_change_callback)},
       m_dyn_lib{m_file_path, dyn_load_lib::dlopen_flags::lazy},
-      m_module{nullptr, nullptr}, m_thread_comm_producer{},
-      m_thread_comm_consumer{}, m_thread{} {
+      m_module{nullptr, nullptr},
+      m_thread_comm_producer{
+          thread_comm::make<module_api::block, thread_comm::producer>(
+              {m_k_thread_comm_state_change_callback,
+               static_cast<void *>(&m_state_change_callback)},
+              m_k_state_change_subscribed_events)},
+      m_thread_comm_consumer{thread_comm::make_from<thread_comm::consumer>(
+          m_thread_comm_producer)},
+      m_thread_comm_producer_module{
+          thread_comm::make_from<thread_comm::producer>(
+              m_thread_comm_consumer)},
+      m_module_api{&m_thread_comm_producer_module}, m_module_thread{} {
   do_ctor(std::move(conf));
 }
 
@@ -54,8 +69,18 @@ module_handle::module_handle(const module_id::type id,
     : m_id{id}, m_name{}, m_file_path{file_path}, m_click_events_enabled{},
       m_state_change_callback{state_change_callback},
       m_dyn_lib{m_file_path, dyn_load_lib::dlopen_flags::lazy},
-      m_module{nullptr, nullptr}, m_thread_comm_producer{},
-      m_thread_comm_consumer{}, m_thread{} {
+      m_module{nullptr, nullptr},
+      m_thread_comm_producer{
+          thread_comm::make<module_api::block, thread_comm::producer>(
+              {m_k_thread_comm_state_change_callback,
+               static_cast<void *>(&m_state_change_callback)},
+              m_k_state_change_subscribed_events)},
+      m_thread_comm_consumer{thread_comm::make_from<thread_comm::consumer>(
+          m_thread_comm_producer)},
+      m_thread_comm_producer_module{
+          thread_comm::make_from<thread_comm::producer>(
+              m_thread_comm_consumer)},
+      m_module_api{&m_thread_comm_producer_module}, m_module_thread{} {
   do_ctor(std::remove_cvref_t<decltype(conf)>{conf});
 }
 
@@ -68,7 +93,10 @@ module_handle::module_handle(module_handle &&other) noexcept
       m_module{std::move(other.m_module)},
       m_thread_comm_producer{std::move(other.m_thread_comm_producer)},
       m_thread_comm_consumer{std::move(other.m_thread_comm_consumer)},
-      m_thread{std::move(other.m_thread)} {}
+      m_thread_comm_producer_module{
+          std::move(other.m_thread_comm_producer_module)},
+      m_module_api{std::move(other.m_module_api)},
+      m_module_thread{std::move(other.m_module_thread)} {}
 
 module_handle::~module_handle() {
   try {
@@ -80,7 +108,7 @@ module_handle::~module_handle() {
     m_thread_comm_producer.put_exception(std::make_exception_ptr(
         module_error{m_id, m_name, m_file_path, "UNKNOWN"}));
   }
-  m_thread.join();
+  m_module_thread.join();
 }
 
 module_handle &module_handle::operator=(module_handle &&other) noexcept {
@@ -94,7 +122,10 @@ module_handle &module_handle::operator=(module_handle &&other) noexcept {
     m_module = std::move(other.m_module);
     m_thread_comm_producer = std::move(other.m_thread_comm_producer);
     m_thread_comm_consumer = std::move(other.m_thread_comm_consumer);
-    m_thread = std::move(other.m_thread);
+    m_thread_comm_producer_module =
+        std::move(other.m_thread_comm_producer_module);
+    m_module_api = std::move(other.m_module_api);
+    m_module_thread = std::move(other.m_module_thread);
   }
   return *this;
 }
@@ -111,21 +142,11 @@ void module_handle::do_ctor(libconfigfile::map_node &&conf) {
     throw module_error{m_id, "UNKNOWN", m_file_path, "allocator() failed"};
   }
 
-  thread_comm::t_pair<module_api::block> tc_pair{
-      thread_comm::make_pair<module_api::block>(
-          {m_s_thread_comm_state_change_callback,
-           static_cast<void *>(&m_state_change_callback)},
-          thread_comm::shared_state_state::value |
-              thread_comm::shared_state_state::exception)};
-  m_thread_comm_producer = std::move(tc_pair.first);
-  module_api mod_api{
-      m_thread_comm_producer,
-  };
-  m_thread_comm_consumer = std::move(tc_pair.second);
+  module_api mod_api{&m_thread_comm_producer_module};
 
   try {
     module_api::config_out conf_out{
-        m_module->init(std::move(mod_api), std::move(conf))};
+        m_module->init(&m_module_api, std::move(conf))};
     m_name = std::move(conf_out.name);
     m_click_events_enabled = conf_out.click_events_enabled;
 
@@ -145,7 +166,7 @@ void module_handle::do_ctor(libconfigfile::map_node &&conf) {
 }
 
 void module_handle::run() {
-  m_thread = std::thread{[this]() {
+  m_module_thread = std::thread{[this]() {
     try {
       m_module->run();
     } catch (const std::exception &ex) {

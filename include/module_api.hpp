@@ -7,7 +7,10 @@
 
 #include <exception>
 #include <string>
-#include <utility>
+
+namespace thread_comm {
+template <typename t_value> class producer;
+}
 
 class module_api {
 public:
@@ -24,12 +27,10 @@ public:
   using click_event = struct i3bar_data::click_event::content;
 
 private:
-  thread_comm::producer<block> m_thread_comm_producer;
+  thread_comm::producer<block> *m_thread_comm_producer;
 
 public:
-  module_api();
-  module_api(const thread_comm::producer<block> &thread_comm_producer);
-  module_api(thread_comm::producer<block> &&thread_comm_producer);
+  module_api(thread_comm::producer<block> *thread_comm_producer);
   module_api(module_api &&other) noexcept;
   module_api(const module_api &other) = delete;
 

@@ -222,7 +222,7 @@ public:
 
 Your module class does not need to be copyable or movable, these operations will never be preformed.
 
-The primary way your module will communicate with i3neostatus is through the `module_api` class. Your module will receive an instance of this class during its initialization. Thus, we should familiarize ourselves with its interface before proceeding further.
+The primary way your module will communicate with i3neostatus is through the `module_api` class. Your module will receive a pointer to an instance of this class during its initialization. Thus, we should familiarize ourselves with its interface before proceeding further.
 
 There are four main data structures that will be passed between i3neostatus and your module.
 
@@ -275,7 +275,7 @@ struct click_event {
 
 Note that the `pixel_count_t` data type in the above structs is an alias for a signed integer type (currently `long`).
 
-The `module_api` class is default constructible and movable, but not copyable. Your module should never have to create a new instance of `module_api`.
+The `module_api` class is movable but not copyable. Your module should never have to create a new instance of `module_api`.
 
 There are two primary API functions that will be called by your module.
 
@@ -301,12 +301,12 @@ The first is `init()`, which should verify user configuration and initialize you
 
 class module_test : public module_base {
 private:
-  module_api m_api;
+  module_api* m_api;
 
 public:
-  virtual module_api::config_out init(module_api &&api, module_api::config_in &&config) override {
-    // store API instance
-    m_api = std::move(api);
+  virtual module_api::config_out init(module_api* api, module_api::config_in&& config) override {
+    // store pointer to API instance
+    m_api = api;
 
     // verify user configuration
     if (...) {
@@ -327,7 +327,7 @@ The next is `run()`, which is the main update loop of your module. This function
 
 class module_test : public module_base {
 private:
-  module_api m_api;
+  module_api* m_api;
 
 public:
   virtual void run() override {
@@ -337,7 +337,7 @@ public:
 
       // post new info
       module_api::block block{/*new info*/};
-      m_api.put_block(std::move(block));
+      m_api->put_block(std::move(block));
     }
   }
 };
@@ -354,7 +354,7 @@ public:
 };
 ```
 
-Finally, there is `on_click_event()`, which will be called when someone clicks on your module.
+Finally, there is `on_click_event()`, which will be called when someone clicks on your module. This function only needs to be overriden if you want to receive click events.
 ```cpp
 class module_test : public module_base {
   virtual void on_click_event(module_api::click_event &&click_event) override {
@@ -379,6 +379,7 @@ private:
   };
 
 private:
+  module_api* m_api;
   state m_state;
   std::mutex m_state_mtx;
   std::condition_variable m_state_cv;
@@ -395,7 +396,7 @@ public:
 
       // post new info
       module_api::block block{/*new info*/};
-      m_api.put_block(std::move(block));
+      m_api->put_block(std::move(block));
 
       // sleep for 1 second or until woken up to continue or exit
       std::unique_lock<std::mutex> lock_m_state_mtx{m_state_mtx};
@@ -457,7 +458,7 @@ private:
   };
 
 private:
-  module_api m_api;
+  module_api* m_api;
   state m_state;
   std::mutex m_state_mtx;
   std::condition_variable m_state_cv;
@@ -472,7 +473,7 @@ public:
 
 public:
   virtual module_api::config_out init(module_api&& api, module_api::config_in&& config) override {
-    m_api = std::move(api);
+    m_api = api;
 
     if (...) {
       // verify configuration
@@ -488,7 +489,7 @@ public:
       // get new info
 
       module_api::block block{/*new info*/};
-      m_api.put_block(std::move(block));
+      m_api->put_block(std::move(block));
 
       std::unique_lock<std::mutex> lock_m_state_mtx{m_state_mtx};
       m_state = state::wait;

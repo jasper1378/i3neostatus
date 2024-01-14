@@ -19,7 +19,7 @@ public:
   virtual ~module_base() = default;
 
 public:
-  virtual module_api::config_out init(module_api &&api,
+  virtual module_api::config_out init(module_api *api,
                                       module_api::config_in &&config) = 0;
 
   virtual void run() = 0;
