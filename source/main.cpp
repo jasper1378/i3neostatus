@@ -1,5 +1,6 @@
 #include "click_event_listener.hpp"
 #include "config_file.hpp"
+#include "i3bar_data.hpp"
 #include "i3bar_protocol.hpp"
 #include "misc.hpp"
 #include "module_error.hpp"
@@ -259,8 +260,8 @@ int main(int argc, char *argv[]) {
 
       switch (block_content.index()) {
       case 0: {
-        std::pair<i3bar_protocol::block, module_id::type> updated_block{
-            {i3bar_protocol::block::struct_id{
+        std::pair<i3bar_data::block, module_id::type> updated_block{
+            {i3bar_data::block::struct_id{
                  module_handles[cur_module_id].get_name(),
                  module_handles[cur_module_id].get_id()},
              std::get<0>(std::move(block_content))},

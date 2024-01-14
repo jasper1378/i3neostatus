@@ -1,13 +1,11 @@
 #ifndef MODULE_API_HPP
 #define MODULE_API_HPP
 
-#include "i3bar_protocol.hpp"
-#include "thread_comm.hpp"
+#include "i3bar_data.hpp"
 
 #include "libconfigfile.hpp"
 
 #include <exception>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -22,8 +20,8 @@ public:
     static const std::string k_valid_name_chars;
   };
 
-  using block = struct i3bar_protocol::block::content;
-  using click_event = struct i3bar_protocol::click_event::content;
+  using block = struct i3bar_data::block::content;
+  using click_event = struct i3bar_data::click_event::content;
 
 private:
   thread_comm::producer<block> m_thread_comm_producer;
