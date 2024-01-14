@@ -215,7 +215,7 @@ private:
 template <typename t_value> class shared_state_ptr {
 private:
   shared_state<t_value> *m_shared_state;
-  std::atomic<long> *m_use_count;
+  std::atomic<std::size_t> *m_use_count;
 
 public:
   shared_state_ptr() : m_shared_state{nullptr}, m_use_count{nullptr} {}
@@ -224,7 +224,7 @@ public:
       : m_shared_state{nullptr}, m_use_count{nullptr} {}
 
   explicit shared_state_ptr(shared_state<t_value> *ssp)
-      : m_shared_state{ssp}, m_use_count{new std::atomic<long>{1}} {}
+      : m_shared_state{ssp}, m_use_count{new std::atomic<std::size_t>{1}} {}
 
   shared_state_ptr(const shared_state_ptr &other)
       : m_shared_state{other.m_shared_state}, m_use_count{other.m_use_count} {
@@ -279,7 +279,7 @@ public:
     }
     if (ssp) {
       m_shared_state = ssp;
-      m_use_count = new std::atomic<long>{1};
+      m_use_count = new std::atomic<std::size_t>{1};
     }
   }
 
@@ -295,7 +295,7 @@ public:
 
   shared_state<t_value> *operator->() const { return get(); }
 
-  long use_count() const {
+  std::size_t use_count() const {
     if (m_use_count != nullptr) {
       return m_use_count->load();
     } else {
