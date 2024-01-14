@@ -2,6 +2,7 @@
 #define THREAD_COMM_HPP
 
 #include "generic_callback.hpp"
+#include "misc.hpp"
 
 #include <atomic>
 #include <compare>
@@ -10,6 +11,7 @@
 #include <exception>
 #include <iostream>
 #include <mutex>
+#include <tuple>
 #include <utility>
 #include <variant>
 
@@ -32,6 +34,10 @@ template <typename t_value> class shared_state;
 template <typename t_value> class shared_state_ptr;
 template <typename t_value> class producer;
 template <typename t_value> class consumer;
+
+template <template <typename> typename t_intf>
+concept concept_interface = misc::same_as_template::same_as<t_intf, producer> ||
+                            misc::same_as_template::same_as<t_intf, consumer>;
 
 template <typename t_value> class shared_state {
 private:
@@ -404,6 +410,12 @@ public:
   bool put_exception(std::exception_ptr &&exception) {
     return m_shared_state_ptr->put_exception(std::move(exception));
   }
+
+  const shared_state_ptr<t_value> &get_underlying() const {
+    return m_shared_state_ptr;
+  }
+
+  shared_state_ptr<t_value> get_underlying() { return m_shared_state_ptr; }
 };
 
 template <typename t_value> class consumer {
@@ -446,29 +458,56 @@ public:
     return m_shared_state_ptr->get();
   }
 
-  void wait() { m_shared_state_ptr->wait();
+  void wait() { m_shared_state_ptr->wait(); }
+
+  const shared_state_ptr<t_value> &get_underlying() const {
+    return m_shared_state_ptr;
   }
+
+  shared_state_ptr<t_value> get_underlying() { return m_shared_state_ptr; }
 };
 
-template <typename t_value>
-using t_pair = std::pair<producer<t_value>, consumer<t_value>>;
+template <typename t_value, template <typename> typename t_intf>
+  requires concept_interface<t_intf>
+t_intf<t_value> make() {
+  return t_intf<t_value>{shared_state_ptr<t_value>::make_shared_state_ptr()};
+}
 
-template <typename t_value>
-t_pair<t_value>
-make_pair(const state_change_callback &state_change_callback,
-          shared_state_state::type state_change_subscribed_events =
-              shared_state_state::all) {
+template <typename t_value, template <typename> typename t_intf>
+  requires concept_interface<t_intf>
+t_intf<t_value>
+make(const state_change_callback &state_change_callback,
+     const shared_state_state::type state_change_subscribed_events =
+         shared_state_state::all) {
+  return t_intf<t_value>{shared_state_ptr<t_value>::make_shared_state_ptr(
+      state_change_callback, state_change_subscribed_events)};
+}
+
+template <template <typename> typename t_intf_1, typename t_value,
+          template <typename> typename t_intf_2>
+  requires concept_interface<t_intf_1> && concept_interface<t_intf_2>
+t_intf_1<t_value> make_from(const t_intf_2<t_value> &intf_2) {
+  return t_intf_1<t_value>{intf_2.get_underlying()};
+}
+
+template <typename t_value, template <typename> typename... t_intf>
+std::tuple<t_intf<t_value>...> make_set() {
+  shared_state_ptr<t_value> ssp{
+      shared_state_ptr<t_value>::make_shared_state_ptr()};
+  return std::tuple{t_intf<t_value>{ssp}...};
+}
+
+template <typename t_value, template <typename> typename... t_intf>
+std::tuple<t_intf<t_value>...>
+make_set(const state_change_callback &state_change_callback,
+         const shared_state_state::type state_change_subscribed_events =
+             shared_state_state::all) {
   shared_state_ptr<t_value> ssp{
       shared_state_ptr<t_value>::make_shared_state_ptr(
           state_change_callback, state_change_subscribed_events)};
-  return std::make_pair(producer<t_value>{ssp}, consumer<t_value>{ssp});
+  return std::tuple{t_intf<t_value>{ssp}...};
 }
 
-template <typename t_value> t_pair<t_value> make_pair() {
-  shared_state_ptr<t_value> ssp{
-      shared_state_ptr<t_value>::make_shared_state_ptr()};
-  return std::make_pair(producer<t_value>{ssp}, consumer<t_value>{ssp});
-}
 } // namespace thread_comm
 
 #endif
