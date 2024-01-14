@@ -33,11 +33,15 @@ private:
   std::unique_ptr<module_base, module_base::deleter_func_ptr_t> m_module;
   thread_comm::producer<module_api::block> m_thread_comm_producer;
   thread_comm::consumer<module_api::block> m_thread_comm_consumer;
-  std::thread m_thread;
+  thread_comm::producer<module_api::block> m_thread_comm_producer_module;
+  module_api m_module_api;
+  std::thread m_module_thread;
 
 private:
-  static decltype(thread_comm::state_change_callback::func)
-      m_s_thread_comm_state_change_callback;
+  static const decltype(thread_comm::state_change_callback::func)
+      m_k_thread_comm_state_change_callback;
+  static const thread_comm::shared_state_state::type
+      m_k_state_change_subscribed_events;
 
 public:
   module_handle(const module_id::type id, std::string &&file_path,

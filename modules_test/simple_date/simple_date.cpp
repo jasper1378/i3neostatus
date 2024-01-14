@@ -31,7 +31,7 @@ private:
   static constexpr std::string m_k_color_b{"#ff0000"};
 
 private:
-  module_api m_api;
+  module_api *m_api;
   std::string m_format;
   std::atomic<const std::string *> m_color;
   state m_state;
@@ -46,9 +46,9 @@ public:
   virtual ~simple_date() {}
 
 public:
-  virtual module_api::config_out init(module_api &&api,
+  virtual module_api::config_out init(module_api *api,
                                       module_api::config_in &&config) override {
-    m_api = std::move(api);
+    m_api = api;
 
     if (libconfigfile::node_ptr<libconfigfile::node> np;
         ((config.size() == 1 && config.contains("format")) &&
@@ -99,7 +99,7 @@ public:
       }
 
       module_api::block block{.full_text{buf}, .color{*m_color.load()}};
-      m_api.put_block(std::move(block));
+      m_api->put_block(std::move(block));
 
       std::unique_lock<std::mutex> lock_m_state_mtx{m_state_mtx};
       m_state = state::wait;
