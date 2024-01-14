@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <cstring>
 #include <string>
-#include <string_view>
 #include <type_traits>
 
 namespace misc {
@@ -167,17 +166,15 @@ inline std::size_t impl::unaligned_load(const char *p) {
 template <typename T>
 inline constexpr std::size_t impl::unaligned_load_c(const char *p) {
   std::size_t result{0};
-  if constexpr (std::endian::native == std::endian::little) {
-    for (std::size_t i{0}; i < sizeof(result); ++i) {
-      result |= (static_cast<decltype(result)>(p[i]) << (CHAR_BIT * i));
-    }
-  } else if constexpr (std::endian::native == std::endian::big) {
+  if constexpr (std::endian::native == std::endian::big) {
     for (std::size_t i{0}; i < sizeof(result); ++i) {
       result |= (static_cast<decltype(result)>(p[i])
                  << (CHAR_BIT * (sizeof(result) - (i + 1))));
     }
   } else {
-    static_assert(false, "mixed endian");
+    for (std::size_t i{0}; i < sizeof(result); ++i) {
+      result |= (static_cast<decltype(result)>(p[i]) << (CHAR_BIT * i));
+    }
   }
   return result;
 }
