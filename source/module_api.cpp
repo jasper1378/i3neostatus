@@ -1,12 +1,12 @@
 #include "module_api.hpp"
 
+#include "i3bar_data.hpp"
 #include "i3bar_protocol.hpp"
 #include "thread_comm.hpp"
 
 #include "libconfigfile.hpp"
 
 #include <exception>
-#include <memory>
 #include <string>
 #include <utility>
 
