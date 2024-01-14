@@ -10,32 +10,10 @@
 #include <exception>
 #include <iostream>
 #include <mutex>
-#include <stdexcept>
-#include <string>
 #include <utility>
 #include <variant>
 
 namespace thread_comm {
-
-class error : public std::runtime_error {
-private:
-  using base_t = std::runtime_error;
-
-public:
-  explicit error(const std::string &what_arg);
-  explicit error(const char *what_arg);
-  error(const error &other);
-
-public:
-  virtual ~error() override;
-
-public:
-  error &operator=(const error &other);
-
-public:
-  virtual const char *what() const noexcept override;
-};
-
 namespace shared_state_state {
 using type = unsigned int;
 enum : type {
@@ -82,6 +60,7 @@ public:
         m_state_change_callback{state_change_callback},
         m_state_change_subscribed_events{state_change_subscribed_events} {}
 
+public:
   shared_state(const shared_state &other) = delete;
 
   shared_state(shared_state &&other) = delete;
@@ -379,8 +358,6 @@ private:
   shared_state_ptr<t_value> m_shared_state_ptr;
 
 public:
-  producer() : m_shared_state_ptr{} {}
-
   explicit producer(const shared_state_ptr<t_value> &ssp)
       : m_shared_state_ptr{ssp} {}
 
@@ -407,43 +384,25 @@ public:
   }
 
 public:
-  bool valid() { return static_cast<bool>(m_shared_state_ptr); }
-
   void swap(producer &other) noexcept {
     using std::swap;
     swap(m_shared_state_ptr, other.m_shared_state_ptr);
   }
 
   bool put_value(const t_value &value) {
-    if (!valid()) {
-      throw error{"no state"};
-    } else {
-      return m_shared_state_ptr->put_value(value);
-    }
+    return m_shared_state_ptr->put_value(value);
   }
 
   bool put_value(t_value &&value) {
-    if (!valid()) {
-      throw error{"no state"};
-    } else {
-      return m_shared_state_ptr->put_value(std::move(value));
-    }
+    return m_shared_state_ptr->put_value(std::move(value));
   }
 
   bool put_exception(const std::exception_ptr &exception) {
-    if (!valid()) {
-      throw error{"no state"};
-    } else {
-      return m_shared_state_ptr->put_exception(exception);
-    }
+    return m_shared_state_ptr->put_exception(exception);
   }
 
   bool put_exception(std::exception_ptr &&exception) {
-    if (!valid()) {
-      throw error{"no state"};
-    } else {
-      return m_shared_state_ptr->put_exception(std::move(exception));
-    }
+    return m_shared_state_ptr->put_exception(std::move(exception));
   }
 };
 
@@ -452,8 +411,6 @@ private:
   shared_state_ptr<t_value> m_shared_state_ptr;
 
 public:
-  consumer() : m_shared_state_ptr{} {}
-
   explicit consumer(const shared_state_ptr<t_value> &ssp)
       : m_shared_state_ptr{ssp} {}
 
@@ -480,27 +437,16 @@ public:
   }
 
 public:
-  bool valid() { return static_cast<bool>(m_shared_state_ptr); }
-
   void swap(consumer &other) noexcept {
     using std::swap;
     swap(m_shared_state_ptr, other.m_shared_state_ptr);
   }
 
   std::variant<t_value, std::exception_ptr> get() {
-    if (!valid()) {
-      throw error{"no state"};
-    } else {
-      return m_shared_state_ptr->get();
-    }
+    return m_shared_state_ptr->get();
   }
 
-  void wait() {
-    if (!valid()) {
-      throw error{"no state"};
-    } else {
-      m_shared_state_ptr->wait();
-    }
+  void wait() { m_shared_state_ptr->wait();
   }
 };
 
