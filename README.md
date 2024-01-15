@@ -293,7 +293,7 @@ void module_api::put_error(std::exception_ptr&& error);
 
 Returning to your module, there are several virtual functions in `module_base` that must be overriden by your class. Any exceptions thrown in these functions will be handled appropriately (as if by `module_api::put_error()`).
 
-The first is `init()`, which should verify user configuration and initialize your module.
+The first is `init()`, which should verify user configuration and initialize your module. This function will be executed before `run()`.
 ```cpp
 #include <exception>
 #include <stdexcept>
@@ -363,7 +363,7 @@ class module_test : public module_base {
 };
 ```
 
-Because `run()` will be executed concurrently, some level of synchronization will likely be required in your module. Note that is is guaranteed that `init()` will exit before `run` is called and that `module_api::put_block()`/`module_api::put_error()` can be called simultaneously from multiple threads. The synchronization mechanism should at least provide a means for `term()` to signal `run()` to exit. You might also wish for `on_click_event()` to be able to wake `run()` to preform an update immediately. Though synchronization can be implemented however you wish, the following example provides a starting point.
+Because `run()` will be executed concurrently, some level of synchronization will likely be required in your module. Note that `module_api::put_block()`/`module_api::put_error()` are thread-safe. The synchronization mechanism should at least provide a means for `term()` to signal `run()` to exit. You might also wish for `on_click_event()` to be able to wake `run()` to preform an update immediately. Though synchronization can be implemented however you wish, the following example provides a starting point.
 ```cpp
 #include <chrono>
 #include <condition_variable>
@@ -542,6 +542,8 @@ g++ -std=c++20 -Wall -Wextra -g -O2 -fPIC -shared module_test.cpp -o module_test
 ```
 For more complex projects, I recommend using the Makefile found here: [generic-makefile/C++/library/Makefile](https://github.com/jasper1378/generic-makefile/blob/main/C%2B%2B/library/Makefile).
 This binary can be placed anywhere, however, `/usr/local/lib/i3neostatus_modules/module_test` is recommended for consistency between third-party modules.
+
+As a final piece of advice, be very wary of calling any non-thread-safe library functions in your module in order to avoid race conditions with other modules that may be loaded.
 
 ### Misc
 
