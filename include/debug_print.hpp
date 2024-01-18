@@ -1,3 +1,6 @@
+#ifndef I3NEOSTATUS_DEBUG_PRINT_HPP
+#define I3NEOSTATUS_DEBUG_PRINT_HPP
+
 #include <string>
 
 namespace debug_print {

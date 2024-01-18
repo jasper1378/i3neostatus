@@ -1,5 +1,5 @@
-#ifndef I3BAR_DATA_HPP
-#define I3BAR_DATA_HPP
+#ifndef I3NEOSTATUS_I3BAR_DATA_HPP
+#define I3NEOSTATUS_I3BAR_DATA_HPP
 
 #include "module_id.hpp"
 

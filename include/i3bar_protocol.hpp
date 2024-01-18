@@ -1,5 +1,5 @@
-#ifndef I3BAR_PROTOCOL_HPP
-#define I3BAR_PROTOCOL_HPP
+#ifndef I3NEOSTATUS_I3BAR_PROTOCOL_HPP
+#define I3NEOSTATUS_I3BAR_PROTOCOL_HPP
 
 #include "i3bar_data.hpp"
 

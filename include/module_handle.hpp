@@ -1,5 +1,5 @@
-#ifndef MODULE_HANDLE_HPP
-#define MODULE_HANDLE_HPP
+#ifndef I3NEOSTATUS_MODULE_HANDLE_HPP
+#define I3NEOSTATUS_MODULE_HANDLE_HPP
 
 #include "dyn_load_lib.hpp"
 #include "generic_callback.hpp"

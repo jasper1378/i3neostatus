@@ -1,5 +1,5 @@
-#ifndef DYN_LOAD_LIB_HPP
-#define DYN_LOAD_LIB_HPP
+#ifndef I3NEOSTATUS_DYN_LOAD_LIB_HPP
+#define I3NEOSTATUS_DYN_LOAD_LIB_HPP
 
 #include <exception>
 #include <filesystem>

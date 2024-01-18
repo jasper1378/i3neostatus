@@ -1,5 +1,5 @@
-#ifndef MODULE_ERROR_HPP
-#define MODULE_ERROR_HPP
+#ifndef I3NEOSTATUS_MODULE_ERROR_HPP
+#define I3NEOSTATUS_MODULE_ERROR_HPP
 
 #include "module_id.hpp"
 

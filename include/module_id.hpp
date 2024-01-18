@@ -1,5 +1,5 @@
-#ifndef MODULE_ID
-#define MODULE_ID
+#ifndef I3NEOSTATUS_MODULE_ID
+#define I3NEOSTATUS_MODULE_ID
 
 #include <cstddef>
 #include <limits>

@@ -1,5 +1,5 @@
-#ifndef CONFIG_FILE_HPP
-#define CONFIG_FILE_HPP
+#ifndef I3NEOSTATUS_CONFIG_FILE_HPP
+#define I3NEOSTATUS_CONFIG_FILE_HPP
 
 #include "libconfigfile.hpp"
 
