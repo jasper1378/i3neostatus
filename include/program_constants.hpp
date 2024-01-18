@@ -1,5 +1,5 @@
-#ifndef PROGRAM_CONSTANTS_HPP
-#define PROGRAM_CONSTANTS_HPP
+#ifndef I3NEOSTATUS_PROGRAM_CONSTANTS_HPP
+#define I3NEOSTATUS_PROGRAM_CONSTANTS_HPP
 
 #include <filesystem>
 #include <string>

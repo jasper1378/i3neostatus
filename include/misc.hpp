@@ -1,5 +1,5 @@
-#ifndef MISC_HPP
-#define MISC_HPP
+#ifndef I3NEOSTATUS_MISC_HPP
+#define I3NEOSTATUS_MISC_HPP
 
 #include <bit>
 #include <climits>

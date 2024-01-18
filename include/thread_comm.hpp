@@ -1,5 +1,5 @@
-#ifndef THREAD_COMM_HPP
-#define THREAD_COMM_HPP
+#ifndef I3NEOSTATUS_THREAD_COMM_HPP
+#define I3NEOSTATUS_THREAD_COMM_HPP
 
 #include "generic_callback.hpp"
 #include "misc.hpp"

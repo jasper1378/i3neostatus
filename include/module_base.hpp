@@ -1,5 +1,5 @@
-#ifndef MODULE_BASE_HPP
-#define MODULE_BASE_HPP
+#ifndef I3NEOSTATUS_MODULE_BASE_HPP
+#define I3NEOSTATUS_MODULE_BASE_HPP
 
 #include "module_api.hpp"
 

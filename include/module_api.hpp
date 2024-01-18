@@ -1,5 +1,5 @@
-#ifndef MODULE_API_HPP
-#define MODULE_API_HPP
+#ifndef I3NEOSTATUS_MODULE_API_HPP
+#define I3NEOSTATUS_MODULE_API_HPP
 
 #include "i3bar_data.hpp"
 
