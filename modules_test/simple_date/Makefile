@@ -11,8 +11,7 @@ DEBUG_LINK_FLAGS :=
 SOURCE_FILE_EXT := .cpp
 HEADER_FILE_EXT := .hpp
 SOURCE_DIRS := ./
-# TODO FIXME vvv
-INCLUDE_DIRS := ../../include ../../submodules/libconfigfile/include
+INCLUDE_DIRS := ../../include_install
 SUBMODULE_DIR := ./submodules
 LIBRARIES :=
 INSTALL_PATH := /usr/local
