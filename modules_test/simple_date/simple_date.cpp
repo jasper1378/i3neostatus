@@ -1,10 +1,7 @@
 #ifndef SIMPLE_DATE_HPP
 #define SIMPLE_DATE_HPP
 
-#include "module_api.hpp"
-#include "module_base.hpp"
-
-#include "libconfigfile.hpp"
+#include "module_dev.hpp"
 
 #include <atomic>
 #include <chrono>

@@ -13,6 +13,7 @@ SOURCE_FILE_EXT := .cpp
 HEADER_FILE_EXT := .hpp
 SOURCE_DIRS := ./source
 INCLUDE_DIRS := ./include
+INCLUDE_INSTALL_DIRS := ./include_install
 SUBMODULE_DIR := ./submodules
 INSTALL_PATH := /usr/local
 
@@ -29,6 +30,7 @@ SHELL := /bin/bash
 export BUILD_DIR := ./build
 
 BIN_INSTALL_PATH := $(INSTALL_PATH)/bin
+HEADER_INSTALL_PATH := $(INSTALL_PATH)/include
 
 INCLUDE_DIRS += $(wildcard $(SUBMODULE_DIR)/*/include)
 LINK_FLAGS += $(addprefix -l, $(LIBRARIES))
@@ -73,18 +75,28 @@ $(BUILD_DIR)/%$(SOURCE_FILE_EXT).o: %$(SOURCE_FILE_EXT)
 -include $(DEPENDENCIES)
 
 .PHONY: install
-install: _install_executable
+install: _install_executable _install_headers
 
 .PHONY: _install_executable
 _install_executable:
 	@install -v -Dm755 $(BUILD_DIR)/$(BIN_NAME) -t $(BIN_INSTALL_PATH)/
 
+.PHONY: _install_headers
+_install_headers:
+	# @install -v -Dm644 $(foreach INCLUDE_DIR,$(INCLUDE_INSTALL_DIRS),$(wildcard $(INCLUDE_DIR)/*)) -t $(HEADER_INSTALL_PATH)/$(BIN_NAME)
+	$(foreach INCLUDE_DIR,$(INCLUDE_INSTALL_DIRS), cd $(INCLUDE_DIR); find . -type f,l -exec install -v -Dm644 {} -T $(HEADER_INSTALL_PATH)/$(BIN_NAME)/{} \;;)
+	@find $(HEADER_INSTALL_PATH)/$(BIN_NAME) -maxdepth 1 -type f -exec sed -i 's/#include "libconfigfile.hpp"/#include "libconfigfile\/libconfigfile.hpp"/g' {} \;
+
 .PHONY: uninstall
-uninstall: _uninstall_executable
+uninstall: _uninstall_executable _uninstall_headers
 
 .PHONY: _uninstall_executable
 _uninstall_executable:
 	@rm -v $(BIN_INSTALL_PATH)/$(BIN_NAME)
+
+.PHONY: _uninstall_headers
+_uninstall_headers:
+	@rm -v -r $(HEADER_INSTALL_PATH)/$(BIN_NAME)
 
 .PHONY: clean
 clean:
