@@ -32,29 +32,33 @@ export BUILD_DIR := ./build
 BIN_INSTALL_PATH := $(INSTALL_PATH)/bin
 HEADER_INSTALL_PATH := $(INSTALL_PATH)/include
 
-INCLUDE_DIRS += $(wildcard $(SUBMODULE_DIR)/*/include)
 LINK_FLAGS += $(addprefix -l, $(LIBRARIES))
 SUBMODULE_OBJECTS := $(wildcard $(SUBMODULE_DIR)/*/build/*.a)
 INCLUDE_FLAGS := $(addprefix -I, $(shell find $(INCLUDE_DIRS) -type d))
 
 export CPPFLAGS := $(INCLUDE_FLAGS) -MMD -MP
 
-release: export CXXFLAGS := $(CXXFLAGS) $(COMPILE_FLAGS) $(RELEASE_COMPILE_FLAGS)
-release: export LDFLAGS := $(LDFLAGS) $(LINK_FLAGS) $(RELEASE_LINK_FLAGS)
-debug: export CXXFLAGS := $(CXXFLAGS) $(COMPILE_FLAGS) $(DEBUG_COMPILE_FLAGS)
-debug: export LDFLAGS := $(LDFLAGS) $(LINK_FLAGS) $(DEBUG_LINK_FLAGS)
+RELEASE_CXXFLAGS := $(CXXFLAGS) $(COMPILE_FLAGS) $(RELEASE_COMPILE_FLAGS)
+RELEASE_LDFLAGS := $(LDFLAGS) $(LINK_FLAGS) $(RELEASE_LINK_FLAGS)
+DEBUG_CXXFLAGS := $(CXXFLAGS) $(COMPILE_FLAGS) $(DEBUG_COMPILE_FLAGS)
+DEBUG_LDFLAGS := $(LDFLAGS) $(LINK_FLAGS) $(DEBUG_LINK_FLAGS)
+
+all: CXXFLAGS := $(RELEASE_CXXFLAGS)
+all: LDFLAGS := $(RELEASE_LDFLAGS)
+release: CXXFLAGS := $(RELEASE_CXXFLAGS)
+release: LDFLAGS := $(RELEASE_LDFLAGS)
+debug: CXXFLAGS := $(DEBUG_CXXFLAGS)
+debug: LDFLAGS := $(DEBUG_LDFLAGS)
 
 SOURCES := $(shell find $(SOURCE_DIRS) -type f -name '*$(SOURCE_FILE_EXT)')
 OBJECTS := $(SOURCES:%=$(BUILD_DIR)/%.o)
 DEPENDENCIES := $(OBJECTS:.o=.d)
 
 .PHONY: release
-release:
-	@$(MAKE) all --no-print-directory
+release: _all
 
 .PHONY: debug
-debug:
-	@$(MAKE) all --no-print-directory
+debug: _all
 
 .PHONY: all
 all: _all
@@ -85,7 +89,6 @@ _install_executable:
 _install_headers:
 	# @install -v -Dm644 $(foreach INCLUDE_DIR,$(INCLUDE_INSTALL_DIRS),$(wildcard $(INCLUDE_DIR)/*)) -t $(HEADER_INSTALL_PATH)/$(BIN_NAME)
 	$(foreach INCLUDE_DIR,$(INCLUDE_INSTALL_DIRS), cd $(INCLUDE_DIR); find . -type f,l -exec install -v -Dm644 {} -T $(HEADER_INSTALL_PATH)/$(BIN_NAME)/{} \;;)
-	@find $(HEADER_INSTALL_PATH)/$(BIN_NAME) -maxdepth 1 -type f -exec sed -i 's/#include "libconfigfile.hpp"/#include "libconfigfile\/libconfigfile.hpp"/g' {} \;
 
 .PHONY: uninstall
 uninstall: _uninstall_executable _uninstall_headers

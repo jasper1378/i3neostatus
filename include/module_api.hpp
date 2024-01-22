@@ -3,7 +3,7 @@
 
 #include "i3bar_data.hpp"
 
-#include "libconfigfile.hpp"
+#include "libconfigfile/libconfigfile.hpp"
 
 #include <exception>
 #include <string>

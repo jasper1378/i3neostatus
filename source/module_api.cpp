@@ -4,7 +4,7 @@
 #include "i3bar_protocol.hpp"
 #include "thread_comm.hpp"
 
-#include "libconfigfile.hpp"
+#include "libconfigfile/libconfigfile.hpp"
 
 #include <exception>
 #include <string>

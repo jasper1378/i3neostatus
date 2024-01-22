@@ -8,7 +8,7 @@
 #include "module_id.hpp"
 #include "thread_comm.hpp"
 
-#include "libconfigfile.hpp"
+#include "libconfigfile/libconfigfile.hpp"
 
 #include <memory>
 #include <string>
