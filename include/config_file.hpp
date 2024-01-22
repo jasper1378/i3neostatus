@@ -1,7 +1,7 @@
 #ifndef I3NEOSTATUS_CONFIG_FILE_HPP
 #define I3NEOSTATUS_CONFIG_FILE_HPP
 
-#include "libconfigfile.hpp"
+#include "libconfigfile/libconfigfile.hpp"
 
 #include <exception>
 #include <filesystem>
