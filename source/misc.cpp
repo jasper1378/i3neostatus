@@ -7,8 +7,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <string_view>
 
-bool misc::resolve_tilde::would_resolve_tilde(const std::string &str) {
+bool misc::resolve_tilde::would_resolve_tilde(const std::string_view str) {
   return (!(str.empty() || str.front() != '~'));
 }
 
