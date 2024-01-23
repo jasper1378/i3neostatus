@@ -6,11 +6,12 @@
 #include <cstddef>
 #include <cstring>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 namespace misc {
 namespace resolve_tilde {
-bool would_resolve_tilde(const std::string &str);
+bool would_resolve_tilde(const std::string_view str);
 std::string resolve_tilde(const std::string &str);
 } // namespace resolve_tilde
 
@@ -48,6 +49,7 @@ namespace constexpr_hash_string {
 // at compile time
 
 constexpr std::size_t hash(const std::string &str);
+constexpr std::size_t hash(const std::string_view str);
 constexpr std::size_t hash(const char *str);
 
 namespace impl {
@@ -77,6 +79,11 @@ inline constexpr std::size_t shift_mix(std::size_t v);
 } // namespace impl
 
 constexpr std::size_t hash(const std::string &str) {
+  return impl::hash<sizeof(std::size_t)>::do_hash(str.data(), str.size(),
+                                                  impl::g_k_default_seed);
+}
+
+constexpr std::size_t hash(const std::string_view str) {
   return impl::hash<sizeof(std::size_t)>::do_hash(str.data(), str.size(),
                                                   impl::g_k_default_seed);
 }

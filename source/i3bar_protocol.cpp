@@ -264,7 +264,8 @@ i3bar_protocol::impl::serialize_array(const std::vector<std::string> &array) {
   return ret_val;
 }
 
-std::string i3bar_protocol::impl::serialize_string(const std::string &string) {
+std::string
+i3bar_protocol::impl::serialize_string(const std::string_view string) {
   static const std::string control_chars{
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
       0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
@@ -330,19 +331,14 @@ std::string i3bar_protocol::impl::serialize_bool(const bool b) {
 }
 
 i3bar_data::click_event
-i3bar_protocol::impl::parse_click_event(const std::string &click_event) {
-  const auto substr{[](const std::string &str,
+i3bar_protocol::impl::parse_click_event(const std::string_view click_event) {
+  const auto substr{[](const std::string_view str,
                        const std::string::size_type begin,
-                       const std::string::size_type end) -> std::string {
+                       const std::string::size_type end) -> std::string_view {
     return str.substr(begin, end - begin + 1);
   }};
-  const auto substr_view{
-      [](const std::string &str, const std::string::size_type begin,
-         const std::string::size_type end) -> std::string_view {
-        return std::string_view(str).substr(begin, end - begin + 1);
-      }};
   const auto find_first_digit{
-      [](const std::string &str,
+      [](const std::string_view str,
          const std::string::size_type pos = 0) -> std::string::size_type {
         for (std::string::size_type i{pos}; i < str.size(); ++i) {
           if (str[i] >= '0' && str[i] <= '9') {
@@ -352,7 +348,7 @@ i3bar_protocol::impl::parse_click_event(const std::string &click_event) {
         return std::string::npos;
       }};
   const auto find_first_not_digit{
-      [](const std::string &str,
+      [](const std::string_view str,
          const std::string::size_type pos = 0) -> std::string::size_type {
         for (std::string::size_type i{pos}; i < str.size(); ++i) {
           if (!(str[i] >= '0' && str[i] <= '9')) {
@@ -362,7 +358,7 @@ i3bar_protocol::impl::parse_click_event(const std::string &click_event) {
         return std::string::npos;
       }};
   const auto read_string_value{
-      [&substr](const std::string &str,
+      [&substr](const std::string_view str,
                 const std::string::size_type name_end_pos,
                 std::string::size_type &continue_from_pos) -> std::string {
         std::string::size_type value_begin_pos{
@@ -372,18 +368,18 @@ i3bar_protocol::impl::parse_click_event(const std::string &click_event) {
             str.find(json_constants::g_k_string_delimiter, value_begin_pos) -
             1};
         continue_from_pos = value_end_pos + 2;
-        return substr(str, value_begin_pos, value_end_pos);
+        return std::string{substr(str, value_begin_pos, value_end_pos)};
       }};
   const auto read_numeric_value{
-      [&substr_view, &find_first_digit, &find_first_not_digit](
-          const std::string &str, const std::string::size_type name_end_pos,
+      [&substr, &find_first_digit, &find_first_not_digit](
+          const std::string_view str, const std::string::size_type name_end_pos,
           std::string::size_type &continue_from_pos) -> std::string_view {
         std::string::size_type value_begin_pos{
             find_first_digit(str, name_end_pos + 2)};
         std::string::size_type value_end_pos{
             find_first_not_digit(str, value_begin_pos)};
         continue_from_pos = value_end_pos + 1;
-        return substr_view(str, value_begin_pos, value_end_pos);
+        return substr(str, value_begin_pos, value_end_pos);
       }};
 
   std::string name_buf;
@@ -506,7 +502,7 @@ i3bar_protocol::impl::parse_click_event(const std::string &click_event) {
                                value_begin_pos) -
               1};
           ret_val.content.modifiers.push_back(
-              substr(click_event, value_begin_pos, value_end_pos));
+              std::string{substr(click_event, value_begin_pos, value_end_pos)});
           i = value_end_pos + 2;
         }
         continue_from_pos = array_end_pos + 1;

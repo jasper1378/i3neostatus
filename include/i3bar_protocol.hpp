@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -100,10 +101,10 @@ std::string serialize_number(auto number)
 {
   return std::to_string(number);
 }
-std::string serialize_string(const std::string &string);
+std::string serialize_string(const std::string_view string);
 std::string serialize_bool(const bool b);
 
-i3bar_data::click_event parse_click_event(const std::string &click_event);
+i3bar_data::click_event parse_click_event(const std::string_view click_event);
 } // namespace impl
 } // namespace i3bar_protocol
 #endif
