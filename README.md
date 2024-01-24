@@ -557,4 +557,4 @@ Please note that the wording of some parts of this documentation has been lifted
 
 ## License
 
-See [LICENSE.md](LICENSE.md) for details.
+See [LICENSE](LICENSE) for details.
