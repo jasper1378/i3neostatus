@@ -15,6 +15,8 @@
 #include <utility>
 #include <variant>
 
+namespace i3neostatus {
+
 namespace thread_comm {
 namespace shared_state_state {
 using type = unsigned int;
@@ -510,4 +512,5 @@ make_set(const state_change_callback &state_change_callback,
 
 } // namespace thread_comm
 
+} // namespace i3neostatus
 #endif

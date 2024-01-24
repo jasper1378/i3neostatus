@@ -8,6 +8,8 @@
 #include <variant>
 #include <vector>
 
+namespace i3neostatus {
+
 namespace i3bar_data {
 using pixel_count_t = long;
 
@@ -108,4 +110,5 @@ struct click_event {
 
 } // namespace i3bar_data
 
+} // namespace i3neostatus
 #endif

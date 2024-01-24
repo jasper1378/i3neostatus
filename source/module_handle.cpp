@@ -15,8 +15,8 @@
 #include <thread>
 #include <utility>
 
-const decltype(thread_comm::state_change_callback::func)
-    module_handle::m_k_thread_comm_state_change_callback{
+const decltype(i3neostatus::thread_comm::state_change_callback::func)
+    i3neostatus::module_handle::m_k_thread_comm_state_change_callback{
         [](void *userdata,
            thread_comm::shared_state_state::type state) -> void {
           state_change_callback *scc{
@@ -35,14 +35,15 @@ const decltype(thread_comm::state_change_callback::func)
           }
         }};
 
-const thread_comm::shared_state_state::type
-    module_handle::m_k_state_change_subscribed_events{
+const i3neostatus::thread_comm::shared_state_state::type
+    i3neostatus::module_handle::m_k_state_change_subscribed_events{
         thread_comm::shared_state_state::value |
         thread_comm::shared_state_state::exception};
 
-module_handle::module_handle(const module_id::type id, std::string &&file_path,
-                             libconfigfile::map_node &&conf,
-                             state_change_callback &&state_change_callback)
+i3neostatus::module_handle::module_handle(
+    const module_id::type id, std::string &&file_path,
+    libconfigfile::map_node &&conf,
+    state_change_callback &&state_change_callback)
     : m_id{id}, m_name{}, m_file_path{std::move(file_path)},
       m_click_events_enabled{},
       m_state_change_callback{std::move(state_change_callback)},
@@ -62,10 +63,10 @@ module_handle::module_handle(const module_id::type id, std::string &&file_path,
   do_ctor(std::move(conf));
 }
 
-module_handle::module_handle(const module_id::type id,
-                             const std::string &file_path,
-                             const libconfigfile::map_node &conf,
-                             const state_change_callback &state_change_callback)
+i3neostatus::module_handle::module_handle(
+    const module_id::type id, const std::string &file_path,
+    const libconfigfile::map_node &conf,
+    const state_change_callback &state_change_callback)
     : m_id{id}, m_name{}, m_file_path{file_path}, m_click_events_enabled{},
       m_state_change_callback{state_change_callback},
       m_dyn_lib{m_file_path, dyn_load_lib::dlopen_flags::lazy},
@@ -84,7 +85,7 @@ module_handle::module_handle(const module_id::type id,
   do_ctor(std::remove_cvref_t<decltype(conf)>{conf});
 }
 
-module_handle::module_handle(module_handle &&other) noexcept
+i3neostatus::module_handle::module_handle(module_handle &&other) noexcept
     : m_id{other.m_id}, m_name{std::move(other.m_name)},
       m_file_path{std::move(other.m_file_path)},
       m_click_events_enabled{other.m_click_events_enabled},
@@ -98,7 +99,7 @@ module_handle::module_handle(module_handle &&other) noexcept
       m_module_api{std::move(other.m_module_api)},
       m_module_thread{std::move(other.m_module_thread)} {}
 
-module_handle::~module_handle() {
+i3neostatus::module_handle::~module_handle() {
   try {
     m_module->term();
   } catch (const std::exception &ex) {
@@ -111,7 +112,8 @@ module_handle::~module_handle() {
   m_module_thread.join();
 }
 
-module_handle &module_handle::operator=(module_handle &&other) noexcept {
+i3neostatus::module_handle &
+i3neostatus::module_handle::operator=(module_handle &&other) noexcept {
   if (this != &other) {
     m_id = other.m_id;
     m_name = std::move(other.m_name);
@@ -130,7 +132,7 @@ module_handle &module_handle::operator=(module_handle &&other) noexcept {
   return *this;
 }
 
-void module_handle::do_ctor(libconfigfile::map_node &&conf) {
+void i3neostatus::module_handle::do_ctor(libconfigfile::map_node &&conf) {
   module_base::allocator_func_ptr_t mod_alloc{
       m_dyn_lib.get_symbol<module_base::allocator_func_t>(
           module_base::allocator_func_str)};
@@ -165,7 +167,7 @@ void module_handle::do_ctor(libconfigfile::map_node &&conf) {
   }
 }
 
-void module_handle::run() {
+void i3neostatus::module_handle::run() {
   m_module_thread = std::thread{[this]() {
     try {
       m_module->run();
@@ -179,7 +181,8 @@ void module_handle::run() {
   }};
 }
 
-void module_handle::send_click_event(module_api::click_event &&click_event) {
+void i3neostatus::module_handle::send_click_event(
+    module_api::click_event &&click_event) {
   try {
     m_module->on_click_event(std::move(click_event));
   } catch (const std::exception &ex) {
@@ -191,16 +194,23 @@ void module_handle::send_click_event(module_api::click_event &&click_event) {
   }
 }
 
-module_id::type module_handle::get_id() const { return m_id; }
+i3neostatus::module_id::type i3neostatus::module_handle::get_id() const {
+  return m_id;
+}
 
-const std::string &module_handle::get_name() const { return m_name; }
+const std::string &i3neostatus::module_handle::get_name() const {
+  return m_name;
+}
 
-const std::string &module_handle::get_file_path() const { return m_file_path; }
+const std::string &i3neostatus::module_handle::get_file_path() const {
+  return m_file_path;
+}
 
-bool module_handle::get_click_events_enabled() const {
+bool i3neostatus::module_handle::get_click_events_enabled() const {
   return m_click_events_enabled;
 }
 
-thread_comm::consumer<module_api::block> &module_handle::get_comm() {
+i3neostatus::thread_comm::consumer<i3neostatus::module_api::block> &
+i3neostatus::module_handle::get_comm() {
   return m_thread_comm_consumer;
 }

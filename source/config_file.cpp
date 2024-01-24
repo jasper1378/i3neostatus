@@ -11,10 +11,10 @@
 #include <utility>
 #include <vector>
 
-config_file::error::error(const std::string &message,
-                          const std::string &file_path /*= ""*/,
-                          const long long pos_line /*= -1*/,
-                          const long long pos_char /*= -1*/)
+i3neostatus::config_file::error::error(const std::string &message,
+                                       const std::string &file_path /*= ""*/,
+                                       const long long pos_line /*= -1*/,
+                                       const long long pos_char /*= -1*/)
     : base_t{((!file_path.empty())
                   ? (file_path +
                      ((pos_line != -1)
@@ -26,40 +26,47 @@ config_file::error::error(const std::string &message,
                      m_k_separator_char + m_k_whitespace_char + message)
                   : (message))} {}
 
-config_file::error::error(const char *message, const char *file_path /*= ""*/,
-                          const long long pos_line /*= -1*/,
-                          const long long pos_char /*= -1*/)
+i3neostatus::config_file::error::error(const char *message,
+                                       const char *file_path /*= ""*/,
+                                       const long long pos_line /*= -1*/,
+                                       const long long pos_char /*= -1*/)
     : error{std::string{message}, std::string{file_path}, pos_line, pos_char} {}
 
-config_file::error::error(const error &other) : base_t{other} {}
+i3neostatus::config_file::error::error(const error &other) : base_t{other} {}
 
-config_file::error::~error() {}
+i3neostatus::config_file::error::~error() {}
 
-config_file::error &config_file::error::operator=(const error &other) {
+i3neostatus::config_file::error &
+i3neostatus::config_file::error::operator=(const error &other) {
   if (this != &other) {
     base_t::operator=(other);
   }
   return *this;
 }
 
-const char *config_file::error::what() const noexcept { return base_t::what(); }
+const char *i3neostatus::config_file::error::what() const noexcept {
+  return base_t::what();
+}
 
-config_file::parsed config_file::read(const char *file_path) {
+i3neostatus::config_file::parsed
+i3neostatus::config_file::read(const char *file_path) {
   return impl::read(impl::resolve_path(file_path));
 }
 
-config_file::parsed config_file::read(const std::string &file_path) {
+i3neostatus::config_file::parsed
+i3neostatus::config_file::read(const std::string &file_path) {
   return impl::read(impl::resolve_path(file_path));
 }
 
-config_file::parsed config_file::read(const std::filesystem::path &file_path) {
+i3neostatus::config_file::parsed
+i3neostatus::config_file::read(const std::filesystem::path &file_path) {
   return impl::read(impl::resolve_path(file_path.string()));
 }
 
-config_file::parsed config_file::read() {
+i3neostatus::config_file::parsed i3neostatus::config_file::read() {
   static const std::string file_name_short{"config"};
-  static const std::string file_name_long{program_constants::g_k_name +
-                                          ".conf"};
+  static const std::string file_name_long{
+      i3neostatus::program_constants::g_k_name + ".conf"};
 
   static const char *env_home{std::getenv("HOME")};
   if (env_home == nullptr) {
@@ -83,37 +90,40 @@ config_file::parsed config_file::read() {
   static const std::filesystem::path conf_path_4{"/etc/i3neostatus.conf"};
 
   if (std::filesystem::exists(conf_path_1)) {
-    return config_file::read(conf_path_1);
+    return i3neostatus::config_file::read(conf_path_1);
   } else if (std::filesystem::exists(conf_path_2)) {
-    return config_file::read(conf_path_2);
+    return i3neostatus::config_file::read(conf_path_2);
   } else if (std::filesystem::exists(conf_path_3)) {
-    return config_file::read(conf_path_3);
+    return i3neostatus::config_file::read(conf_path_3);
   } else if (std::filesystem::exists(conf_path_4)) {
-    return config_file::read(conf_path_4);
+    return i3neostatus::config_file::read(conf_path_4);
   } else {
     throw error{"can't find configuration file"};
   }
 }
 
-std::string config_file::impl::resolve_path(const std::string &file_path) {
-  if (misc::resolve_tilde::would_resolve_tilde(file_path)) {
-    return misc::resolve_tilde::resolve_tilde(file_path);
+std::string
+i3neostatus::config_file::impl::resolve_path(const std::string &file_path) {
+  if (i3neostatus::misc::resolve_tilde::would_resolve_tilde(file_path)) {
+    return i3neostatus::misc::resolve_tilde::resolve_tilde(file_path);
   } else {
     return file_path;
   }
 }
 
-std::string config_file::impl::resolve_path(std::string &&file_path) {
-  if (misc::resolve_tilde::would_resolve_tilde(file_path)) {
-    return misc::resolve_tilde::resolve_tilde(file_path);
+std::string
+i3neostatus::config_file::impl::resolve_path(std::string &&file_path) {
+  if (i3neostatus::misc::resolve_tilde::would_resolve_tilde(file_path)) {
+    return i3neostatus::misc::resolve_tilde::resolve_tilde(file_path);
   } else {
     return file_path;
   }
 }
 
-config_file::parsed config_file::impl::read(const std::string &file_path) {
+i3neostatus::config_file::parsed
+i3neostatus::config_file::impl::read(const std::string &file_path) {
   static const std::filesystem::path builtin_module_install_path{
-      program_constants::g_k_install_path / "lib"};
+      i3neostatus::program_constants::g_k_install_path / "lib"};
   static constexpr char builtin_module_prefix_remove{'_'};
   static constexpr std::string builtin_module_suffix_add{".so"};
 
@@ -277,7 +287,8 @@ config_file::parsed config_file::impl::read(const std::string &file_path) {
 }
 
 libconfigfile::node_ptr<libconfigfile::map_node>
-config_file::impl::libcf_parse_file_wrapper(const std::string &file_path) {
+i3neostatus::config_file::impl::libcf_parse_file_wrapper(
+    const std::string &file_path) {
   try {
     return libconfigfile::parse_file(file_path);
   } catch (const libconfigfile::syntax_error &ex) {

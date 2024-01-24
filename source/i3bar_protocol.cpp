@@ -14,13 +14,15 @@
 #include <variant>
 #include <vector>
 
-void i3bar_protocol::print_header(const i3bar_data::header &value,
-                                  std::ostream &stream /*= std::cout */) {
+void i3neostatus::i3bar_protocol::print_header(
+    const i3neostatus::i3bar_data::header &value,
+    std::ostream &stream /*= std::cout */) {
   stream << impl::serialize_header(value) << json_constants::g_k_newline
          << std::flush;
 }
 
-void i3bar_protocol::init_statusline(std::ostream &stream /*= std::cout*/) {
+void i3neostatus::i3bar_protocol::init_statusline(
+    std::ostream &stream /*= std::cout*/) {
   stream << json_constants::g_k_array_opening_delimiter
          << json_constants::g_k_newline;
   stream << json_constants::g_k_array_opening_delimiter
@@ -29,9 +31,9 @@ void i3bar_protocol::init_statusline(std::ostream &stream /*= std::cout*/) {
   stream << std::flush;
 }
 
-void i3bar_protocol::print_statusline(
-    const std::vector<i3bar_data::block> &value, bool hide_empty /*= true*/,
-    std::ostream &stream /*= std::cout*/) {
+void i3neostatus::i3bar_protocol::print_statusline(
+    const std::vector<i3neostatus::i3bar_data::block> &value,
+    bool hide_empty /*= true*/, std::ostream &stream /*= std::cout*/) {
   impl::print_statusline(
       [&value, &hide_empty]() -> std::vector<std::string> {
         std::vector<std::string> ret_val;
@@ -46,8 +48,8 @@ void i3bar_protocol::print_statusline(
       stream);
 }
 
-void i3bar_protocol::print_statusline(
-    const std::pair<i3bar_data::block, std::size_t> &value,
+void i3neostatus::i3bar_protocol::print_statusline(
+    const std::pair<i3neostatus::i3bar_data::block, std::size_t> &value,
     std::vector<std::string> &cache, bool hide_empty /* = true*/,
     std::ostream &stream /*= std::cout*/) {
   cache[value.second] = ((value.first.content.full_text.empty() && hide_empty)
@@ -56,8 +58,9 @@ void i3bar_protocol::print_statusline(
   impl::print_statusline(cache, stream);
 }
 
-void i3bar_protocol::print_statusline(
-    const std::vector<std::pair<i3bar_data::block, std::size_t>> &value,
+void i3neostatus::i3bar_protocol::print_statusline(
+    const std::vector<std::pair<i3neostatus::i3bar_data::block, std::size_t>>
+        &value,
     std::vector<std::string> &cache, bool hide_empty /*= true*/,
     std::ostream &stream /*= std::cout*/) {
   for (std::size_t i{0}; i < value.size(); ++i) {
@@ -69,29 +72,30 @@ void i3bar_protocol::print_statusline(
   impl::print_statusline(cache, stream);
 }
 
-void i3bar_protocol::init_click_event(
+void i3neostatus::i3bar_protocol::init_click_event(
     std::istream &input_stream /*=std::cin*/) {
   input_stream.ignore(std::numeric_limits<std::streamsize>::max(),
                       json_constants::g_k_array_opening_delimiter);
 }
 
-i3bar_data::click_event
-i3bar_protocol::read_click_event(std::istream &input_stream /*= std::cin*/) {
+i3neostatus::i3bar_data::click_event
+i3neostatus::i3bar_protocol::read_click_event(
+    std::istream &input_stream /*= std::cin*/) {
   std::string input_str{};
   std::getline(input_stream, input_str, json_constants::g_k_newline);
 
   return impl::parse_click_event(input_str);
 }
 
-void i3bar_protocol::impl::print_statusline(
+void i3neostatus::i3bar_protocol::impl::print_statusline(
     const std::vector<std::string> &value,
     std::ostream &stream /*= std::cout*/) {
   stream << json_constants::g_k_element_separator << serialize_array(value)
          << json_constants::g_k_newline << std::flush;
 }
 
-std::string
-i3bar_protocol::impl::serialize_header(const i3bar_data::header &header) {
+std::string i3neostatus::i3bar_protocol::impl::serialize_header(
+    const i3neostatus::i3bar_data::header &header) {
   return serialize_object(
       [&header]() -> std::vector<std::pair<std::string, std::string>> {
         std::vector<std::pair<std::string, std::string>> ret_val;
@@ -118,8 +122,8 @@ i3bar_protocol::impl::serialize_header(const i3bar_data::header &header) {
       }());
 }
 
-std::string
-i3bar_protocol::impl::serialize_block(const i3bar_data::block &block) {
+std::string i3neostatus::i3bar_protocol::impl::serialize_block(
+    const i3neostatus::i3bar_data::block &block) {
   return serialize_object(
       [&block]() -> std::vector<std::pair<std::string, std::string>> {
         std::vector<std::pair<std::string, std::string>> ret_val;
@@ -217,7 +221,7 @@ i3bar_protocol::impl::serialize_block(const i3bar_data::block &block) {
       }());
 }
 
-std::string i3bar_protocol::impl::serialize_name_value(
+std::string i3neostatus::i3bar_protocol::impl::serialize_name_value(
     const std::pair<std::string, std::string> &name_value) {
 
   return std::string{json_constants::g_k_string_delimiter + name_value.first +
@@ -226,7 +230,7 @@ std::string i3bar_protocol::impl::serialize_name_value(
                      name_value.second};
 }
 
-std::string i3bar_protocol::impl::serialize_object(
+std::string i3neostatus::i3bar_protocol::impl::serialize_object(
     const std::vector<std::pair<std::string, std::string>> &object) {
   std::string ret_val;
 
@@ -244,8 +248,8 @@ std::string i3bar_protocol::impl::serialize_object(
   return ret_val;
 }
 
-std::string
-i3bar_protocol::impl::serialize_array(const std::vector<std::string> &array) {
+std::string i3neostatus::i3bar_protocol::impl::serialize_array(
+    const std::vector<std::string> &array) {
   std::string ret_val;
 
   ret_val += json_constants::g_k_array_opening_delimiter;
@@ -264,8 +268,8 @@ i3bar_protocol::impl::serialize_array(const std::vector<std::string> &array) {
   return ret_val;
 }
 
-std::string
-i3bar_protocol::impl::serialize_string(const std::string_view string) {
+std::string i3neostatus::i3bar_protocol::impl::serialize_string(
+    const std::string_view string) {
   static const std::string control_chars{
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
       0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
@@ -322,7 +326,7 @@ i3bar_protocol::impl::serialize_string(const std::string_view string) {
   return ret_val;
 }
 
-std::string i3bar_protocol::impl::serialize_bool(const bool b) {
+std::string i3neostatus::i3bar_protocol::impl::serialize_bool(const bool b) {
   if (b) {
     return "true";
   } else {
@@ -330,8 +334,9 @@ std::string i3bar_protocol::impl::serialize_bool(const bool b) {
   }
 }
 
-i3bar_data::click_event
-i3bar_protocol::impl::parse_click_event(const std::string_view click_event) {
+i3neostatus::i3bar_data::click_event
+i3neostatus::i3bar_protocol::impl::parse_click_event(
+    const std::string_view click_event) {
   const auto substr{[](const std::string_view str,
                        const std::string::size_type begin,
                        const std::string::size_type end) -> std::string_view {
@@ -383,7 +388,7 @@ i3bar_protocol::impl::parse_click_event(const std::string_view click_event) {
       }};
 
   std::string name_buf;
-  name_buf.resize(misc::constexpr_minmax::max(
+  name_buf.resize(i3neostatus::misc::constexpr_minmax::max(
       json_strings::click_event::k_name.size(),
       json_strings::click_event::k_instance.size(),
       json_strings::click_event::k_x.size(),
@@ -399,7 +404,7 @@ i3bar_protocol::impl::parse_click_event(const std::string_view click_event) {
 
   constexpr std::hash<std::string> string_hash{};
 
-  i3bar_data::click_event ret_val;
+  i3neostatus::i3bar_data::click_event ret_val;
 
   std::string::size_type continue_from_pos{0};
 
@@ -417,78 +422,80 @@ i3bar_protocol::impl::parse_click_event(const std::string_view click_event) {
       name_buf = substr(click_event, name_begin_pos, name_end_pos);
 
       switch (string_hash(name_buf)) {
-      case misc::constexpr_hash_string::hash(
+      case i3neostatus::misc::constexpr_hash_string::hash(
           json_strings::click_event::k_name): {
         ret_val.id.name =
             read_string_value(click_event, name_end_pos, continue_from_pos);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case i3neostatus::misc::constexpr_hash_string::hash(
           json_strings::click_event::k_instance): {
         ret_val.id.instance = module_id::from_string(
             read_string_value(click_event, name_end_pos, continue_from_pos));
       } break;
-      case misc::constexpr_hash_string::hash(json_strings::click_event::k_x): {
+      case i3neostatus::misc::constexpr_hash_string::hash(
+          json_strings::click_event::k_x): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.x);
       } break;
-      case misc::constexpr_hash_string::hash(json_strings::click_event::k_y): {
+      case i3neostatus::misc::constexpr_hash_string::hash(
+          json_strings::click_event::k_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.y);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case i3neostatus::misc::constexpr_hash_string::hash(
           json_strings::click_event::k_button): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.button);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case i3neostatus::misc::constexpr_hash_string::hash(
           json_strings::click_event::k_relative_x): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.relative_x);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case i3neostatus::misc::constexpr_hash_string::hash(
           json_strings::click_event::k_relative_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.relative_y);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case i3neostatus::misc::constexpr_hash_string::hash(
           json_strings::click_event::k_output_x): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.output_x);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case i3neostatus::misc::constexpr_hash_string::hash(
           json_strings::click_event::k_output_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.output_y);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case i3neostatus::misc::constexpr_hash_string::hash(
           json_strings::click_event::k_width): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.width);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case i3neostatus::misc::constexpr_hash_string::hash(
           json_strings::click_event::k_height): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.height);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case i3neostatus::misc::constexpr_hash_string::hash(
           json_strings::click_event::k_modifiers): {
         std::string::size_type array_begin_pos{click_event.find(
             json_constants::g_k_array_opening_delimiter, name_end_pos + 2)};

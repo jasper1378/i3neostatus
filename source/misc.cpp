@@ -9,11 +9,13 @@
 #include <string>
 #include <string_view>
 
-bool misc::resolve_tilde::would_resolve_tilde(const std::string_view str) {
+bool i3neostatus::misc::resolve_tilde::would_resolve_tilde(
+    const std::string_view str) {
   return (!(str.empty() || str.front() != '~'));
 }
 
-std::string misc::resolve_tilde::resolve_tilde(const std::string &str) {
+std::string
+i3neostatus::misc::resolve_tilde::resolve_tilde(const std::string &str) {
   if (!would_resolve_tilde(str)) {
     return str;
   } else {

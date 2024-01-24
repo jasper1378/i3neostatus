@@ -175,6 +175,12 @@ Note that i3neostatus uses (libconfigfile)[https://github.com/jasper1378/libconf
 
 Throughout the following `module_test` will serve as a stand-in for the name of your module.
 
+All i3neostatus code is found within the `i3neostatus` namespace. It might be a good idea to start your module with using-namespace declaration to save yourself some typing. The following code examples assume that this line is present.
+
+```cpp
+using namespace i3neostatus;
+```
+
 Start by including the `i3neostatus/module_dev.hpp` header file. If i3neostatus has been installed to your system, this header should be found in `/usr/local/include` or something similar. This header contains all the declarations needed to interface with i3neostatus, including access to `libconfigfile`.
 
 ```cpp

@@ -8,6 +8,8 @@
 #include <exception>
 #include <string>
 
+namespace i3neostatus {
+
 namespace thread_comm {
 template <typename t_value> class producer;
 }
@@ -47,4 +49,5 @@ public:
   void put_error(std::exception_ptr &&error);
 };
 
+} // namespace i3neostatus
 #endif

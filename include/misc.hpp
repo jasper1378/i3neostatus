@@ -9,6 +9,8 @@
 #include <string_view>
 #include <type_traits>
 
+namespace i3neostatus {
+
 namespace misc {
 namespace resolve_tilde {
 bool would_resolve_tilde(const std::string_view str);
@@ -218,4 +220,5 @@ inline constexpr std::size_t impl::shift_mix(std::size_t v) {
 
 } // namespace misc
 
+} // namespace i3neostatus
 #endif
