@@ -12,6 +12,8 @@
 #include <stdexcept>
 #include <string>
 
+using namespace i3neostatus;
+
 class simple_date : public module_base {
 private:
   static constexpr std::string k_name{"simple_date"};
