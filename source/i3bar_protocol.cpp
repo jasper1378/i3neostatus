@@ -15,8 +15,7 @@
 #include <vector>
 
 void i3neostatus::i3bar_protocol::print_header(
-    const i3neostatus::i3bar_data::header &value,
-    std::ostream &stream /*= std::cout */) {
+    const i3bar_data::header &value, std::ostream &stream /*= std::cout */) {
   stream << impl::serialize_header(value) << json_constants::g_k_newline
          << std::flush;
 }
@@ -32,8 +31,8 @@ void i3neostatus::i3bar_protocol::init_statusline(
 }
 
 void i3neostatus::i3bar_protocol::print_statusline(
-    const std::vector<i3neostatus::i3bar_data::block> &value,
-    bool hide_empty /*= true*/, std::ostream &stream /*= std::cout*/) {
+    const std::vector<i3bar_data::block> &value, bool hide_empty /*= true*/,
+    std::ostream &stream /*= std::cout*/) {
   impl::print_statusline(
       [&value, &hide_empty]() -> std::vector<std::string> {
         std::vector<std::string> ret_val;
@@ -49,7 +48,7 @@ void i3neostatus::i3bar_protocol::print_statusline(
 }
 
 void i3neostatus::i3bar_protocol::print_statusline(
-    const std::pair<i3neostatus::i3bar_data::block, std::size_t> &value,
+    const std::pair<i3bar_data::block, std::size_t> &value,
     std::vector<std::string> &cache, bool hide_empty /* = true*/,
     std::ostream &stream /*= std::cout*/) {
   cache[value.second] = ((value.first.content.full_text.empty() && hide_empty)
@@ -59,8 +58,7 @@ void i3neostatus::i3bar_protocol::print_statusline(
 }
 
 void i3neostatus::i3bar_protocol::print_statusline(
-    const std::vector<std::pair<i3neostatus::i3bar_data::block, std::size_t>>
-        &value,
+    const std::vector<std::pair<i3bar_data::block, std::size_t>> &value,
     std::vector<std::string> &cache, bool hide_empty /*= true*/,
     std::ostream &stream /*= std::cout*/) {
   for (std::size_t i{0}; i < value.size(); ++i) {
@@ -95,7 +93,7 @@ void i3neostatus::i3bar_protocol::impl::print_statusline(
 }
 
 std::string i3neostatus::i3bar_protocol::impl::serialize_header(
-    const i3neostatus::i3bar_data::header &header) {
+    const i3bar_data::header &header) {
   return serialize_object(
       [&header]() -> std::vector<std::pair<std::string, std::string>> {
         std::vector<std::pair<std::string, std::string>> ret_val;
@@ -123,7 +121,7 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_header(
 }
 
 std::string i3neostatus::i3bar_protocol::impl::serialize_block(
-    const i3neostatus::i3bar_data::block &block) {
+    const i3bar_data::block &block) {
   return serialize_object(
       [&block]() -> std::vector<std::pair<std::string, std::string>> {
         std::vector<std::pair<std::string, std::string>> ret_val;
@@ -388,7 +386,7 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
       }};
 
   std::string name_buf;
-  name_buf.resize(i3neostatus::misc::constexpr_minmax::max(
+  name_buf.resize(misc::constexpr_minmax::max(
       json_strings::click_event::k_name.size(),
       json_strings::click_event::k_instance.size(),
       json_strings::click_event::k_x.size(),
@@ -404,7 +402,7 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
 
   constexpr std::hash<std::string> string_hash{};
 
-  i3neostatus::i3bar_data::click_event ret_val;
+  i3bar_data::click_event ret_val;
 
   std::string::size_type continue_from_pos{0};
 
@@ -422,80 +420,78 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
       name_buf = substr(click_event, name_begin_pos, name_end_pos);
 
       switch (string_hash(name_buf)) {
-      case i3neostatus::misc::constexpr_hash_string::hash(
+      case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_name): {
         ret_val.id.name =
             read_string_value(click_event, name_end_pos, continue_from_pos);
       } break;
-      case i3neostatus::misc::constexpr_hash_string::hash(
+      case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_instance): {
         ret_val.id.instance = module_id::from_string(
             read_string_value(click_event, name_end_pos, continue_from_pos));
       } break;
-      case i3neostatus::misc::constexpr_hash_string::hash(
-          json_strings::click_event::k_x): {
+      case misc::constexpr_hash_string::hash(json_strings::click_event::k_x): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.x);
       } break;
-      case i3neostatus::misc::constexpr_hash_string::hash(
-          json_strings::click_event::k_y): {
+      case misc::constexpr_hash_string::hash(json_strings::click_event::k_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.y);
       } break;
-      case i3neostatus::misc::constexpr_hash_string::hash(
+      case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_button): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.button);
       } break;
-      case i3neostatus::misc::constexpr_hash_string::hash(
+      case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_relative_x): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.relative_x);
       } break;
-      case i3neostatus::misc::constexpr_hash_string::hash(
+      case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_relative_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.relative_y);
       } break;
-      case i3neostatus::misc::constexpr_hash_string::hash(
+      case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_output_x): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.output_x);
       } break;
-      case i3neostatus::misc::constexpr_hash_string::hash(
+      case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_output_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.output_y);
       } break;
-      case i3neostatus::misc::constexpr_hash_string::hash(
+      case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_width): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.width);
       } break;
-      case i3neostatus::misc::constexpr_hash_string::hash(
+      case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_height): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.content.height);
       } break;
-      case i3neostatus::misc::constexpr_hash_string::hash(
+      case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_modifiers): {
         std::string::size_type array_begin_pos{click_event.find(
             json_constants::g_k_array_opening_delimiter, name_end_pos + 2)};
