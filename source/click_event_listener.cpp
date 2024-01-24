@@ -8,13 +8,13 @@
 #include <utility>
 #include <vector>
 
-click_event_listener::click_event_listener(
+i3neostatus::click_event_listener::click_event_listener(
     std::vector<module_handle> *module_handles,
     std::istream *input_stream /*= &std::cin*/)
     : m_module_handles{module_handles}, m_input_stream{input_stream},
       m_thread{} {}
 
-click_event_listener::click_event_listener(
+i3neostatus::click_event_listener::click_event_listener(
     click_event_listener &&other) noexcept
     : m_module_handles{other.m_module_handles},
       m_input_stream{other.m_input_stream},
@@ -23,14 +23,14 @@ click_event_listener::click_event_listener(
   other.m_input_stream = nullptr;
 }
 
-click_event_listener::~click_event_listener() {
+i3neostatus::click_event_listener::~click_event_listener() {
   if (m_thread.joinable()) {
     m_thread.join();
   }
 }
 
-click_event_listener &
-click_event_listener::operator=(click_event_listener &&other) noexcept {
+i3neostatus::click_event_listener &i3neostatus::click_event_listener::operator=(
+    click_event_listener &&other) noexcept {
   if (this != &other) {
     m_module_handles = other.m_module_handles;
     m_input_stream = other.m_input_stream;
@@ -42,7 +42,7 @@ click_event_listener::operator=(click_event_listener &&other) noexcept {
   return *this;
 }
 
-void click_event_listener::run() {
+void i3neostatus::click_event_listener::run() {
   m_thread = std::thread{[this]() -> void {
     i3bar_protocol::init_click_event(*m_input_stream);
 

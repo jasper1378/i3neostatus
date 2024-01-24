@@ -3,6 +3,8 @@
 
 #include <utility>
 
+namespace i3neostatus {
+
 template <typename... T> struct generic_callback {
   void (*func)(void *userdata, T... args);
   void *userdata;
@@ -12,4 +14,5 @@ template <typename... T> struct generic_callback {
   }
 };
 
+} // namespace i3neostatus
 #endif

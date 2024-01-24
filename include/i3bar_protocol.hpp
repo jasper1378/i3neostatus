@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+namespace i3neostatus {
+
 namespace i3bar_protocol {
 
 namespace json_strings {
@@ -107,4 +109,5 @@ std::string serialize_bool(const bool b);
 i3bar_data::click_event parse_click_event(const std::string_view click_event);
 } // namespace impl
 } // namespace i3bar_protocol
+} // namespace i3neostatus
 #endif

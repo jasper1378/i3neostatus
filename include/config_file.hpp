@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+namespace i3neostatus {
+
 namespace config_file {
 class error : public std::runtime_error {
 private:
@@ -64,4 +66,5 @@ libcf_parse_file_wrapper(const std::string &file_path);
 
 }; // namespace config_file
 
+} // namespace i3neostatus
 #endif

@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <string>
 
+namespace i3neostatus {
+
 class module_error : public std::runtime_error {
 private:
   using base_t = std::runtime_error;
@@ -28,4 +30,5 @@ public:
   virtual const char *what() const noexcept override;
 };
 
+} // namespace i3neostatus
 #endif

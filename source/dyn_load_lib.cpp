@@ -7,26 +7,30 @@
 #include <stdexcept>
 #include <string>
 
-dyn_load_lib::error::error(const std::string &what_arg) : base_t{what_arg} {}
+i3neostatus::dyn_load_lib::error::error(const std::string &what_arg)
+    : base_t{what_arg} {}
 
-dyn_load_lib::error::error(const char *what_arg) : base_t{what_arg} {}
+i3neostatus::dyn_load_lib::error::error(const char *what_arg)
+    : base_t{what_arg} {}
 
-dyn_load_lib::error::error(const error &other) : base_t{other} {}
+i3neostatus::dyn_load_lib::error::error(const error &other) : base_t{other} {}
 
-dyn_load_lib::error::~error() {}
+i3neostatus::dyn_load_lib::error::~error() {}
 
-dyn_load_lib::error &dyn_load_lib::error::operator=(const error &other) {
+i3neostatus::dyn_load_lib::error &
+i3neostatus::dyn_load_lib::error::operator=(const error &other) {
   if (this != &other) {
     base_t::operator=(other);
   }
   return *this;
 }
 
-const char *dyn_load_lib::error::what() const noexcept {
+const char *i3neostatus::dyn_load_lib::error::what() const noexcept {
   return base_t::what();
 }
 
-dyn_load_lib::lib::lib(const char *file_path, dlopen_flags::type flags)
+i3neostatus::dyn_load_lib::lib::lib(const char *file_path,
+                                    dlopen_flags::type flags)
     : m_handle{nullptr} {
   dlerror();
   m_handle = dlopen(file_path, static_cast<int>(flags));
@@ -35,24 +39,27 @@ dyn_load_lib::lib::lib(const char *file_path, dlopen_flags::type flags)
   }
 }
 
-dyn_load_lib::lib::lib(const std::string &file_path, dlopen_flags::type flags)
+i3neostatus::dyn_load_lib::lib::lib(const std::string &file_path,
+                                    dlopen_flags::type flags)
     : lib{file_path.c_str(), flags} {}
 
-dyn_load_lib::lib::lib(const std::filesystem::path &file_path,
-                       dlopen_flags::type flags)
+i3neostatus::dyn_load_lib::lib::lib(const std::filesystem::path &file_path,
+                                    dlopen_flags::type flags)
     : lib{file_path.c_str(), flags} {}
 
-dyn_load_lib::lib::lib(lib &&other) noexcept : m_handle{other.m_handle} {
+i3neostatus::dyn_load_lib::lib::lib(lib &&other) noexcept
+    : m_handle{other.m_handle} {
   other.m_handle = nullptr;
 }
 
-dyn_load_lib::lib::~lib() {
+i3neostatus::dyn_load_lib::lib::~lib() {
   if (m_handle != nullptr) {
     dlclose(m_handle);
   }
 }
 
-dyn_load_lib::lib &dyn_load_lib::lib::operator=(lib &&other) {
+i3neostatus::dyn_load_lib::lib &
+i3neostatus::dyn_load_lib::lib::operator=(lib &&other) {
   if (this != &other) {
     if (m_handle != nullptr) {
       dlerror();
@@ -66,8 +73,8 @@ dyn_load_lib::lib &dyn_load_lib::lib::operator=(lib &&other) {
   return *this;
 }
 
-void *dyn_load_lib::lib::get_symbol_impl(void *handle, const char *symbol,
-                                         const char *version /*= ""*/) {
+void *i3neostatus::dyn_load_lib::lib::get_symbol_impl(
+    void *handle, const char *symbol, const char *version /*= ""*/) {
   dlerror();
   void *sym_addr{nullptr};
   sym_addr = ((version[0] == '\0') ? (dlsym(handle, symbol))
@@ -79,7 +86,7 @@ void *dyn_load_lib::lib::get_symbol_impl(void *handle, const char *symbol,
   }
 }
 
-Dl_info dyn_load_lib::lib::get_info_impl(void *addr) {
+Dl_info i3neostatus::dyn_load_lib::lib::get_info_impl(void *addr) {
   dlerror();
   Dl_info ret_val;
   if (dladdr(addr, &ret_val) != 0) {

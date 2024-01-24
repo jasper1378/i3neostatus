@@ -6,6 +6,8 @@
 #include <istream>
 #include <vector>
 
+namespace i3neostatus {
+
 class click_event_listener {
 private:
   std::vector<module_handle> *m_module_handles;
@@ -30,4 +32,5 @@ public:
   void run();
 };
 
+} // namespace i3neostatus
 #endif

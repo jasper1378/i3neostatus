@@ -14,6 +14,8 @@
 #include <string>
 #include <thread>
 
+namespace i3neostatus {
+
 class module_handle {
 public:
   enum class state_change_type {
@@ -76,4 +78,5 @@ public:
   thread_comm::consumer<module_api::block> &get_comm();
 };
 
+} // namespace i3neostatus
 #endif

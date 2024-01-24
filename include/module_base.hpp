@@ -5,6 +5,8 @@
 
 #include <string>
 
+namespace i3neostatus {
+
 class module_base {
 public:
   using allocator_func_t = module_base *();
@@ -29,4 +31,5 @@ public:
   virtual void on_click_event(module_api::click_event &&click_event);
 };
 
+} // namespace i3neostatus
 #endif

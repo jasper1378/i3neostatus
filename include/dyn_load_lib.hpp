@@ -8,6 +8,8 @@
 
 #include <dlfcn.h>
 
+namespace i3neostatus {
+
 namespace dyn_load_lib {
 class error : public std::runtime_error {
 private:
@@ -109,4 +111,5 @@ private:
 };
 } // namespace dyn_load_lib
 
+} // namespace i3neostatus
 #endif
