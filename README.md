@@ -547,7 +547,7 @@ The final step is to compile your module to a shared object that can be loaded b
 g++ -std=c++20 -Wall -Wextra -g -O2 -fPIC -shared module_test.cpp -o module_test
 ```
 For more complex projects, I recommend using the Makefile found here: [generic-makefile/C++/library/Makefile](https://github.com/jasper1378/generic-makefile/blob/main/C%2B%2B/library/Makefile).
-This binary can be placed anywhere, however, `/usr/local/lib/i3neostatus_modules/module_test` is recommended for consistency between third-party modules.
+This binary can be placed anywhere, however, `/usr/local/lib/i3neostatus_modules/module_test` is recommended for consistency between third-party modules. The only naming convention that the binary file must follow is that it cannot be prefixed with an underscore, as i3neostatus reserves this as a shorthand to refer to built-in modules.
 
 As a final piece of advice, be very wary of calling any non-thread-safe library functions in your module in order to avoid race conditions with other modules that may be loaded.
 
