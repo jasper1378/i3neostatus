@@ -47,6 +47,8 @@ public:
 
   void put_error(const std::exception_ptr &error);
   void put_error(std::exception_ptr &&error);
+  void put_error(const std::exception &error);
+  void put_error(std::exception &&error);
 };
 
 } // namespace i3neostatus
