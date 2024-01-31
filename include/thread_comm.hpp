@@ -140,6 +140,14 @@ public:
     }
   }
 
+  bool put_exception(const std::exception &exception) {
+    return put_exception(std::make_exception_ptr(exception));
+  }
+
+  bool put_exception(std::exception &&exception) {
+    return put_exception(std::make_exception_ptr(std::move(exception)));
+  }
+
   std::variant<t_value, std::exception_ptr> get() {
     std::unique_lock<std::mutex> lock_m_value_or_exception_mtx{
         m_value_or_exception_mtx, std::defer_lock_t{}};
@@ -410,6 +418,14 @@ public:
   }
 
   bool put_exception(std::exception_ptr &&exception) {
+    return m_shared_state_ptr->put_exception(std::move(exception));
+  }
+
+  bool put_exception(const std::exception &exception) {
+    return m_shared_state_ptr->put_exception(std::move(exception));
+  }
+
+  bool put_exception(std::exception &&exception) {
     return m_shared_state_ptr->put_exception(std::move(exception));
   }
 

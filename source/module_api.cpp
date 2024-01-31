@@ -48,3 +48,11 @@ void i3neostatus::module_api::put_error(const std::exception_ptr &error) {
 void i3neostatus::module_api::put_error(std::exception_ptr &&error) {
   m_thread_comm_producer->put_exception(std::move(error));
 }
+
+void i3neostatus::module_api::put_error(const std::exception &error) {
+  m_thread_comm_producer->put_exception(error);
+}
+
+void i3neostatus::module_api::put_error(std::exception &&error) {
+  m_thread_comm_producer->put_exception(std::move(error));
+}
