@@ -293,6 +293,8 @@ void module_apu::put_block(block&& block);
 
 The second is `module_api::put_error()`, which is used by your module to communicate an error to i3neostatus. Note that once `module_api::put_error()` has been called, no further calls to `module_api::put_block()` or `module_api::put_exception()` should be made.
 ```cpp
+void module_api::put_error(const std::exception& error);
+void module_api::put_error(std::exception&& error);
 void module_api::put_error(const std::exception_ptr& error);
 void module_api::put_error(std::exception_ptr&& error);
 ```
