@@ -42,7 +42,7 @@ private:
 private:
   static const decltype(thread_comm::state_change_callback::func)
       m_k_thread_comm_state_change_callback;
-  static const thread_comm::shared_state_state::type
+  static const thread_comm::shared_state_state
       m_k_state_change_subscribed_events;
 
 public:

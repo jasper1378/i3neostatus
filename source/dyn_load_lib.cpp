@@ -29,8 +29,7 @@ const char *i3neostatus::dyn_load_lib::error::what() const noexcept {
   return base_t::what();
 }
 
-i3neostatus::dyn_load_lib::lib::lib(const char *file_path,
-                                    dlopen_flags::type flags)
+i3neostatus::dyn_load_lib::lib::lib(const char *file_path, dlopen_flags flags)
     : m_handle{nullptr} {
   dlerror();
   m_handle = dlopen(file_path, static_cast<int>(flags));
@@ -40,11 +39,11 @@ i3neostatus::dyn_load_lib::lib::lib(const char *file_path,
 }
 
 i3neostatus::dyn_load_lib::lib::lib(const std::string &file_path,
-                                    dlopen_flags::type flags)
+                                    dlopen_flags flags)
     : lib{file_path.c_str(), flags} {}
 
 i3neostatus::dyn_load_lib::lib::lib(const std::filesystem::path &file_path,
-                                    dlopen_flags::type flags)
+                                    dlopen_flags flags)
     : lib{file_path.c_str(), flags} {}
 
 i3neostatus::dyn_load_lib::lib::lib(lib &&other) noexcept
