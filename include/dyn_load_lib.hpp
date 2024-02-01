@@ -1,6 +1,8 @@
 #ifndef I3NEOSTATUS_DYN_LOAD_LIB_HPP
 #define I3NEOSTATUS_DYN_LOAD_LIB_HPP
 
+#include "define_enum_flag_operators.hpp"
+
 #include <exception>
 #include <filesystem>
 #include <stdexcept>
@@ -30,9 +32,7 @@ public:
   virtual const char *what() const noexcept override;
 };
 
-namespace dlopen_flags {
-using type = unsigned int;
-enum {
+enum class dlopen_flags : unsigned int {
   lazy = RTLD_LAZY,
   now = RTLD_NOW,
   global = RTLD_GLOBAL,
@@ -41,7 +41,7 @@ enum {
   noload = RTLD_NOLOAD,
   deepbind = RTLD_DEEPBIND,
 };
-} // namespace dlopen_flags
+DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(dlopen_flags);
 
 namespace dlsym_pseudohandles {
 using type = void *const;
@@ -54,9 +54,9 @@ private:
   void *m_handle;
 
 public:
-  lib(const char *file_path, dlopen_flags::type flags);
-  lib(const std::string &file_path, dlopen_flags::type flags);
-  lib(const std::filesystem::path &file_path, dlopen_flags::type flags);
+  lib(const char *file_path, dlopen_flags flags);
+  lib(const std::string &file_path, dlopen_flags flags);
+  lib(const std::filesystem::path &file_path, dlopen_flags flags);
   lib(lib &&other) noexcept;
   lib(const lib &other) = delete;
 

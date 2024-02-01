@@ -17,8 +17,7 @@
 
 const decltype(i3neostatus::thread_comm::state_change_callback::func)
     i3neostatus::module_handle::m_k_thread_comm_state_change_callback{
-        [](void *userdata,
-           thread_comm::shared_state_state::type state) -> void {
+        [](void *userdata, thread_comm::shared_state_state state) -> void {
           state_change_callback *scc{
               static_cast<state_change_callback *>(userdata)};
           switch (state) {
@@ -35,7 +34,7 @@ const decltype(i3neostatus::thread_comm::state_change_callback::func)
           }
         }};
 
-const i3neostatus::thread_comm::shared_state_state::type
+const i3neostatus::thread_comm::shared_state_state
     i3neostatus::module_handle::m_k_state_change_subscribed_events{
         thread_comm::shared_state_state::value |
         thread_comm::shared_state_state::exception};

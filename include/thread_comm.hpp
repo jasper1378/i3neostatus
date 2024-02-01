@@ -1,6 +1,7 @@
 #ifndef I3NEOSTATUS_THREAD_COMM_HPP
 #define I3NEOSTATUS_THREAD_COMM_HPP
 
+#include "define_enum_flag_operators.hpp"
 #include "generic_callback.hpp"
 #include "misc.hpp"
 
@@ -18,19 +19,16 @@
 namespace i3neostatus {
 
 namespace thread_comm {
-namespace shared_state_state {
-using type = unsigned int;
-enum : type {
+enum class shared_state_state : unsigned int {
   null = 0b0000,
   empty = 0b0010,
   value = 0b0100,
   exception = 0b1000,
   all = empty | value | exception,
 };
+DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(shared_state_state);
 
-} // namespace shared_state_state
-
-using state_change_callback = generic_callback<shared_state_state::type>;
+using state_change_callback = generic_callback<shared_state_state>;
 
 template <typename t_value> class shared_state;
 template <typename t_value> class shared_state_ptr;
@@ -54,7 +52,7 @@ private:
   };
 
   state_change_callback m_state_change_callback;
-  shared_state_state::type m_state_change_subscribed_events;
+  shared_state_state m_state_change_subscribed_events;
 
 public:
   shared_state()
@@ -63,7 +61,7 @@ public:
         m_state_change_subscribed_events{shared_state_state::null} {}
 
   shared_state(const state_change_callback &state_change_callback,
-               const shared_state_state::type state_change_subscribed_events)
+               const shared_state_state state_change_subscribed_events)
       : m_value_or_exception{}, m_value_or_exception_mtx{},
         m_state_change_callback{state_change_callback},
         m_state_change_subscribed_events{state_change_subscribed_events} {}
@@ -200,8 +198,9 @@ public:
   }
 
 private:
-  void maybe_call_callback(const shared_state_state::type state) {
-    if ((m_state_change_subscribed_events & state) != 0U) {
+  void maybe_call_callback(const shared_state_state state) {
+    if (static_cast<std::underlying_type_t<shared_state_state>>(
+            m_state_change_subscribed_events & state) != 0U) {
       m_state_change_callback.call(state);
     }
   }
@@ -493,10 +492,9 @@ t_intf<t_value> make() {
 
 template <typename t_value, template <typename> typename t_intf>
   requires concept_interface<t_intf>
-t_intf<t_value>
-make(const state_change_callback &state_change_callback,
-     const shared_state_state::type state_change_subscribed_events =
-         shared_state_state::all) {
+t_intf<t_value> make(const state_change_callback &state_change_callback,
+                     const shared_state_state state_change_subscribed_events =
+                         shared_state_state::all) {
   return t_intf<t_value>{shared_state_ptr<t_value>::make_shared_state_ptr(
       state_change_callback, state_change_subscribed_events)};
 }
@@ -518,7 +516,7 @@ std::tuple<t_intf<t_value>...> make_set() {
 template <typename t_value, template <typename> typename... t_intf>
 std::tuple<t_intf<t_value>...>
 make_set(const state_change_callback &state_change_callback,
-         const shared_state_state::type state_change_subscribed_events =
+         const shared_state_state state_change_subscribed_events =
              shared_state_state::all) {
   shared_state_ptr<t_value> ssp{
       shared_state_ptr<t_value>::make_shared_state_ptr(
