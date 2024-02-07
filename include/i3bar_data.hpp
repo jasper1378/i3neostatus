@@ -1,6 +1,7 @@
 #ifndef I3NEOSTATUS_I3BAR_DATA_HPP
 #define I3NEOSTATUS_I3BAR_DATA_HPP
 
+#include "color.hpp"
 #include "module_id.hpp"
 
 #include <optional>
@@ -12,6 +13,7 @@ namespace i3neostatus {
 
 namespace i3bar_data {
 using pixel_count_t = long;
+using color_t = color::rgb;
 
 struct header {
   int version;
@@ -30,9 +32,9 @@ struct block {
   struct content {
     std::string full_text;
     std::optional<std::string> short_text;
-    std::optional<std::string> color;
-    std::optional<std::string> background;
-    std::optional<std::string> border;
+    std::optional<color_t> color;
+    std::optional<color_t> background;
+    std::optional<color_t> border;
     std::optional<pixel_count_t> border_top;
     std::optional<pixel_count_t> border_right;
     std::optional<pixel_count_t> border_bottom;

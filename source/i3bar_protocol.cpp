@@ -1,5 +1,6 @@
 #include "i3bar_protocol.hpp"
 
+#include "color.hpp"
 #include "i3bar_data.hpp"
 #include "misc.hpp"
 
@@ -146,18 +147,21 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_block(
         }
 
         if (block.content.color.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_color,
-                               serialize_string(*block.content.color));
+          ret_val.emplace_back(
+              json_strings::block::k_color,
+              serialize_string(color::to_string(*block.content.color)));
         }
 
         if (block.content.background.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_background,
-                               serialize_string(*block.content.background));
+          ret_val.emplace_back(
+              json_strings::block::k_background,
+              serialize_string(color::to_string(*block.content.background)));
         }
 
         if (block.content.border.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_border,
-                               serialize_string(*block.content.border));
+          ret_val.emplace_back(
+              json_strings::block::k_border,
+              serialize_string(color::to_string(*block.content.border)));
         }
 
         if (block.content.border_top.has_value()) {
