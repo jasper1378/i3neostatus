@@ -404,8 +404,6 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
       json_strings::click_event::k_height.size(),
       json_strings::click_event::k_modifiers.size()));
 
-  constexpr std::hash<std::string> string_hash{};
-
   i3bar_data::click_event ret_val;
 
   std::string::size_type continue_from_pos{0};
@@ -423,7 +421,7 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
            1);
       name_buf = substr(click_event, name_begin_pos, name_end_pos);
 
-      switch (string_hash(name_buf)) {
+      switch (misc::constexpr_hash_string::hash(name_buf)) {
       case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_name): {
         ret_val.id.name =
