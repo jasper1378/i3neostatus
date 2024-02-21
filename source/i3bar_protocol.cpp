@@ -2,6 +2,7 @@
 
 #include "color.hpp"
 #include "i3bar_data.hpp"
+#include "i3bar_data_conversions.hpp"
 #include "misc.hpp"
 
 #include <charconv>
@@ -12,7 +13,6 @@
 #include <string_view>
 #include <unordered_map>
 #include <utility>
-#include <variant>
 #include <vector>
 
 void i3neostatus::i3bar_protocol::print_header(
@@ -39,7 +39,7 @@ void i3neostatus::i3bar_protocol::print_statusline(
         std::vector<std::string> ret_val;
         for (std::size_t i{0}; i < ret_val.size(); ++i) {
           ret_val.emplace_back(
-              ((value[i].content.full_text.empty() && hide_empty)
+              ((value[i].content.local.full_text.empty() && hide_empty)
                    ? ("")
                    : (impl::serialize_block(value[i]))));
         }
@@ -52,9 +52,10 @@ void i3neostatus::i3bar_protocol::print_statusline(
     const std::pair<i3bar_data::block, std::size_t> &value,
     std::vector<std::string> &cache, bool hide_empty /* = true*/,
     std::ostream &stream /*= std::cout*/) {
-  cache[value.second] = ((value.first.content.full_text.empty() && hide_empty)
-                             ? ("")
-                             : (impl::serialize_block(value.first)));
+  cache[value.second] =
+      ((value.first.content.local.full_text.empty() && hide_empty)
+           ? ("")
+           : (impl::serialize_block(value.first)));
   impl::print_statusline(cache, stream);
 }
 
@@ -64,7 +65,7 @@ void i3neostatus::i3bar_protocol::print_statusline(
     std::ostream &stream /*= std::cout*/) {
   for (std::size_t i{0}; i < value.size(); ++i) {
     cache[value[i].second] =
-        ((value[i].first.content.full_text.empty() && hide_empty)
+        ((value[i].first.content.local.full_text.empty() && hide_empty)
              ? ("")
              : (impl::serialize_block(value[i].first)));
   }
@@ -139,84 +140,91 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_block(
         }
 
         ret_val.emplace_back(json_strings::block::k_full_text,
-                             serialize_string(block.content.full_text));
+                             serialize_string(block.content.local.full_text));
 
-        if (block.content.short_text.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_short_text,
-                               serialize_string(*block.content.short_text));
-        }
-
-        if (block.content.color.has_value()) {
+        if (block.content.local.short_text.has_value()) {
           ret_val.emplace_back(
-              json_strings::block::k_color,
-              serialize_string(color::to_string(*block.content.color)));
+              json_strings::block::k_short_text,
+              serialize_string(*block.content.local.short_text));
         }
 
-        if (block.content.background.has_value()) {
+        if (block.content.local.theme.color.has_value()) {
+          ret_val.emplace_back(json_strings::block::k_color,
+                               serialize_string(color::to_string(
+                                   *block.content.local.theme.color)));
+        }
+
+        if (block.content.local.theme.background.has_value()) {
+          ret_val.emplace_back(json_strings::block::k_background,
+                               serialize_string(color::to_string(
+                                   *block.content.local.theme.background)));
+        }
+
+        if (block.content.local.theme.border.has_value()) {
+          ret_val.emplace_back(json_strings::block::k_border,
+                               serialize_string(color::to_string(
+                                   *block.content.local.theme.border)));
+        }
+
+        if (block.content.local.theme.border_top.has_value()) {
           ret_val.emplace_back(
-              json_strings::block::k_background,
-              serialize_string(color::to_string(*block.content.background)));
+              json_strings::block::k_border_top,
+              serialize_number(*block.content.local.theme.border_top));
         }
 
-        if (block.content.border.has_value()) {
+        if (block.content.local.theme.border_right.has_value()) {
           ret_val.emplace_back(
-              json_strings::block::k_border,
-              serialize_string(color::to_string(*block.content.border)));
+              json_strings::block::k_border_right,
+              serialize_number(*block.content.local.theme.border_right));
         }
 
-        if (block.content.border_top.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_border_top,
-                               serialize_number(*block.content.border_top));
-        }
-
-        if (block.content.border_right.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_border_right,
-                               serialize_number(*block.content.border_right));
-        }
-
-        if (block.content.border_bottom.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_border_bottom,
-                               serialize_number(*block.content.border_bottom));
-        }
-
-        if (block.content.border_left.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_border_left,
-                               serialize_number(*block.content.border_left));
-        }
-
-        if (block.content.min_width.has_value()) {
+        if (block.content.local.theme.border_bottom.has_value()) {
           ret_val.emplace_back(
-              json_strings::block::k_min_width,
-              ((block.content.min_width->index() == 0)
-                   ? (serialize_number(std::get<0>(*block.content.min_width)))
-                   : (serialize_string(
-                         std::get<1>(*block.content.min_width)))));
+              json_strings::block::k_border_bottom,
+              serialize_number(*block.content.local.theme.border_bottom));
         }
 
-        if (block.content.align.has_value()) {
+        if (block.content.local.theme.border_left.has_value()) {
+          ret_val.emplace_back(
+              json_strings::block::k_border_left,
+              serialize_number(*block.content.local.theme.border_left));
+        }
+
+        if (block.content.local.min_width.has_value()) {
+          ret_val.emplace_back(json_strings::block::k_min_width,
+                               ((block.content.local.min_width->index() == 0)
+                                    ? (serialize_number(std::get<0>(
+                                          *block.content.local.min_width)))
+                                    : (serialize_string(std::get<1>(
+                                          *block.content.local.min_width)))));
+        }
+
+        if (block.content.local.align.has_value()) {
           ret_val.emplace_back(json_strings::block::k_align,
-                               serialize_string(*block.content.align));
+                               serialize_string(i3bar_data::types::to_string(
+                                   *block.content.local.align)));
         }
 
-        if (block.content.urgent.has_value()) {
+        if (block.content.local.urgent.has_value()) {
           ret_val.emplace_back(json_strings::block::k_urgent,
-                               serialize_bool(*block.content.urgent));
+                               serialize_bool(*block.content.local.urgent));
         }
 
-        if (block.content.separator.has_value()) {
+        if (block.content.global.separator.has_value()) {
           ret_val.emplace_back(json_strings::block::k_separator,
-                               serialize_bool(*block.content.separator));
+                               serialize_bool(*block.content.global.separator));
         }
 
-        if (block.content.separator_block_width.has_value()) {
+        if (block.content.global.separator_block_width.has_value()) {
           ret_val.emplace_back(
               json_strings::block::k_separator_block_width,
-              serialize_number(*block.content.separator_block_width));
+              serialize_number(*block.content.global.separator_block_width));
         }
 
-        if (block.content.markup.has_value()) {
+        if (block.content.local.markup.has_value()) {
           ret_val.emplace_back(json_strings::block::k_markup,
-                               serialize_string(*block.content.markup));
+                               serialize_string(i3bar_data::types::to_string(
+                                   *block.content.local.markup)));
         }
 
         return ret_val;
@@ -506,7 +514,8 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
               click_event.find(json_constants::g_k_string_delimiter,
                                value_begin_pos) -
               1};
-          ret_val.content.modifiers.push_back(
+          ret_val.content.modifiers |= i3bar_data::types::from_string<
+              i3bar_data::types::click_modifiers>(
               std::string{substr(click_event, value_begin_pos, value_end_pos)});
           i = value_end_pos + 2;
         }

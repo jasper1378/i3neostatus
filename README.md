@@ -171,14 +171,14 @@ i3neostatus aims to deliver first-class support for third-party modules by simpl
 
 The following will walk you through the development process step-by-step.
 
-Note that i3neostatus uses (libconfigfile)[https://github.com/jasper1378/libconfigfile] to interface with its configuration file. If you wish for your module to be user-configurable, an understanding of this library is recommended.
+Note that i3neostatus uses [libconfigfile](https://github.com/jasper1378/libconfigfile) to interface with its configuration file. If you wish for your module to be user-configurable, an understanding of this library is recommended.
 
 Throughout the following `module_test` will serve as a stand-in for the name of your module.
 
-All i3neostatus code is found within the `i3neostatus` namespace. It might be a good idea to start your module with using-namespace declaration to save yourself some typing. The following code examples assume that this line is present.
+All i3neostatus code relevant to module development is found within the `i3neostatus::module_dev` namespace. It might be a good idea to start your module with a using-namespace declaration to save yourself some typing. The following code examples assume that this line is present.
 
 ```cpp
-using namespace i3neostatus;
+using namespace i3neostatus::module_dev;
 ```
 
 Start by including the `i3neostatus/module_dev.hpp` header file. If i3neostatus has been installed to your system, this header should be found in `/usr/local/include` or something similar. This header contains all the declarations needed to interface with i3neostatus, including access to `libconfigfile`.
@@ -187,10 +187,10 @@ Start by including the `i3neostatus/module_dev.hpp` header file. If i3neostatus 
 #include <i3neostatus/module_dev.hpp>
 ```
 
-The basic structure of a module is a class that inherits from `module_base`.
+The basic structure of a module is a class that inherits from `base`.
 
 ```cpp
-class module_test : public module_base {
+class module_test : public base {
 };
 ```
 
@@ -211,7 +211,7 @@ void deleter(module_base *m) {
 Your module class must be default constructible. It's recommended that this constructor does little to nothing; proper initialization of your module will be preformed later.
 
 ```cpp
-class module_test : public module_base {
+class module_test : public base {
 public:
   module_test();
 };
@@ -220,7 +220,7 @@ public:
 Just like any other child class, your module class must have a virtual destructor. It's recommended that this destructor does little to nothing; proper termination of your module will be preformed earlier.
 
 ```cpp
-class module_test : public module_base {
+class module_test : public base {
 public:
   virtual ~module_test();
 };
@@ -228,13 +228,14 @@ public:
 
 Your module class does not need to be copyable or movable, these operations will never be preformed.
 
-The primary way your module will communicate with i3neostatus is through the `module_api` class. Your module will receive a pointer to an instance of this class during its initialization. Thus, we should familiarize ourselves with its interface before proceeding further.
+The primary way your module will communicate with i3neostatus is through the `api` class. Your module will receive a pointer to an instance of this class during its initialization. Thus, we should familiarize ourselves with its interface before proceeding further.
 
 There are four main data structures that will be passed between i3neostatus and your module.
 
-`module_api::config_in` represents the user configuration of your module (see [Configuration](#configuration)). It is an alias for `libconfigfile::map_node`.
+`config_in` represents the user configuration of your module (see [Configuration](#configuration)). It is an alias for `libconfigfile::map_node`.
 
-`module_api::config_out` represents the information about your module that will be passed back to i3neostatus. It is a struct containing the following members.
+`config_out` represents the information about your module that will be passed back to i3neostatus. It is a struct containing the following members.
+
 ```cpp
 struct config_out {
   std::string name // The name of your module (valid characters are [A-Za-z_-])
@@ -242,66 +243,115 @@ struct config_out {
 };
 ```
 
-`module_api::block` represents a unit of information that will be displayed on the status line. The fields of this struct correspond to the fields of the same name in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
+`block` represents a unit of information that will be displayed on the status line.
+
 ```cpp
 struct block {
-  std::string full_text;
-  std::optional<std::string> short_text;
-  std::optional<std::string> color;
-  std::optional<std::string> background;
-  std::optional<std::string> border;
-  std::optional<pixel_count_t> border_top;
-  std::optional<pixel_count_t> border_right;
-  std::optional<pixel_count_t> border_bottom;
-  std::optional<pixel_count_t> border_left;
-  std::optional<std::variant<pixel_count_t, std::string>> min_width;
-  std::optional<std::string> align;
-  std::optional<bool> urgent;
-  std::optional<bool> separator;
-  std::optional<pixel_count_t> separator_block_width;
-  std::optional<std::string> markup;
+  struct theme theme; // See below
+  std::string full_text; // The text displayed on the status line. The block will be hidden if empty.
+  std::optional<std::string> short_text; // The text displayed on the status line when there is insufficient space.
+  std::optional<std::variant<misc_types::pixel_count_t, std::string>> min_width; // Minimum width of the block. If the contents of the block take less space than this, the block will be padded. If the value is a string, the width is determined by the width of its text.
+  std::optional<misc_types::text_align> align; // How to align text when the minimum width of the block is not reached.
+  std::optional<bool> urgent; // Specifies whether the current value is urgent.
+  std::optional<misc_types::markup> markup; // Indicates how the text of the block should be parsed.
 };
 ```
 
-`module_api::click_event` represents the information sent when a user clicks on a block. The fields of this struct correspond to the fields of the same name in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
+The `theme` struct contained in the above represents information related to the visual styling of the block.
+
+```cpp
+struct theme {
+  std::optional<misc_types::color> color; // The color of the text
+  std::optional<misc_types::color> background; // The color of the background
+  std::optional<misc_types::color> border; // The color of the border
+  std::optional<misc_types::pixel_count_t> border_top; // The width of the top border
+  std::optional<misc_types::pixel_count_t> border_right; // The width of the right border
+  std::optional<misc_types::pixel_count_t> border_bottom; // The width of the bottom border
+  std::optional<misc_types::pixel_count_t> border_left; // The width of the left border
+};
+```
+
+`click_event` represents the information sent when a user clicks on a block.
+
 ```cpp
 struct click_event {
-  pixel_count_t x;
-  pixel_count_t y;
-  int button;
-  pixel_count_t relative_x;
-  pixel_count_t relative_y;
-  pixel_count_t output_x;
-  pixel_count_t output_y;
-  pixel_count_t width;
-  pixel_count_t height;
-  std::vector<std::string> modifiers;
+  misc_types::pixel_count_t x; // X11 root window x-coordinate of click occurrence
+  misc_types::pixel_count_t y; // X11 root window y-coordinate of click occurrence
+  int button; // X11 button ID
+  misc_types::pixel_count_t relative_x; // Click occurrence x-coordinate relative to the top left of block
+  misc_types::pixel_count_t relative_y; // Click occurrence y-coordinate relative to the top left of block
+  misc_types::pixel_count_t output_x; // Click occurrence x-coordinate relative to the current output
+  misc_types::pixel_count_t output_y; // Click occurrence y-coordinate relative to the current output
+  misc_types::pixel_count_t width; // Width of the block
+  misc_types::pixel_count_t height; // Height of the block
+  misc_types::click_modifiers; // Bitset of the modifiers active when the click occurred
 };
 ```
 
-Note that the `pixel_count_t` data type in the above structs is an alias for a signed integer type (currently `long`).
+The following data types defined in the `misc_types` namespace are used in the above structs.
 
-The `module_api` class is movable but not copyable. Your module should never have to create a new instance of `module_api`.
+```cpp
+using pixel_count_t = /*signed integer type*/; // Represents a pixel count.
+
+struct color {
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+}; // Represents an RGB color.
+
+enum class text_align {
+  none, // invalid value
+  center,
+  right,
+  left,
+  max, // invalid value
+}; // Represents a text alignment.
+
+enum class markup {
+  none,
+  pango,
+  max, // invalid value
+}; // Represents a text markup.
+
+enum class click_modifiers {
+  none,
+  mod1,
+  mod2,
+  mod3,
+  mod4,
+  mod5,
+  shift,
+  control,
+  lock,
+}; Represents possible click modifiers. Flag operators are defined for this type.
+```
+
+Further information on most of the fields in the above structs (`block`, `theme`, `click_event`) can be found by looking for their namesakes in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
+
+The `api` class is movable but not copyable. Your module should never have to create a new instance of `api`.
 
 There are two primary API functions that will be called by your module.
 
-The first is `module_api::put_block()`, which is used by your module to post new information to the status line.
+The first is `api::put_block()`, which is used by your module to post new information to the status line.
+
 ```cpp
-void module_api::put_block(const block& block);
+void api::put_block(const block& block);
 void module_apu::put_block(block&& block);
 ```
 
-The second is `module_api::put_error()`, which is used by your module to communicate an error to i3neostatus. Note that once `module_api::put_error()` has been called, no further calls to `module_api::put_block()` or `module_api::put_exception()` should be made.
+The second is `api::put_error()`, which is used by your module to communicate an error to i3neostatus. Note that once `api::put_error()` has been called, no further calls to `api::put_block()` or `api::put_exception()` should be made.
+
 ```cpp
-void module_api::put_error(const std::exception& error);
-void module_api::put_error(std::exception&& error);
-void module_api::put_error(const std::exception_ptr& error);
-void module_api::put_error(std::exception_ptr&& error);
+void api::put_error(const std::exception& error);
+void api::put_error(std::exception&& error);
+void api::put_error(const std::exception_ptr& error);
+void api::put_error(std::exception_ptr&& error);
 ```
 
-Returning to your module, there are several virtual functions in `module_base` that must be overriden by your class. Any exceptions thrown in these functions will be handled appropriately (as if by `module_api::put_error()`).
+Returning to your module, there are several virtual functions in `module_base` that must be overriden by your class. Any exceptions thrown in these functions will be handled appropriately (as if by `api::put_error()`).
 
 The first is `init()`, which should verify user configuration and initialize your module. This function will be executed before `run()`.
+
 ```cpp
 #include <exception>
 #include <stdexcept>
@@ -309,10 +359,10 @@ The first is `init()`, which should verify user configuration and initialize you
 
 class module_test : public module_base {
 private:
-  module_api* m_api;
+  api* m_api;
 
 public:
-  virtual module_api::config_out init(module_api* api, module_api::config_in&& config) override {
+  virtual config_out init(api* api, config_in&& config) override {
     // store pointer to API instance
     m_api = api;
 
@@ -330,12 +380,13 @@ public:
 ```
 
 The next is `run()`, which is the main update loop of your module. This function will be executed concurrently in its own thread by i3neostatus.
+
 ```cpp
 #include <utility>
 
 class module_test : public module_base {
 private:
-  module_api* m_api;
+  api* m_api;
 
 public:
   virtual void run() override {
@@ -344,7 +395,7 @@ public:
       // get new info
 
       // post new info
-      module_api::block block{/*new info*/};
+      block block{/*new info*/};
       m_api->put_block(std::move(block));
     }
   }
@@ -352,6 +403,7 @@ public:
 ```
 
 Then we have `term()`, which should signal `run()` to exit and preform any needed cleanup. Due to the nature of i3neostatus (typically runs until your computer is shut off), it is not guaranteed that this function will be called.
+
 ```cpp
 class module_test : public module_base {
 public:
@@ -363,15 +415,17 @@ public:
 ```
 
 Finally, there is `on_click_event()`, which will be called when someone clicks on your module. This function only needs to be overriden if you want to receive click events.
+
 ```cpp
 class module_test : public module_base {
-  virtual void on_click_event(module_api::click_event &&click_event) override {
+  virtual void on_click_event(click_event &&click_event) override {
     // do something based on click event
   }
 };
 ```
 
-Because `run()` will be executed concurrently, some level of synchronization will likely be required in your module. Note that `module_api::put_block()`/`module_api::put_error()` are thread-safe. The synchronization mechanism should at least provide a means for `term()` to signal `run()` to exit. You might also wish for `on_click_event()` to be able to wake `run()` to preform an update immediately. Though synchronization can be implemented however you wish, the following example provides a starting point.
+Because `run()` will be executed concurrently, some level of synchronization will likely be required in your module. Note that `api::put_block()`/`api::put_error()` are thread-safe. The synchronization mechanism should at least provide a means for `term()` to signal `run()` to exit. You might also wish for `on_click_event()` to be able to wake `run()` to preform an update immediately. Though synchronization can be implemented however you wish, the following example provides a starting point.
+
 ```cpp
 #include <chrono>
 #include <condition_variable>
@@ -387,7 +441,7 @@ private:
   };
 
 private:
-  module_api* m_api;
+  api* m_api;
   state m_state;
   std::mutex m_state_mtx;
   std::condition_variable m_state_cv;
@@ -403,7 +457,7 @@ public:
       // get new info
 
       // post new info
-      module_api::block block{/*new info*/};
+      block block{/*new info*/};
       m_api->put_block(std::move(block));
 
       // sleep for 1 second or until woken up to continue or exit
@@ -431,7 +485,7 @@ public:
     // cleanup
   }
 
-  virtual void on_click_event(module_api::click_event&& click_event) override  {
+  virtual void on_click_event(click_event&& click_event) override  {
     // do something based on click event
 
     // signal run() to continue
@@ -445,6 +499,7 @@ public:
 ```
 
 When fully completed, your module should look something like the following.
+
 ```cpp
 // module_test.cpp
 
@@ -466,7 +521,7 @@ private:
   };
 
 private:
-  module_api* m_api;
+  api* m_api;
   state m_state;
   std::mutex m_state_mtx;
   std::condition_variable m_state_cv;
@@ -480,7 +535,7 @@ public:
   }
 
 public:
-  virtual module_api::config_out init(module_api&& api, module_api::config_in&& config) override {
+  virtual config_out init(api&& api, config_in&& config) override {
     m_api = api;
 
     if (...) {
@@ -496,7 +551,7 @@ public:
     while (true) {
       // get new info
 
-      module_api::block block{/*new info*/};
+      block block{/*new info*/};
       m_api->put_block(std::move(block));
 
       std::unique_lock<std::mutex> lock_m_state_mtx{m_state_mtx};
@@ -522,7 +577,7 @@ public:
     // cleanup
   }
 
-  virtual void on_click_event(module_api::click_event&& click_event) override {
+  virtual void on_click_event(click_event&& click_event) override {
     // do something based on click event
 
     {
@@ -549,7 +604,7 @@ The final step is to compile your module to a shared object that can be loaded b
 g++ -std=c++20 -Wall -Wextra -g -O2 -fPIC -shared module_test.cpp -o module_test
 ```
 For more complex projects, I recommend using the Makefile found here: [generic-makefile/C++/library/Makefile](https://github.com/jasper1378/generic-makefile/blob/main/C%2B%2B/library/Makefile).
-This binary can be placed anywhere, however, `/usr/local/lib/i3neostatus_modules/module_test` is recommended for consistency between third-party modules. The only naming convention that the binary file must follow is that it cannot be prefixed with an underscore, as i3neostatus reserves this as a shorthand to refer to built-in modules.
+This binary can be placed anywhere, however, `/usr/local/lib/i3neostatus/modules/module_test` is recommended for consistency between third-party modules. The only naming convention that the binary file must follow is that it cannot be prefixed with an underscore, as i3neostatus reserves this as a shorthand to refer to built-in modules.
 
 As a final piece of advice, be very wary of calling any non-thread-safe library functions in your module in order to avoid race conditions with other modules that may be loaded.
 

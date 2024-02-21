@@ -12,9 +12,9 @@
 #include <stdexcept>
 #include <string>
 
-using namespace i3neostatus;
+using namespace i3neostatus::module_dev;
 
-class simple_date : public module_base {
+class simple_date : public base {
 private:
   static constexpr std::string k_name{"simple_date"};
 
@@ -26,13 +26,13 @@ private:
   };
 
 private:
-  static constexpr std::string m_k_color_a{"#ffffff"};
-  static constexpr std::string m_k_color_b{"#ff0000"};
+  static constexpr misc_types::color m_k_color_a{0xff, 0xff, 0xff};
+  static constexpr misc_types::color m_k_color_b{0xff, 0x00, 0x00};
 
 private:
-  module_api *m_api;
+  api *m_api;
   std::string m_format;
-  std::atomic<const std::string *> m_color;
+  std::atomic<const i3neostatus::color::rgb *> m_color;
   state m_state;
   std::mutex m_state_mtx;
   std::condition_variable m_state_cv;
@@ -45,8 +45,7 @@ public:
   virtual ~simple_date() {}
 
 public:
-  virtual module_api::config_out init(module_api *api,
-                                      module_api::config_in &&config) override {
+  virtual api::config_out init(api *api, api::config_in &&config) override {
     m_api = api;
 
     if (libconfigfile::node_ptr<libconfigfile::node> np;
@@ -97,7 +96,7 @@ public:
         }
       }
 
-      module_api::block block{.full_text{buf}, .color{*m_color.load()}};
+      api::block block{.theme{.color{*m_color.load()}}, .full_text{buf}};
       m_api->put_block(std::move(block));
 
       std::unique_lock<std::mutex> lock_m_state_mtx{m_state_mtx};
@@ -122,7 +121,7 @@ public:
     m_state_cv.notify_all();
   }
 
-  virtual void on_click_event(module_api::click_event &&click_event) override {
+  virtual void on_click_event(api::click_event &&click_event) override {
     (void)click_event;
     if (m_color.load() == &m_k_color_a) {
       m_color.store(&m_k_color_b);
@@ -138,9 +137,9 @@ public:
 };
 
 extern "C" {
-module_base *allocator() { return new simple_date{}; }
+base *allocator() { return new simple_date{}; }
 
-void deleter(module_base *m) { delete m; }
+void deleter(base *m) { delete m; }
 }
 
 #endif

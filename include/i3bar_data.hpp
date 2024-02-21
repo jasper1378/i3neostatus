@@ -2,18 +2,48 @@
 #define I3NEOSTATUS_I3BAR_DATA_HPP
 
 #include "color.hpp"
+#include "define_enum_flag_operators.hpp"
 #include "module_id.hpp"
 
 #include <optional>
 #include <string>
 #include <variant>
-#include <vector>
 
 namespace i3neostatus {
 
 namespace i3bar_data {
+namespace types {
 using pixel_count_t = long;
-using color_t = color::rgb;
+
+using color = color::rgb;
+
+enum class text_align {
+  none = 0,
+  center = 1,
+  right = 2,
+  left = 3,
+  max = 4,
+};
+
+enum class markup {
+  none = 0,
+  pango = 1,
+  max = 2,
+};
+
+enum class click_modifiers {
+  none = 0b00000000,
+  mod1 = 0b00000001,
+  mod2 = 0b00000010,
+  mod3 = 0b00000100,
+  mod4 = 0b00001000,
+  mod5 = 0b00010000,
+  shift = 0b00100000,
+  control = 0b01000000,
+  lock = 0b10000000,
+};
+DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(click_modifiers);
+} // namespace types
 
 struct header {
   int version;
@@ -30,26 +60,41 @@ struct block {
   using struct_id = struct id;
 
   struct content {
-    std::string full_text;
-    std::optional<std::string> short_text;
-    std::optional<color_t> color;
-    std::optional<color_t> background;
-    std::optional<color_t> border;
-    std::optional<pixel_count_t> border_top;
-    std::optional<pixel_count_t> border_right;
-    std::optional<pixel_count_t> border_bottom;
-    std::optional<pixel_count_t> border_left;
-    std::optional<std::variant<pixel_count_t, std::string>> min_width;
-    std::optional<std::string> align;
-    std::optional<bool> urgent;
-    std::optional<bool> separator;
-    std::optional<pixel_count_t> separator_block_width;
-    std::optional<std::string> markup;
+    struct theme {
+      std::optional<types::color> color;
+      std::optional<types::color> background;
+      std::optional<types::color> border;
+      std::optional<types::pixel_count_t> border_top;
+      std::optional<types::pixel_count_t> border_right;
+      std::optional<types::pixel_count_t> border_bottom;
+      std::optional<types::pixel_count_t> border_left;
+    };
+    using struct_theme = struct theme;
+
+    struct global {
+      std::optional<bool> separator;
+      std::optional<types::pixel_count_t> separator_block_width;
+    };
+    using struct_global = struct global;
+
+    struct local {
+      struct theme theme;
+      std::string full_text;
+      std::optional<std::string> short_text;
+      std::optional<std::variant<types::pixel_count_t, std::string>> min_width;
+      std::optional<types::text_align> align;
+      std::optional<bool> urgent;
+      std::optional<types::markup> markup;
+    };
+    using struct_local = struct local;
+
+    struct global global;
+    struct local local;
   };
   using struct_content = struct content;
 
-  id id;
-  content content;
+  struct id id;
+  struct content content;
 };
 
 struct click_event {
@@ -60,16 +105,16 @@ struct click_event {
   using struct_id = struct id;
 
   struct content {
-    pixel_count_t x;
-    pixel_count_t y;
+    types::pixel_count_t x;
+    types::pixel_count_t y;
     int button;
-    pixel_count_t relative_x;
-    pixel_count_t relative_y;
-    pixel_count_t output_x;
-    pixel_count_t output_y;
-    pixel_count_t width;
-    pixel_count_t height;
-    std::vector<std::string> modifiers;
+    types::pixel_count_t relative_x;
+    types::pixel_count_t relative_y;
+    types::pixel_count_t output_x;
+    types::pixel_count_t output_y;
+    types::pixel_count_t width;
+    types::pixel_count_t height;
+    types::click_modifiers modifiers;
   };
   using struct_content = struct content;
 
