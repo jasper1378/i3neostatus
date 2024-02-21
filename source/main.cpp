@@ -175,6 +175,7 @@ void print_error(const std::exception &exception, bool exit = false,
   print_error(exception.what(), exit, output_stream);
 }
 
+#include "i3bar_data_conversions.hpp"
 int main(int argc, char *argv[]) {
   try {
     const char *configuration_file_path{""};
@@ -275,38 +276,42 @@ int main(int argc, char *argv[]) {
         module_id::type cur_module_id{update_queue.get()};
 
         module_updates[cur_module_id].is_buffered.store(false);
-        std::variant<module_api::block, std::exception_ptr> block_content{
+        std::variant<module_api::block, std::exception_ptr> block_content_local{
             module_handles[cur_module_id].get_comm().get()};
 
         auto make_updated_block{
             [&module_handles,
-             &cur_module_id](i3bar_data::block::struct_content &&block_content)
+             &cur_module_id](i3bar_data::block::struct_content::struct_local
+                                 &&block_content_local)
                 -> std::pair<i3bar_data::block, module_id::type> {
               return std::pair<i3bar_data::block, module_id::type>{
-                  {i3bar_data::block::struct_id{
-                       module_handles[cur_module_id].get_name(),
-                       module_handles[cur_module_id].get_id()},
-                   {std::move(block_content)}},
+                  i3bar_data::block{
+                      .id{.name{module_handles[cur_module_id].get_name()},
+                          .instance{module_handles[cur_module_id].get_id()}},
+                      .content{.global{/**/},
+                               .local{std::move(block_content_local)}}},
                   cur_module_id};
             }};
 
-        switch (block_content.index()) {
+        switch (block_content_local.index()) {
         case 0: {
           i3bar_protocol::print_statusline(
-              make_updated_block(std::get<0>(std::move(block_content))),
+              make_updated_block(std::get<0>(std::move(block_content_local))),
               i3bar_cache, true);
         } break;
         case 1: {
           try {
-            std::rethrow_exception(std::get<1>(std::move(block_content)));
+            std::rethrow_exception(std::get<1>(std::move(block_content_local)));
           } catch (const std::exception &exception) {
             i3bar_protocol::print_statusline(
-                make_updated_block(i3bar_data::block::struct_content{.full_text{
-                    module_error{module_handles[cur_module_id].get_id(),
-                                 module_handles[cur_module_id].get_name(),
-                                 module_handles[cur_module_id].get_file_path(),
-                                 exception.what()}
-                        .what()}}),
+                make_updated_block(
+                    i3bar_data::block::struct_content::struct_local{
+                        .full_text{module_error{
+                            module_handles[cur_module_id].get_id(),
+                            module_handles[cur_module_id].get_name(),
+                            module_handles[cur_module_id].get_file_path(),
+                            exception.what()}
+                                       .what()}}),
                 i3bar_cache, true);
           }
         } break;

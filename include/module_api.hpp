@@ -25,7 +25,7 @@ public:
     static const std::string k_valid_name_chars;
   };
 
-  using block = struct i3bar_data::block::content;
+  using block = struct i3bar_data::block::content::local;
   using click_event = struct i3bar_data::click_event::content;
 
 private:
