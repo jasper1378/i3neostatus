@@ -1,6 +1,7 @@
 #ifndef I3NEOSTATUS_MODULE_API_HPP
 #define I3NEOSTATUS_MODULE_API_HPP
 
+#include "block_state.hpp"
 #include "i3bar_data.hpp"
 
 #include "libconfigfile/libconfigfile.hpp"
@@ -13,6 +14,8 @@ namespace i3neostatus {
 namespace thread_comm {
 template <typename t_value> class producer;
 }
+
+class theme;
 
 class module_api {
 public:
@@ -30,6 +33,7 @@ public:
 
 private:
   thread_comm::producer<block> *m_thread_comm_producer;
+  theme *m_theme;
 
 public:
   module_api(thread_comm::producer<block> *thread_comm_producer);
@@ -49,6 +53,8 @@ public:
   void put_error(std::exception_ptr &&error);
   void put_error(const std::exception &error);
   void put_error(std::exception &&error);
+
+  void set_theme(block &block, const block_state state);
 };
 
 } // namespace i3neostatus
