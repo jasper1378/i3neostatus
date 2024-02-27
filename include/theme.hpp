@@ -50,17 +50,17 @@ struct theme {
   t_color alternating_tint_color_background;
   std::variant<t_color, special_border_color> alternating_tint_border;
 
-  char separator_char; // TODO unicode
+  std::string separator_seq; // TODO unicode
   std::variant<t_color, special_separator_color> separator_color_foreground;
   std::variant<t_color, special_separator_color> separator_color_background;
 
-  char separator_begin_char; // TODO unicode
+  std::string separator_seq_begin; // TODO unicode
   std::variant<t_color, special_separator_color>
       separator_begin_color_foreground;
   std::variant<t_color, special_separator_color>
       separator_begin_color_background;
 
-  char separator_end_char; // TODO unicode
+  std::string separator_seq_end; // TODO unicode
   std::variant<t_color, special_separator_color> separator_end_color_foreground;
   std::variant<t_color, special_separator_color> separator_end_color_background;
 
