@@ -146,13 +146,13 @@ private:
 };
 
 void print_program_info(std::ostream &output_stream = std::cout) {
-  output_stream << program_constants::g_k_name << ' '
-                << program_constants::g_k_version << " © "
-                << program_constants::g_k_year << ' '
-                << program_constants::g_k_authors << '\n';
+  output_stream << program_constants::k_name << ' '
+                << program_constants::k_version << " © "
+                << program_constants::k_year << ' '
+                << program_constants::k_authors << '\n';
 }
 
-void print_help(const std::string_view argv_0 = program_constants::g_k_name,
+void print_help(const std::string_view argv_0 = program_constants::k_name,
                 std::ostream &output_stream = std::cout) {
   print_program_info(output_stream);
   output_stream << "Syntax: " << argv_0 << " [-c <configfile>] [-h] [-v]\n";

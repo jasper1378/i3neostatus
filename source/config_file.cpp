@@ -65,8 +65,8 @@ i3neostatus::config_file::read(const std::filesystem::path &file_path) {
 
 i3neostatus::config_file::parsed i3neostatus::config_file::read() {
   static const std::string file_name_short{"config"};
-  static const std::string file_name_long{program_constants::g_k_name +
-                                          ".conf"};
+  static const std::string file_name_long{program_constants::k_name +
+                                            ".conf"};
 
   static const char *env_home{std::getenv("HOME")};
   if (env_home == nullptr) {
@@ -123,7 +123,7 @@ i3neostatus::config_file::impl::resolve_path(std::string &&file_path) {
 i3neostatus::config_file::parsed
 i3neostatus::config_file::impl::read(const std::string &file_path) {
   static const std::filesystem::path builtin_module_install_path{
-      program_constants::g_k_install_path / "lib"};
+      program_constants::k_install_path / "lib"};
   static constexpr char builtin_module_prefix_remove{'_'};
   static constexpr std::string builtin_module_suffix_add{".so"};
 

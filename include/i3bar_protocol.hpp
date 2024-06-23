@@ -58,16 +58,16 @@ static constexpr std::string k_modifiers{"modifiers"};
 } // namespace json_strings
 
 namespace json_constants {
-static constexpr char g_k_newline{'\n'};
-static constexpr char g_k_space{' '};
-static constexpr char g_k_escape_leader{'\\'};
-static constexpr char g_k_name_value_separator{':'};
-static constexpr char g_k_element_separator{','};
-static constexpr char g_k_string_delimiter{'"'};
-static constexpr char g_k_object_opening_delimiter{'{'};
-static constexpr char g_k_object_closing_delimiter{'}'};
-static constexpr char g_k_array_opening_delimiter{'['};
-static constexpr char g_k_array_closing_delimiter{']'};
+static constexpr char k_newline{'\n'};
+static constexpr char k_space{' '};
+static constexpr char k_escape_leader{'\\'};
+static constexpr char k_name_value_separator{':'};
+static constexpr char k_element_separator{','};
+static constexpr char k_string_delimiter{'"'};
+static constexpr char k_object_opening_delimiter{'{'};
+static constexpr char k_object_closing_delimiter{'}'};
+static constexpr char k_array_opening_delimiter{'['};
+static constexpr char k_array_closing_delimiter{']'};
 } // namespace json_constants
 
 void print_header(const i3bar_data::header &value,
