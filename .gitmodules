@@ -1,3 +1,6 @@
 [submodule "submodules/libconfigfile"]
 	path = submodules/libconfigfile
 	url = https://github.com/jasper1378/libconfigfile
+[submodule "submodules/bits-and-bytes"]
+	path = submodules/bits-and-bytes
+	url = https://github.com/jasper1378/bits-and-bytes
