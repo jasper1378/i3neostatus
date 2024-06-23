@@ -1,10 +1,10 @@
 #ifndef I3NEOSTATUS_I3BAR_DATA_HPP
 #define I3NEOSTATUS_I3BAR_DATA_HPP
 
-#include "color.hpp"
 #include "define_enum_flag_operators.hpp"
 #include "module_id.hpp"
 
+#include "libconfigfile/color.hpp"
 #include <optional>
 #include <string>
 #include <variant>
@@ -14,8 +14,7 @@ namespace i3neostatus {
 namespace i3bar_data {
 namespace types {
 using pixel_count_t = long;
-
-using color = color::rgb;
+using color = libconfigfile::color::rgba;
 
 enum class text_align {
   none = 0,

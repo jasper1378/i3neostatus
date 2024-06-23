@@ -2,7 +2,6 @@
 #define I3NEOSTATUS_THEME_HPP
 
 #include "block_state.hpp"
-#include "color.hpp"
 #include "i3bar_data.hpp"
 
 #include <variant>
@@ -10,7 +9,7 @@
 namespace i3neostatus {
 
 struct theme {
-  using t_color = color::rgba;
+  using t_color = i3bar_data::types::color;
 
   enum class special_separator_color {
     left,
