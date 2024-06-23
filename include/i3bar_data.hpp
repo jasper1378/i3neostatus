@@ -1,16 +1,16 @@
 #ifndef I3NEOSTATUS_I3BAR_DATA_HPP
 #define I3NEOSTATUS_I3BAR_DATA_HPP
 
-#include "define_enum_flag_operators.hpp"
 #include "module_id.hpp"
 
+#include "bits-and-bytes/enum_flag_operators.hpp"
 #include "libconfigfile/color.hpp"
+
 #include <optional>
 #include <string>
 #include <variant>
 
 namespace i3neostatus {
-
 namespace i3bar_data {
 namespace types {
 using pixel_count_t = long;
@@ -41,7 +41,7 @@ enum class click_modifiers {
   control = 0b01000000,
   lock = 0b10000000,
 };
-DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(click_modifiers);
+BITS_AND_BYTES_DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(click_modifiers);
 } // namespace types
 
 struct header {

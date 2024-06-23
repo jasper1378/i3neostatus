@@ -1,7 +1,7 @@
 #ifndef I3NEOSTATUS_DYN_LOAD_LIB_HPP
 #define I3NEOSTATUS_DYN_LOAD_LIB_HPP
 
-#include "define_enum_flag_operators.hpp"
+#include "bits-and-bytes/enum_flag_operators.hpp"
 
 #include <exception>
 #include <filesystem>
@@ -41,7 +41,7 @@ enum class dlopen_flags : unsigned int {
   noload = RTLD_NOLOAD,
   deepbind = RTLD_DEEPBIND,
 };
-DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(dlopen_flags);
+BITS_AND_BYTES_DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(dlopen_flags);
 
 namespace dlsym_pseudohandles {
 using type = void *const;

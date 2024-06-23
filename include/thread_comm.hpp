@@ -1,9 +1,10 @@
 #ifndef I3NEOSTATUS_THREAD_COMM_HPP
 #define I3NEOSTATUS_THREAD_COMM_HPP
 
-#include "define_enum_flag_operators.hpp"
 #include "generic_callback.hpp"
 #include "misc.hpp"
+
+#include "bits-and-bytes/enum_flag_operators.hpp"
 
 #include <atomic>
 #include <compare>
@@ -26,7 +27,7 @@ enum class shared_state_state : unsigned int {
   exception = 0b1000,
   all = empty | value | exception,
 };
-DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(shared_state_state);
+BITS_AND_BYTES_DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(shared_state_state);
 
 using state_change_callback = generic_callback<shared_state_state>;
 
