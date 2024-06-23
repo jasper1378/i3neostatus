@@ -1,7 +1,8 @@
 BIN_NAME := i3neostatus
 VERSION_MAJOR := 0
 VERSION_MINOR := 0
-CXX := g++
+# CXX := g++
+CXX := clang++
 COMPILE_FLAGS := -std=c++20 -Wall -Wextra
 RELEASE_COMPILE_FLAGS := -g -O2 -DNDEBUG
 DEBUG_COMPILE_FLAGS := -g3 -O0 -DDEBUG
