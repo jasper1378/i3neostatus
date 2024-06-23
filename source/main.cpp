@@ -2,11 +2,11 @@
 #include "config_file.hpp"
 #include "i3bar_data.hpp"
 #include "i3bar_protocol.hpp"
+#include "message_printing.hpp"
 #include "misc.hpp"
 #include "module_error.hpp"
 #include "module_handle.hpp"
 #include "module_id.hpp"
-#include "program_constants.hpp"
 
 #include <algorithm>
 #include <atomic>
@@ -145,35 +145,6 @@ private:
   }
 };
 
-void print_program_info(std::ostream &output_stream = std::cout) {
-  output_stream << program_constants::k_name << ' '
-                << program_constants::k_version << " © "
-                << program_constants::k_year << ' '
-                << program_constants::k_authors << '\n';
-}
-
-void print_help(const std::string_view argv_0 = program_constants::k_name,
-                std::ostream &output_stream = std::cout) {
-  print_program_info(output_stream);
-  output_stream << "Syntax: " << argv_0 << " [-c <configfile>] [-h] [-v]\n";
-}
-
-void print_version(std::ostream &output_stream = std::cout) {
-  print_program_info(output_stream);
-}
-
-void print_error(const std::string_view error, bool exit = false,
-                 std::ostream &output_stream = std::cerr) {
-  output_stream << "Error: " << error << '\n';
-  if (exit) {
-    std::exit(EXIT_FAILURE);
-  }
-}
-
-void print_error(const std::exception &exception, bool exit = false,
-                 std::ostream &output_stream = std::cerr) {
-  print_error(exception.what(), exit, output_stream);
-}
 
 #include "i3bar_data_conversions.hpp"
 int main(int argc, char *argv[]) {
@@ -188,28 +159,28 @@ int main(int argc, char *argv[]) {
           if (*configuration_file_path == '\0') {
             configuration_file_path = argv[++cur_arg];
           } else {
-            print_error((std::string{'"'} + argv[cur_arg] +
-                         "\" option has already been specified\n"),
-                        true);
+            message_printing::error((std::string{'"'} + argv[cur_arg] +
+                                     "\" option has already been specified\n"),
+                                    true);
           }
         } else {
-          print_error((std::string{'"'} + argv[cur_arg] +
-                       "\" option requires an argument"),
-                      true);
+          message_printing::error((std::string{'"'} + argv[cur_arg] +
+                                   "\" option requires an argument"),
+                                  true);
         }
       } break;
       case misc::constexpr_hash_string::hash("-h"):
       case misc::constexpr_hash_string::hash("--help"): {
-        print_help(argv[0]);
+        message_printing::help(argv[0]);
         return 0;
       } break;
       case misc::constexpr_hash_string::hash("-v"):
       case misc::constexpr_hash_string::hash("--version"): {
-        print_version();
+        message_printing::version();
         return 0;
       } break;
       default: {
-        print_error(
+        message_printing::error(
             (std::string{'"'} + argv[cur_arg] + "\" option is unrecognized\n"),
             true);
       } break;
