@@ -1,9 +1,10 @@
 #include "i3bar_protocol.hpp"
 
-#include "color.hpp"
 #include "i3bar_data.hpp"
 #include "i3bar_data_conversions.hpp"
 #include "misc.hpp"
+
+#include "libconfigfile/color.hpp"
 
 #include <charconv>
 #include <iostream>
@@ -150,19 +151,19 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_block(
 
         if (block.content.local.theme.color.has_value()) {
           ret_val.emplace_back(json_strings::block::k_color,
-                               serialize_string(color::to_string(
+                               serialize_string(libconfigfile::color::to_string(
                                    *block.content.local.theme.color)));
         }
 
         if (block.content.local.theme.background.has_value()) {
           ret_val.emplace_back(json_strings::block::k_background,
-                               serialize_string(color::to_string(
+                               serialize_string(libconfigfile::color::to_string(
                                    *block.content.local.theme.background)));
         }
 
         if (block.content.local.theme.border.has_value()) {
           ret_val.emplace_back(json_strings::block::k_border,
-                               serialize_string(color::to_string(
+                               serialize_string(libconfigfile::color::to_string(
                                    *block.content.local.theme.border)));
         }
 
