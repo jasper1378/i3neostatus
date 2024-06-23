@@ -55,7 +55,7 @@ constexpr std::size_t hash(const std::string_view str);
 constexpr std::size_t hash(const char *str);
 
 namespace impl {
-static constexpr std::size_t g_k_default_seed{0xc70f6907UL};
+static constexpr std::size_t k_default_seed{0xc70f6907UL};
 
 template <std::size_t sizeof_size_t> struct hash {
   static constexpr std::size_t do_hash(const char *ptr, std::size_t len,
@@ -82,17 +82,17 @@ inline constexpr std::size_t shift_mix(std::size_t v);
 
 constexpr std::size_t hash(const std::string &str) {
   return impl::hash<sizeof(std::size_t)>::do_hash(str.data(), str.size(),
-                                                  impl::g_k_default_seed);
+                                                  impl::k_default_seed);
 }
 
 constexpr std::size_t hash(const std::string_view str) {
   return impl::hash<sizeof(std::size_t)>::do_hash(str.data(), str.size(),
-                                                  impl::g_k_default_seed);
+                                                  impl::k_default_seed);
 }
 
 constexpr std::size_t hash(const char *str) {
   return impl::hash<sizeof(std::size_t)>::do_hash(str, impl::strlen(str),
-                                                  impl::g_k_default_seed);
+                                                  impl::k_default_seed);
 }
 
 template <std::size_t sizeof_size_t>

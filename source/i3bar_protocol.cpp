@@ -18,17 +18,17 @@
 
 void i3neostatus::i3bar_protocol::print_header(
     const i3bar_data::header &value, std::ostream &stream /*= std::cout */) {
-  stream << impl::serialize_header(value) << json_constants::g_k_newline
+  stream << impl::serialize_header(value) << json_constants::k_newline
          << std::flush;
 }
 
 void i3neostatus::i3bar_protocol::init_statusline(
     std::ostream &stream /*= std::cout*/) {
-  stream << json_constants::g_k_array_opening_delimiter
-         << json_constants::g_k_newline;
-  stream << json_constants::g_k_array_opening_delimiter
-         << json_constants::g_k_array_closing_delimiter
-         << json_constants::g_k_newline;
+  stream << json_constants::k_array_opening_delimiter
+         << json_constants::k_newline;
+  stream << json_constants::k_array_opening_delimiter
+         << json_constants::k_array_closing_delimiter
+         << json_constants::k_newline;
   stream << std::flush;
 }
 
@@ -83,7 +83,7 @@ i3neostatus::i3bar_data::click_event
 i3neostatus::i3bar_protocol::read_click_event(
     std::istream &input_stream /*= std::cin*/) {
   std::string input_str{};
-  std::getline(input_stream, input_str, json_constants::g_k_newline);
+  std::getline(input_stream, input_str, json_constants::k_newline);
 
   return impl::parse_click_event(input_str);
 }
@@ -91,8 +91,8 @@ i3neostatus::i3bar_protocol::read_click_event(
 void i3neostatus::i3bar_protocol::impl::print_statusline(
     const std::vector<std::string> &value,
     std::ostream &stream /*= std::cout*/) {
-  stream << json_constants::g_k_element_separator << serialize_array(value)
-         << json_constants::g_k_newline << std::flush;
+  stream << json_constants::k_element_separator << serialize_array(value)
+         << json_constants::k_newline << std::flush;
 }
 
 std::string i3neostatus::i3bar_protocol::impl::serialize_header(
@@ -235,9 +235,9 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_block(
 std::string i3neostatus::i3bar_protocol::impl::serialize_name_value(
     const std::pair<std::string, std::string> &name_value) {
 
-  return std::string{json_constants::g_k_string_delimiter + name_value.first +
-                     json_constants::g_k_string_delimiter +
-                     json_constants::g_k_name_value_separator +
+  return std::string{json_constants::k_string_delimiter + name_value.first +
+                     json_constants::k_string_delimiter +
+                     json_constants::k_name_value_separator +
                      name_value.second};
 }
 
@@ -245,16 +245,16 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_object(
     const std::vector<std::pair<std::string, std::string>> &object) {
   std::string ret_val;
 
-  ret_val += json_constants::g_k_object_opening_delimiter;
+  ret_val += json_constants::k_object_opening_delimiter;
 
   for (std::size_t i{0}; i < object.size(); ++i) {
     if (i != 0) {
-      ret_val += json_constants::g_k_element_separator;
+      ret_val += json_constants::k_element_separator;
     }
     ret_val += serialize_name_value(object[i]);
   }
 
-  ret_val += json_constants::g_k_object_closing_delimiter;
+  ret_val += json_constants::k_object_closing_delimiter;
 
   return ret_val;
 }
@@ -263,18 +263,18 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_array(
     const std::vector<std::string> &array) {
   std::string ret_val;
 
-  ret_val += json_constants::g_k_array_opening_delimiter;
+  ret_val += json_constants::k_array_opening_delimiter;
 
   for (std::size_t i{0}; i < array.size(); ++i) {
     if (!array[i].empty()) {
       if ((i != 0) && (!array[i - 1].empty())) {
-        ret_val += json_constants::g_k_element_separator;
+        ret_val += json_constants::k_element_separator;
       }
       ret_val += array[i];
     }
   }
 
-  ret_val += json_constants::g_k_array_closing_delimiter;
+  ret_val += json_constants::k_array_closing_delimiter;
 
   return ret_val;
 }
@@ -297,13 +297,13 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_string(
       {0x1C, "u001C"}, {0x1D, "u001D"}, {0x1E, "u001E"}, {0x1F, "u001F"}};
 
   static const std::string need_to_replace{
-      control_chars + json_constants::g_k_string_delimiter +
-      json_constants::g_k_escape_leader};
+      control_chars + json_constants::k_string_delimiter +
+      json_constants::k_escape_leader};
 
   std::string ret_val;
   ret_val.reserve(string.size() + 2);
 
-  ret_val += json_constants::g_k_string_delimiter;
+  ret_val += json_constants::k_string_delimiter;
 
   std::string::size_type pos{0};
   std::string::size_type pos_prev{0};
@@ -313,14 +313,14 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_string(
       break;
     } else {
       ret_val += string.substr(pos_prev, (pos - pos_prev));
-      ret_val += json_constants::g_k_escape_leader;
+      ret_val += json_constants::k_escape_leader;
 
       switch (string[pos]) {
-      case json_constants::g_k_string_delimiter: {
-        ret_val += json_constants::g_k_string_delimiter;
+      case json_constants::k_string_delimiter: {
+        ret_val += json_constants::k_string_delimiter;
       } break;
-      case json_constants::g_k_escape_leader: {
-        ret_val += json_constants::g_k_escape_leader;
+      case json_constants::k_escape_leader: {
+        ret_val += json_constants::k_escape_leader;
       } break;
       default: {
         ret_val += control_char_codes.at(string[pos]);
@@ -332,7 +332,7 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_string(
   }
   ret_val += string.substr(pos_prev);
 
-  ret_val += json_constants::g_k_string_delimiter;
+  ret_val += json_constants::k_string_delimiter;
 
   return ret_val;
 }
@@ -378,11 +378,9 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
                 const std::string::size_type name_end_pos,
                 std::string::size_type &continue_from_pos) -> std::string {
         std::string::size_type value_begin_pos{
-            str.find(json_constants::g_k_string_delimiter, name_end_pos + 2) +
-            1};
+            str.find(json_constants::k_string_delimiter, name_end_pos + 2) + 1};
         std::string::size_type value_end_pos{
-            str.find(json_constants::g_k_string_delimiter, value_begin_pos) -
-            1};
+            str.find(json_constants::k_string_delimiter, value_begin_pos) - 1};
         continue_from_pos = value_end_pos + 2;
         return std::string{substr(str, value_begin_pos, value_end_pos)};
       }};
@@ -419,13 +417,13 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
 
   while (true) {
     std::string::size_type name_begin_pos{click_event.find(
-        json_constants::g_k_string_delimiter, continue_from_pos)};
+        json_constants::k_string_delimiter, continue_from_pos)};
     if (name_begin_pos == std::string::npos) {
       break;
     } else {
       ++name_begin_pos;
       std::string::size_type name_end_pos =
-          (click_event.find(json_constants::g_k_string_delimiter,
+          (click_event.find(json_constants::k_string_delimiter,
                             name_begin_pos) -
            1);
       name_buf = substr(click_event, name_begin_pos, name_end_pos);
@@ -505,14 +503,14 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
       case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_modifiers): {
         std::string::size_type array_begin_pos{click_event.find(
-            json_constants::g_k_array_opening_delimiter, name_end_pos + 2)};
+            json_constants::k_array_opening_delimiter, name_end_pos + 2)};
         std::string::size_type array_end_pos{click_event.find(
-            json_constants::g_k_array_closing_delimiter, array_begin_pos)};
+            json_constants::k_array_closing_delimiter, array_begin_pos)};
         for (std::string::size_type i{array_begin_pos}; i < array_end_pos;) {
           std::string::size_type value_begin_pos{
-              click_event.find(json_constants::g_k_string_delimiter, i) + 1};
+              click_event.find(json_constants::k_string_delimiter, i) + 1};
           std::string::size_type value_end_pos{
-              click_event.find(json_constants::g_k_string_delimiter,
+              click_event.find(json_constants::k_string_delimiter,
                                value_begin_pos) -
               1};
           ret_val.content.modifiers |= i3bar_data::types::from_string<
