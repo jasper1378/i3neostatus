@@ -1,7 +1,8 @@
 LIB_NAME := simple_date
 VERSION_MAJOR := 0
 VERSION_MINOR := 0
-CXX := g++
+# CXX := g++
+CXX := clang++
 COMPILE_FLAGS := -std=c++20 -Wall -Wextra -g
 RELEASE_COMPILE_FLAGS := -O2 -DNDEBUG
 DEBUG_COMPILE_FLAGS := -Og -DDEBUG
