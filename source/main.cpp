@@ -191,10 +191,10 @@ int main(int argc, char *argv[]) {
         ((*configuration_file_path == '\0')
              ? (config_file::read())
              : (config_file::read(configuration_file_path)))};
-    if (config.modules.size() > module_id::max) {
-      print_error(
-          ("too many modules! max is " + std::to_string(module_id::max) + ')'),
-          true);
+    if (config.modules.size() == 0) {
+      message_printing::error("Umm... Are you forgetting something?", true);
+    } else if (config.modules.size() > module_id::max) {
+      message_printing::error("Fool! That's too many modules!", true);
     }
     const module_id::type module_count{config.modules.size()};
 
