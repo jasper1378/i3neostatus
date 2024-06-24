@@ -56,28 +56,28 @@ struct block {
     std::optional<std::string> name;
     std::optional<module_id::type> instance;
   };
-  using struct_id = struct id;
 
-  struct content {
-    struct theme {
-      std::optional<types::color> color;
-      std::optional<types::color> background;
-      std::optional<types::color> border;
-      std::optional<types::pixel_count_t> border_top;
-      std::optional<types::pixel_count_t> border_right;
-      std::optional<types::pixel_count_t> border_bottom;
-      std::optional<types::pixel_count_t> border_left;
-    };
-    using struct_theme = struct theme;
+  struct data {
+    struct program {
+      struct global {
+        std::optional<bool> separator;
+        std::optional<types::pixel_count_t> separator_block_width;
+      };
+      struct theme {
+        std::optional<types::color> color;
+        std::optional<types::color> background;
+        std::optional<types::color> border;
+        std::optional<types::pixel_count_t> border_top;
+        std::optional<types::pixel_count_t> border_right;
+        std::optional<types::pixel_count_t> border_bottom;
+        std::optional<types::pixel_count_t> border_left;
+      };
 
-    struct global {
-      std::optional<bool> separator;
-      std::optional<types::pixel_count_t> separator_block_width;
-    };
-    using struct_global = struct global;
-
-    struct local {
+      struct global global;
       struct theme theme;
+    };
+
+    struct module {
       std::string full_text;
       std::optional<std::string> short_text;
       std::optional<std::variant<types::pixel_count_t, std::string>> min_width;
@@ -85,15 +85,13 @@ struct block {
       std::optional<bool> urgent;
       std::optional<types::markup> markup;
     };
-    using struct_local = struct local;
 
-    struct global global;
-    struct local local;
+    struct program program;
+    struct module module;
   };
-  using struct_content = struct content;
 
   struct id id;
-  struct content content;
+  struct data data;
 };
 
 struct click_event {
@@ -101,9 +99,8 @@ struct click_event {
     std::string name;
     module_id::type instance;
   };
-  using struct_id = struct id;
 
-  struct content {
+  struct data {
     types::pixel_count_t x;
     types::pixel_count_t y;
     int button;
@@ -115,10 +112,9 @@ struct click_event {
     types::pixel_count_t height;
     types::click_modifiers modifiers;
   };
-  using struct_content = struct content;
 
   struct id id;
-  struct content content;
+  struct data data;
 };
 
 } // namespace i3bar_data

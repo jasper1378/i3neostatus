@@ -28,8 +28,8 @@ public:
     static const std::string k_valid_name_chars;
   };
 
-  using block = struct i3bar_data::block::content::local;
-  using click_event = struct i3bar_data::click_event::content;
+  using block = struct i3bar_data::block::data::module;
+  using click_event = struct i3bar_data::click_event::data;
 
 private:
   thread_comm::producer<block> *m_thread_comm_producer;
