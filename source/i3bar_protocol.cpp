@@ -76,7 +76,7 @@ void i3neostatus::i3bar_protocol::print_statusline(
 void i3neostatus::i3bar_protocol::init_click_event(
     std::istream &input_stream /*=std::cin*/) {
   input_stream.ignore(std::numeric_limits<std::streamsize>::max(),
-                      json_constants::g_k_array_opening_delimiter);
+                      json_constants::k_array_opening_delimiter);
 }
 
 i3neostatus::i3bar_data::click_event
@@ -281,12 +281,12 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_array(
 
 std::string i3neostatus::i3bar_protocol::impl::serialize_string(
     const std::string_view string) {
-  static const std::string control_chars{
+  static const std::string k_control_chars{
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
       0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
       0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F};
 
-  static const std::unordered_map<char, std::string> control_char_codes{
+  static const std::unordered_map<char, std::string> k_control_char_codes{
       {0x00, "u0000"}, {0x01, "u0001"}, {0x02, "u0002"}, {0x03, "u0003"},
       {0x04, "u0004"}, {0x05, "u0005"}, {0x06, "u0006"}, {0x07, "u0007"},
       {0x08, "u0008"}, {0x09, "u0009"}, {0x0A, "u000A"}, {0x0B, "u000B"},
@@ -296,8 +296,8 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_string(
       {0x18, "u0018"}, {0x19, "u0019"}, {0x1A, "u001A"}, {0x1B, "u001B"},
       {0x1C, "u001C"}, {0x1D, "u001D"}, {0x1E, "u001E"}, {0x1F, "u001F"}};
 
-  static const std::string need_to_replace{
-      control_chars + json_constants::k_string_delimiter +
+  static const std::string k_need_to_replace{
+      k_control_chars + json_constants::k_string_delimiter +
       json_constants::k_escape_leader};
 
   std::string ret_val;
@@ -308,7 +308,7 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_string(
   std::string::size_type pos{0};
   std::string::size_type pos_prev{0};
   while (true) {
-    pos = string.find_first_of(need_to_replace, pos_prev);
+    pos = string.find_first_of(k_need_to_replace, pos_prev);
     if (pos == std::string::npos) {
       break;
     } else {
@@ -323,7 +323,7 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_string(
         ret_val += json_constants::k_escape_leader;
       } break;
       default: {
-        ret_val += control_char_codes.at(string[pos]);
+        ret_val += k_control_char_codes.at(string[pos]);
       } break;
       }
 

@@ -64,39 +64,39 @@ i3neostatus::config_file::read(const std::filesystem::path &file_path) {
 }
 
 i3neostatus::config_file::parsed i3neostatus::config_file::read() {
-  static const std::string file_name_short{"config"};
-  static const std::string file_name_long{program_constants::k_name +
+  static const std::string k_file_name_short{"config"};
+  static const std::string k_file_name_long{program_constants::k_name +
                                             ".conf"};
 
-  static const char *env_home{std::getenv("HOME")};
-  if (env_home == nullptr) {
+  static const char *k_env_home{std::getenv("HOME")};
+  if (k_env_home == nullptr) {
     throw error{"can't get 'HOME' environment variable"};
   }
-  static const std::filesystem::path home_dir{env_home};
+  static const std::filesystem::path k_home_dir{k_env_home};
 
-  static const char *env_xdg_config_home{std::getenv("XDG_CONFIG_HOME")};
-  static const char *env_xdg_config_dirs{std::getenv("XDG_CONFIG_DIRS")};
+  static const char *k_env_xdg_config_home{std::getenv("XDG_CONFIG_HOME")};
+  static const char *k_env_xdg_config_dirs{std::getenv("XDG_CONFIG_DIRS")};
 
-  static const std::filesystem::path conf_path_1{
-      (env_xdg_config_home != nullptr)
-          ? (std::filesystem::path{env_xdg_config_home} / "i3neostatus/config")
-          : (home_dir / ".config/i3neostatus/config")};
-  static const std::filesystem::path conf_path_2{
-      (env_xdg_config_dirs != nullptr)
-          ? (std::filesystem::path{env_xdg_config_dirs} / "i3neostatus/config")
+  static const std::filesystem::path k_conf_path_1{
+      (k_env_xdg_config_home != nullptr)
+          ? (std::filesystem::path{k_env_xdg_config_home} / "i3neostatus/config")
+          : (k_home_dir / ".config/i3neostatus/config")};
+  static const std::filesystem::path k_conf_path_2{
+      (k_env_xdg_config_dirs != nullptr)
+          ? (std::filesystem::path{k_env_xdg_config_dirs} / "i3neostatus/config")
           : ("/etc/xdg/i3neostatus/config")};
-  static const std::filesystem::path conf_path_3{home_dir /
+  static const std::filesystem::path k_conf_path_3{k_home_dir /
                                                  ".i3neostatus.conf"};
-  static const std::filesystem::path conf_path_4{"/etc/i3neostatus.conf"};
+  static const std::filesystem::path k_conf_path_4{"/etc/i3neostatus.conf"};
 
-  if (std::filesystem::exists(conf_path_1)) {
-    return config_file::read(conf_path_1);
-  } else if (std::filesystem::exists(conf_path_2)) {
-    return config_file::read(conf_path_2);
-  } else if (std::filesystem::exists(conf_path_3)) {
-    return config_file::read(conf_path_3);
-  } else if (std::filesystem::exists(conf_path_4)) {
-    return config_file::read(conf_path_4);
+  if (std::filesystem::exists(k_conf_path_1)) {
+    return config_file::read(k_conf_path_1);
+  } else if (std::filesystem::exists(k_conf_path_2)) {
+    return config_file::read(k_conf_path_2);
+  } else if (std::filesystem::exists(k_conf_path_3)) {
+    return config_file::read(k_conf_path_3);
+  } else if (std::filesystem::exists(k_conf_path_4)) {
+    return config_file::read(k_conf_path_4);
   } else {
     throw error{"can't find configuration file"};
   }
