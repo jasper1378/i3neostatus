@@ -290,9 +290,9 @@ int main(int argc, char *argv[]) {
       }
     }
   } catch (const std::exception &error) {
-    print_error(error, true);
+    message_printing::error(error, true);
   } catch (...) {
-    print_error("unknown", true);
+    message_printing::error("unknown", true);
   }
 
   return EXIT_SUCCESS;
