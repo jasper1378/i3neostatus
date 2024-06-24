@@ -172,12 +172,12 @@ int main(int argc, char *argv[]) {
       case misc::constexpr_hash_string::hash("-h"):
       case misc::constexpr_hash_string::hash("--help"): {
         message_printing::help(argv[0]);
-        return 0;
+        return EXIT_SUCCESS;
       } break;
       case misc::constexpr_hash_string::hash("-v"):
       case misc::constexpr_hash_string::hash("--version"): {
         message_printing::version();
-        return 0;
+        return EXIT_SUCCESS;
       } break;
       default: {
         message_printing::error(
