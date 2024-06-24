@@ -55,6 +55,13 @@ constexpr std::size_t hash(const std::string_view str);
 constexpr std::size_t hash(const char *str);
 
 namespace impl {
+inline constexpr std::size_t strlen(const char *str);
+inline std::size_t unaligned_load(const char *p);
+template <typename T = void>
+inline constexpr std::size_t unaligned_load_c(const char *p);
+inline constexpr std::size_t load_bytes(const char *p, int n);
+inline constexpr std::size_t shift_mix(std::size_t v);
+
 static constexpr std::size_t k_default_seed{0xc70f6907UL};
 
 template <std::size_t sizeof_size_t> struct hash {
@@ -71,13 +78,6 @@ template <> struct hash<8> {
   static constexpr std::size_t do_hash(const char *ptr, std::size_t len,
                                        std::size_t sed);
 };
-
-inline constexpr std::size_t strlen(const char *str);
-inline std::size_t unaligned_load(const char *p);
-template <typename T = void>
-inline constexpr std::size_t unaligned_load_c(const char *p);
-inline constexpr std::size_t load_bytes(const char *p, int n);
-inline constexpr std::size_t shift_mix(std::size_t v);
 } // namespace impl
 
 constexpr std::size_t hash(const std::string &str) {
@@ -93,6 +93,49 @@ constexpr std::size_t hash(const std::string_view str) {
 constexpr std::size_t hash(const char *str) {
   return impl::hash<sizeof(std::size_t)>::do_hash(str, impl::strlen(str),
                                                   impl::k_default_seed);
+}
+
+inline constexpr std::size_t impl::strlen(const char *str) {
+  const char *end{str};
+  while (*end != '\0') {
+    ++end;
+  }
+  return end - str;
+}
+
+inline std::size_t impl::unaligned_load(const char *p) {
+  std::size_t result;
+  std::memcpy(&result, p, sizeof(result));
+  return result;
+}
+
+template <typename T>
+inline constexpr std::size_t impl::unaligned_load_c(const char *p) {
+  std::size_t result{0};
+  if constexpr (std::endian::native == std::endian::big) {
+    for (std::size_t i{0}; i < sizeof(result); ++i) {
+      result |= (static_cast<decltype(result)>(p[i])
+                 << (CHAR_BIT * (sizeof(result) - (i + 1))));
+    }
+  } else {
+    for (std::size_t i{0}; i < sizeof(result); ++i) {
+      result |= (static_cast<decltype(result)>(p[i]) << (CHAR_BIT * i));
+    }
+  }
+  return result;
+}
+
+inline constexpr std::size_t impl::load_bytes(const char *p, int n) {
+  std::size_t result = 0;
+  --n;
+  do {
+    result = (result << 8) + static_cast<unsigned char>(p[n]);
+  } while (--n >= 0);
+  return result;
+}
+
+inline constexpr std::size_t impl::shift_mix(std::size_t v) {
+  return v ^ (v >> 47);
 }
 
 template <std::size_t sizeof_size_t>
@@ -174,48 +217,6 @@ constexpr std::size_t impl::hash<8>::do_hash(const char *ptr, std::size_t len,
   return hash;
 }
 
-inline constexpr std::size_t impl::strlen(const char *str) {
-  const char *end{str};
-  while (*end != '\0') {
-    ++end;
-  }
-  return end - str;
-}
-
-inline std::size_t impl::unaligned_load(const char *p) {
-  std::size_t result;
-  std::memcpy(&result, p, sizeof(result));
-  return result;
-}
-
-template <typename T>
-inline constexpr std::size_t impl::unaligned_load_c(const char *p) {
-  std::size_t result{0};
-  if constexpr (std::endian::native == std::endian::big) {
-    for (std::size_t i{0}; i < sizeof(result); ++i) {
-      result |= (static_cast<decltype(result)>(p[i])
-                 << (CHAR_BIT * (sizeof(result) - (i + 1))));
-    }
-  } else {
-    for (std::size_t i{0}; i < sizeof(result); ++i) {
-      result |= (static_cast<decltype(result)>(p[i]) << (CHAR_BIT * i));
-    }
-  }
-  return result;
-}
-
-inline constexpr std::size_t impl::load_bytes(const char *p, int n) {
-  std::size_t result = 0;
-  --n;
-  do {
-    result = (result << 8) + static_cast<unsigned char>(p[n]);
-  } while (--n >= 0);
-  return result;
-}
-
-inline constexpr std::size_t impl::shift_mix(std::size_t v) {
-  return v ^ (v >> 47);
-}
 } // namespace constexpr_hash_string
 
 } // namespace misc
