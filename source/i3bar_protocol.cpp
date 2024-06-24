@@ -104,10 +104,8 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_header(
         ret_val.emplace_back(json_strings::header::k_version,
                              serialize_number(header.version));
 
-        if (header.stop_signal.has_value()) {
           ret_val.emplace_back(json_strings::header::k_stop_signal,
-                               serialize_number(*header.stop_signal));
-        }
+                               serialize_number(header.stop_signal));
 
           ret_val.emplace_back(json_strings::header::k_cont_signal,
                                serialize_number(header.cont_signal));
