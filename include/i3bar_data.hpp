@@ -46,31 +46,32 @@ BITS_AND_BYTES_DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(click_modifiers);
 
 struct header {
   int version;
-  std::optional<int> stop_signal;
-  std::optional<int> cont_signal;
-  std::optional<bool> click_events;
+  int stop_signal;
+  int cont_signal;
+  bool click_events;
 };
 
 struct block {
   struct id {
-    std::optional<std::string> name;
-    std::optional<module_id::type> instance;
+    std::string name;
+    module_id::type instance{module_id::null};
   };
 
   struct data {
     struct program {
       struct global {
-        std::optional<bool> separator;
-        std::optional<types::pixel_count_t> separator_block_width;
+        bool separator;
+        types::pixel_count_t separator_block_width{9};
       };
+
       struct theme {
-        std::optional<types::color> color;
-        std::optional<types::color> background;
-        std::optional<types::color> border;
-        std::optional<types::pixel_count_t> border_top;
-        std::optional<types::pixel_count_t> border_right;
-        std::optional<types::pixel_count_t> border_bottom;
-        std::optional<types::pixel_count_t> border_left;
+        types::color color;
+        types::color background;
+        types::color border;
+        types::pixel_count_t border_top;
+        types::pixel_count_t border_right;
+        types::pixel_count_t border_bottom;
+        types::pixel_count_t border_left;
       };
 
       struct global global;
