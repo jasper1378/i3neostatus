@@ -252,15 +252,15 @@ int main(int argc, char *argv[]) {
 
         auto make_updated_block{
             [&module_handles,
-             &cur_module_id](i3bar_data::block::struct_content::struct_local
+             &cur_module_id](struct i3bar_data::block::data::module
                                  &&block_content_local)
                 -> std::pair<i3bar_data::block, module_id::type> {
               return std::pair<i3bar_data::block, module_id::type>{
                   i3bar_data::block{
                       .id{.name{module_handles[cur_module_id].get_name()},
                           .instance{module_handles[cur_module_id].get_id()}},
-                      .content{.global{/**/},
-                               .local{std::move(block_content_local)}}},
+                      .data{.program{.global{/**/}},
+                               .module{std::move(block_content_local)}}},
                   cur_module_id};
             }};
 
@@ -276,7 +276,7 @@ int main(int argc, char *argv[]) {
           } catch (const std::exception &exception) {
             i3bar_protocol::print_statusline(
                 make_updated_block(
-                    i3bar_data::block::struct_content::struct_local{
+                    (struct i3bar_data::block::data::module){
                         .full_text{module_error{
                             module_handles[cur_module_id].get_id(),
                             module_handles[cur_module_id].get_name(),

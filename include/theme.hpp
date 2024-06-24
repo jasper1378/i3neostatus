@@ -68,7 +68,7 @@ struct theme {
   i3bar_data::types::pixel_count_t border_width_bottom;
   i3bar_data::types::pixel_count_t border_width_left;
 
-  i3bar_data::block::content::theme set_block(const block_state state) {
+  struct i3bar_data::block::data::program::theme set_block(const block_state state) {
     switch (state) {
     case block_state::idle: {
     } break;

@@ -40,7 +40,7 @@ void i3neostatus::i3bar_protocol::print_statusline(
         std::vector<std::string> ret_val;
         for (std::size_t i{0}; i < ret_val.size(); ++i) {
           ret_val.emplace_back(
-              ((value[i].content.local.full_text.empty() && hide_empty)
+              ((value[i].data.module.full_text.empty() && hide_empty)
                    ? ("")
                    : (impl::serialize_block(value[i]))));
         }
@@ -54,7 +54,7 @@ void i3neostatus::i3bar_protocol::print_statusline(
     std::vector<std::string> &cache, bool hide_empty /* = true*/,
     std::ostream &stream /*= std::cout*/) {
   cache[value.second] =
-      ((value.first.content.local.full_text.empty() && hide_empty)
+      ((value.first.data.module.full_text.empty() && hide_empty)
            ? ("")
            : (impl::serialize_block(value.first)));
   impl::print_statusline(cache, stream);
@@ -66,7 +66,7 @@ void i3neostatus::i3bar_protocol::print_statusline(
     std::ostream &stream /*= std::cout*/) {
   for (std::size_t i{0}; i < value.size(); ++i) {
     cache[value[i].second] =
-        ((value[i].first.content.local.full_text.empty() && hide_empty)
+        ((value[i].first.data.module.full_text.empty() && hide_empty)
              ? ("")
              : (impl::serialize_block(value[i].first)));
   }
@@ -141,91 +141,91 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_block(
         }
 
         ret_val.emplace_back(json_strings::block::k_full_text,
-                             serialize_string(block.content.local.full_text));
+                             serialize_string(block.data.module.full_text));
 
-        if (block.content.local.short_text.has_value()) {
+        if (block.data.module.short_text.has_value()) {
           ret_val.emplace_back(
               json_strings::block::k_short_text,
-              serialize_string(*block.content.local.short_text));
+              serialize_string(*block.data.module.short_text));
         }
 
-        if (block.content.local.theme.color.has_value()) {
+        if (block.data.program.theme.color.has_value()) {
           ret_val.emplace_back(json_strings::block::k_color,
                                serialize_string(libconfigfile::color::to_string(
-                                   *block.content.local.theme.color)));
+                                   *block.data.program.theme.color)));
         }
 
-        if (block.content.local.theme.background.has_value()) {
+        if (block.data.program.theme.background.has_value()) {
           ret_val.emplace_back(json_strings::block::k_background,
                                serialize_string(libconfigfile::color::to_string(
-                                   *block.content.local.theme.background)));
+                                   *block.data.program.theme.background)));
         }
 
-        if (block.content.local.theme.border.has_value()) {
+        if (block.data.program.theme.border.has_value()) {
           ret_val.emplace_back(json_strings::block::k_border,
                                serialize_string(libconfigfile::color::to_string(
-                                   *block.content.local.theme.border)));
+                                   *block.data.program.theme.border)));
         }
 
-        if (block.content.local.theme.border_top.has_value()) {
+        if (block.data.program.theme.border_top.has_value()) {
           ret_val.emplace_back(
               json_strings::block::k_border_top,
-              serialize_number(*block.content.local.theme.border_top));
+              serialize_number(*block.data.program.theme.border_top));
         }
 
-        if (block.content.local.theme.border_right.has_value()) {
+        if (block.data.program.theme.border_right.has_value()) {
           ret_val.emplace_back(
               json_strings::block::k_border_right,
-              serialize_number(*block.content.local.theme.border_right));
+              serialize_number(*block.data.program.theme.border_right));
         }
 
-        if (block.content.local.theme.border_bottom.has_value()) {
+        if (block.data.program.theme.border_bottom.has_value()) {
           ret_val.emplace_back(
               json_strings::block::k_border_bottom,
-              serialize_number(*block.content.local.theme.border_bottom));
+              serialize_number(*block.data.program.theme.border_bottom));
         }
 
-        if (block.content.local.theme.border_left.has_value()) {
+        if (block.data.program.theme.border_left.has_value()) {
           ret_val.emplace_back(
               json_strings::block::k_border_left,
-              serialize_number(*block.content.local.theme.border_left));
+              serialize_number(*block.data.program.theme.border_left));
         }
 
-        if (block.content.local.min_width.has_value()) {
+        if (block.data.module.min_width.has_value()) {
           ret_val.emplace_back(json_strings::block::k_min_width,
-                               ((block.content.local.min_width->index() == 0)
+                               ((block.data.module.min_width->index() == 0)
                                     ? (serialize_number(std::get<0>(
-                                          *block.content.local.min_width)))
+                                          *block.data.module.min_width)))
                                     : (serialize_string(std::get<1>(
-                                          *block.content.local.min_width)))));
+                                          *block.data.module.min_width)))));
         }
 
-        if (block.content.local.align.has_value()) {
+        if (block.data.module.align.has_value()) {
           ret_val.emplace_back(json_strings::block::k_align,
                                serialize_string(i3bar_data::types::to_string(
-                                   *block.content.local.align)));
+                                   *block.data.module.align)));
         }
 
-        if (block.content.local.urgent.has_value()) {
+        if (block.data.module.urgent.has_value()) {
           ret_val.emplace_back(json_strings::block::k_urgent,
-                               serialize_bool(*block.content.local.urgent));
+                               serialize_bool(*block.data.module.urgent));
         }
 
-        if (block.content.global.separator.has_value()) {
+        if (block.data.program.global.separator.has_value()) {
           ret_val.emplace_back(json_strings::block::k_separator,
-                               serialize_bool(*block.content.global.separator));
+                               serialize_bool(*block.data.program.global.separator));
         }
 
-        if (block.content.global.separator_block_width.has_value()) {
+        if (block.data.program.global.separator_block_width.has_value()) {
           ret_val.emplace_back(
               json_strings::block::k_separator_block_width,
-              serialize_number(*block.content.global.separator_block_width));
+              serialize_number(*block.data.program.global.separator_block_width));
         }
 
-        if (block.content.local.markup.has_value()) {
+        if (block.data.module.markup.has_value()) {
           ret_val.emplace_back(json_strings::block::k_markup,
                                serialize_string(i3bar_data::types::to_string(
-                                   *block.content.local.markup)));
+                                   *block.data.module.markup)));
         }
 
         return ret_val;
@@ -443,62 +443,62 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
-                        ret_val.content.x);
+                        ret_val.data.x);
       } break;
       case misc::constexpr_hash_string::hash(json_strings::click_event::k_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
-                        ret_val.content.y);
+                        ret_val.data.y);
       } break;
       case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_button): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
-                        ret_val.content.button);
+                        ret_val.data.button);
       } break;
       case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_relative_x): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
-                        ret_val.content.relative_x);
+                        ret_val.data.relative_x);
       } break;
       case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_relative_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
-                        ret_val.content.relative_y);
+                        ret_val.data.relative_y);
       } break;
       case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_output_x): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
-                        ret_val.content.output_x);
+                        ret_val.data.output_x);
       } break;
       case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_output_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
-                        ret_val.content.output_y);
+                        ret_val.data.output_y);
       } break;
       case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_width): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
-                        ret_val.content.width);
+                        ret_val.data.width);
       } break;
       case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_height): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
-                        ret_val.content.height);
+                        ret_val.data.height);
       } break;
       case misc::constexpr_hash_string::hash(
           json_strings::click_event::k_modifiers): {
@@ -513,7 +513,7 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
               click_event.find(json_constants::k_string_delimiter,
                                value_begin_pos) -
               1};
-          ret_val.content.modifiers |= i3bar_data::types::from_string<
+          ret_val.data.modifiers |= i3bar_data::types::from_string<
               i3bar_data::types::click_modifiers>(
               std::string{substr(click_event, value_begin_pos, value_end_pos)});
           i = value_end_pos + 2;

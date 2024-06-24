@@ -59,5 +59,5 @@ void i3neostatus::module_api::put_error(std::exception &&error) {
 }
 
 void i3neostatus::module_api::set_theme(block &block, const block_state state) {
-  block.theme = m_theme->set_block(state);
+  // TODO
 }
