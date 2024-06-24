@@ -3,6 +3,7 @@
 #include "i3bar_data.hpp"
 #include "i3bar_protocol.hpp"
 #include "module_handle.hpp"
+#include "module_id.hpp"
 
 #include <istream>
 #include <utility>
@@ -49,8 +50,10 @@ void i3neostatus::click_event_listener::run() {
     while (true) {
       i3bar_data::click_event click_event{
           i3bar_protocol::read_click_event(*m_input_stream)};
-      (*m_module_handles)[click_event.id.instance].send_click_event(
-          std::move(click_event.content));
+      if (click_event.id.instance != module_id::null) {
+        (*m_module_handles)[click_event.id.instance].send_click_event(
+            std::move(click_event.data));
+      }
     }
   }};
 }
