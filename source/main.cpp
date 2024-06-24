@@ -145,8 +145,6 @@ private:
   }
 };
 
-
-#include "i3bar_data_conversions.hpp"
 int main(int argc, char *argv[]) {
   try {
     const char *configuration_file_path{""};
