@@ -52,7 +52,7 @@ void i3neostatus::click_event_listener::run() {
           i3bar_protocol::read_click_event(*m_input_stream)};
       if (click_event.id.instance != module_id::null) {
         (*m_module_handles)[click_event.id.instance].send_click_event(
-            std::move(click_event.data));
+            std::move(click_event.content));
       }
     }
   }};
