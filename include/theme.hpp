@@ -4,88 +4,94 @@
 #include "block_state.hpp"
 #include "i3bar_data.hpp"
 
+#include <array>
+#include <cstddef>
+#include <string>
 #include <variant>
 
 namespace i3neostatus {
+namespace theme {
+using pixel_count_t = i3bar_data::types::pixel_count_t;
+using color = i3bar_data::types::color;
+
+enum class special_border_color {
+  foreground,
+  background,
+};
+
+enum class special_separator_color_begin { right = 0 };
+enum class special_separator_color_end { left = 1 };
+enum class special_separator_color {
+  right = static_cast<int>(special_separator_color_begin::right),
+  left = static_cast<int>(special_separator_color_end::left)
+};
+
+enum class separator_type {
+  begin,
+  middle,
+  end,
+};
 
 struct theme {
-  using t_color = i3bar_data::types::color;
+  std::array<color, static_cast<std::size_t>(block_state::max)>
+      state_dependent_color_foreground;
+  std::array<color, static_cast<std::size_t>(block_state::max)>
+      state_dependent_color_background;
+  std::array<std::variant<color, special_border_color>,
+             static_cast<std::size_t>(block_state::max)>
+      state_dependent_color_border;
 
-  enum class special_separator_color {
-    left,
-    right,
-  };
+  color alternating_tint_color_foreground;
+  color alternating_tint_color_background;
+  std::variant<color, special_border_color> alternating_tint_color_border;
 
-  enum class special_border_color {
-    foreground,
-    background,
-  };
+  std::string separator_middle_sequence; // TODO unicode
+  std::variant<color, special_separator_color>
+      separator_middle_color_foreground;
+  std::variant<color, special_separator_color>
+      separator_middle_color_background;
 
-  t_color idle_color_foreground;
-  t_color idle_color_background;
-  std::variant<t_color, special_border_color> idle_color_border;
-
-  t_color info_color_foreground;
-  t_color info_color_background;
-  std::variant<t_color, special_border_color> info_color_border;
-
-  t_color good_color_foreground;
-  t_color good_color_background;
-  std::variant<t_color, special_border_color> good_color_border;
-
-  t_color warning_color_foreground;
-  t_color warning_color_background;
-  std::variant<t_color, special_border_color> warning_color_border;
-
-  t_color critical_color_foreground;
-  t_color critical_color_background;
-  std::variant<t_color, special_border_color> critical_color_border;
-
-  t_color error_color_foreground;
-  t_color error_color_background;
-  std::variant<t_color, special_border_color> error_color_border;
-
-  t_color alternating_tint_color_foreground;
-  t_color alternating_tint_color_background;
-  std::variant<t_color, special_border_color> alternating_tint_border;
-
-  std::string separator_seq; // TODO unicode
-  std::variant<t_color, special_separator_color> separator_color_foreground;
-  std::variant<t_color, special_separator_color> separator_color_background;
-
-  std::string separator_seq_begin; // TODO unicode
-  std::variant<t_color, special_separator_color>
+  std::string separator_begin_sequence; // TODO unicode
+  std::variant<color, special_separator_color_begin>
       separator_begin_color_foreground;
-  std::variant<t_color, special_separator_color>
+  std::variant<color, special_separator_color_begin>
       separator_begin_color_background;
 
-  std::string separator_seq_end; // TODO unicode
-  std::variant<t_color, special_separator_color> separator_end_color_foreground;
-  std::variant<t_color, special_separator_color> separator_end_color_background;
+  std::string separator_end_sequence; // TODO unicode
+  std::variant<color, special_separator_color_end>
+      separator_end_color_foreground;
+  std::variant<color, special_separator_color_end>
+      separator_end_color_background;
 
-  i3bar_data::types::pixel_count_t border_width_top;
-  i3bar_data::types::pixel_count_t border_width_right;
-  i3bar_data::types::pixel_count_t border_width_bottom;
-  i3bar_data::types::pixel_count_t border_width_left;
-
-  struct i3bar_data::block::data::program::theme set_block(const block_state state) {
-    switch (state) {
-    case block_state::idle: {
-    } break;
-    case block_state::info: {
-    } break;
-    case block_state::good: {
-    } break;
-    case block_state::warning: {
-    } break;
-    case block_state::critical: {
-    } break;
-    case block_state::error: {
-    } break;
-    }
-  }
-  // TODO
+  pixel_count_t border_width_top;
+  pixel_count_t border_width_right;
+  pixel_count_t border_width_bottom;
+  pixel_count_t border_width_left;
 };
+
+namespace impl {
+template <separator_type type>
+struct separator_type_enum_to_special_separator_color_enum;
+template <>
+struct separator_type_enum_to_special_separator_color_enum<
+    separator_type::begin> {
+  using type = special_separator_color_begin;
+};
+template <>
+struct separator_type_enum_to_special_separator_color_enum<
+    separator_type::end> {
+  using type = special_separator_color_end;
+};
+template <>
+struct separator_type_enum_to_special_separator_color_enum<
+    separator_type::middle> {
+  using type = special_separator_color;
+};
+template <separator_type type>
+using separator_type_enum_to_special_separator_color_enum_t =
+    separator_type_enum_to_special_separator_color_enum<type>::type;
+} // namespace impl
+} // namespace theme
 } // namespace i3neostatus
 
 #endif
