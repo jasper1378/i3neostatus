@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
         switch (block_content_local.index()) {
         case 0: {
           i3bar_protocol::print_statusline(
-              make_updated_block(std::get<0>(std::move(block_content_local))),
+              make_updated_block(std::get<0>(std::move(block_content_local)).first),
               i3bar_cache, true);
         } break;
         case 1: {
