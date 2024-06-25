@@ -1,10 +1,13 @@
+#include "block_state.hpp"
 #include "click_event_listener.hpp"
 #include "config_file.hpp"
 #include "hide_block.hpp"
 #include "i3bar_data.hpp"
 #include "i3bar_protocol.hpp"
+#include "make_block.hpp"
 #include "message_printing.hpp"
 #include "misc.hpp"
+#include "module_api.hpp"
 #include "module_error.hpp"
 #include "module_handle.hpp"
 #include "module_id.hpp"
@@ -15,6 +18,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <mutex>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -196,14 +200,27 @@ int main(int argc, char *argv[]) {
       message_printing::error("Fool! That's too many modules!", true);
     }
     const module_id::type module_count{config.modules.size()};
+    const bool custom_separators_enabled{true}; // TODO
+    bool click_events_enabled{false};
 
     std::vector<module_handle> module_handles{};
     module_handles.reserve(module_count);
-
     std::vector<update_queue::update_info> module_updates{};
     module_updates.reserve(module_count);
-
     update_queue update_queue{module_count};
+
+    std::pair<std::vector<struct i3bar_data::block>, std::vector<block_state>>
+        content_cache{std::piecewise_construct, std::forward_as_tuple(),
+                      std::forward_as_tuple(module_count, block_state::idle)};
+    content_cache.first.reserve(module_count);
+    std::vector<module_id::type> module_id_to_active_index(module_count,
+                                                           module_id::null);
+    std::vector<module_id::type> active_index_to_module_id(module_count,
+                                                           module_id::null);
+
+    std::vector<std::string> content_string_cache(module_count);
+    std::vector<std::string> separator_string_cache(
+        (custom_separators_enabled) ? (module_count + 1) : (0));
 
     const auto module_callback{
         [](void *userdata,
@@ -216,75 +233,243 @@ int main(int argc, char *argv[]) {
           }
         }};
 
-    bool any_click_events_enabled{false};
-    for (module_id::type i = 0; i < module_count; ++i) {
-      module_updates.emplace_back(i, &update_queue, false);
-      module_handles.emplace_back(i, std::move(config.modules[i].file_path),
-                                  std::move(config.modules[i].config),
-                                  module_handle::state_change_callback{
-                                      module_callback, &module_updates.back()});
-      any_click_events_enabled = any_click_events_enabled ||
-                                 module_handles[i].get_click_events_enabled();
+    for (module_id::type cur_module_id{0}; cur_module_id < module_count;
+         ++cur_module_id) {
+      module_updates.emplace_back(cur_module_id, &update_queue, false);
+      module_handles.emplace_back(
+          cur_module_id, std::move(config.modules[cur_module_id].file_path),
+          std::move(config.modules[cur_module_id].config),
+          module_handle::state_change_callback{module_callback,
+                                               &module_updates.back()});
+      click_events_enabled =
+          (click_events_enabled ||
+           module_handles[cur_module_id].get_click_events_enabled());
       module_handles.back().run();
+      content_cache.first.emplace_back(i3bar_data::block{
+          .id{.name{module_handles.back().get_name()},
+              .instance{cur_module_id}},
+          .data{.module{
+              hide_block::set<struct i3bar_data::block::data::module>()}}});
     }
 
     click_event_listener click_event_listener{&module_handles, &std::cin};
-    if (any_click_events_enabled) {
+    if (click_events_enabled) {
       click_event_listener.run();
     }
 
-    i3bar_protocol::print_header(
-        {1, SIGSTOP, SIGCONT, any_click_events_enabled});
+    i3bar_protocol::print_header({1, SIGSTOP, SIGCONT, click_events_enabled});
     i3bar_protocol::init_statusline();
-    std::vector<std::string> i3bar_cache(module_count);
 
     while (true) {
       update_queue.count().wait(0);
       for (std::size_t queued_updates{update_queue.count().load()},
            cur_queued_update{};
            cur_queued_update < queued_updates; ++cur_queued_update) {
-        module_id::type cur_module_id{update_queue.get()};
-
+        const module_id::type cur_module_id{update_queue.get()};
         module_updates[cur_module_id].is_buffered.store(false);
-        std::variant<module_api::block, std::exception_ptr> block_content_local{
+
+        bool hide_previous{hide_block::get(content_cache.first[cur_module_id])};
+        std::variant<module_api::block, std::exception_ptr> content_module{
             module_handles[cur_module_id].get_comm().get()};
 
-        auto make_updated_block{
-            [&module_handles,
-             &cur_module_id](struct i3bar_data::block::data::module
-                                 &&block_content_local)
-                -> std::pair<i3bar_data::block, module_id::type> {
-              return std::pair<i3bar_data::block, module_id::type>{
-                  i3bar_data::block{
-                      .id{.name{module_handles[cur_module_id].get_name()},
-                          .instance{module_handles[cur_module_id].get_id()}},
-                      .data{.program{.global{/**/}},
-                               .module{std::move(block_content_local)}}},
-                  cur_module_id};
-            }};
-
-        switch (block_content_local.index()) {
+        switch (content_module.index()) {
         case 0: {
-          i3bar_protocol::print_statusline(
-              make_updated_block(std::get<0>(std::move(block_content_local)).first),
-              i3bar_cache, true);
+          std::tie(content_cache.first[cur_module_id].data.module,
+                   content_cache.second[cur_module_id]) =
+              std::get<0>(std::move(content_module));
         } break;
         case 1: {
           try {
-            std::rethrow_exception(std::get<1>(std::move(block_content_local)));
+            std::rethrow_exception(std::get<1>(std::move(content_module)));
           } catch (const std::exception &exception) {
-            i3bar_protocol::print_statusline(
-                make_updated_block(
-                    (struct i3bar_data::block::data::module){
-                        .full_text{module_error{
-                            module_handles[cur_module_id].get_id(),
-                            module_handles[cur_module_id].get_name(),
-                            module_handles[cur_module_id].get_file_path(),
-                            exception.what()}
-                                       .what()}}),
-                i3bar_cache, true);
+            content_cache.first[cur_module_id].data.module = {
+                .full_text{module_error{
+                    cur_module_id, module_handles[cur_module_id].get_name(),
+                    module_handles[cur_module_id].get_file_path(),
+                    exception.what()}
+                               .what()},
+                .short_text{std::nullopt},
+                .min_width{std::nullopt},
+                .align{std::nullopt},
+                .urgent{true},
+                .markup{i3bar_data::types::markup::none}};
+            content_cache.second[cur_module_id] = block_state::error;
           }
         } break;
+        default: {
+          throw std::runtime_error{"impossible!"};
+        } break;
+        }
+
+        bool hide_current{hide_block::get(content_cache.first[cur_module_id])};
+
+        const auto make_separator_left{
+            [&config, module_count, &content_cache, &module_id_to_active_index,
+             &active_index_to_module_id](const module_id::type cur_module_id)
+                -> std::pair<i3bar_data::block, module_id::type> {
+              if (cur_module_id == module_id::null) {
+                return {i3bar_data::block{.data{.module{hide_block::set<
+                            struct i3bar_data::block::data::module>()}}},
+                        module_id::null};
+              }
+              module_id::type left_module_id{
+                  ((module_id_to_active_index[cur_module_id] != 0)
+                       ? (active_index_to_module_id
+                              [module_id_to_active_index[cur_module_id] - 1])
+                       : (module_id::null))};
+              return {
+                  make_block::separator(
+                      config.theme,
+                      ((left_module_id != module_id::null)
+                           ? (&content_cache.first[left_module_id]
+                                   .data.program.theme)
+                           : (nullptr)),
+                      &content_cache.first[cur_module_id].data.program.theme),
+                  cur_module_id};
+            }};
+        const auto make_separator_right{
+            [&config, module_count, &content_cache, &module_id_to_active_index,
+             &active_index_to_module_id](const module_id::type cur_module_id)
+                -> std::pair<i3bar_data::block, module_id::type> {
+              if (cur_module_id == module_id::null) {
+                return {i3bar_data::block{.data{.module{hide_block::set<
+                            struct i3bar_data::block::data::module>()}}},
+                        module_id::null};
+              }
+              module_id::type right_module_id{
+                  ((((module_id_to_active_index[cur_module_id] + 1 <
+                      module_count)) &&
+                    (active_index_to_module_id
+                         [module_id_to_active_index[cur_module_id] + 1] !=
+                     module_id::null))
+                       ? (active_index_to_module_id
+                              [module_id_to_active_index[cur_module_id] + 1])
+                       : (module_id::null))};
+              return {
+                  make_block::separator(
+                      config.theme,
+                      &content_cache.first[cur_module_id].data.program.theme,
+                      ((right_module_id != module_id::null)
+                           ? (&content_cache.first[right_module_id]
+                                   .data.program.theme)
+                           : (nullptr))),
+                  ((right_module_id != module_id::null) ? (right_module_id)
+                                                        : (module_count))};
+            }};
+        const auto make_separators{
+            [&make_separator_left,
+             &make_separator_right](const module_id::type cur_module_id)
+                -> std::pair<decltype(make_separator_left(cur_module_id)),
+                             decltype(make_separator_right(cur_module_id))> {
+              return {make_separator_left(cur_module_id),
+                      make_separator_right(cur_module_id)};
+            }};
+
+        if (hide_previous != hide_current) {
+          if (hide_current) {
+            for (module_id::type i{module_id_to_active_index[cur_module_id]};
+                 i < (module_count - 1); ++i) {
+              active_index_to_module_id[i] = active_index_to_module_id[i + 1];
+            }
+            active_index_to_module_id.back() = module_id::null;
+            for (module_id::type i{cur_module_id + 1}; i < module_count; ++i) {
+              if (module_id_to_active_index[i] != module_id::null) {
+                --module_id_to_active_index[i];
+              }
+            }
+            module_id_to_active_index[cur_module_id] = module_id::null;
+          } else {
+            for (module_id::type i{0};; ++i) {
+              if ((active_index_to_module_id[i] > cur_module_id) ||
+                  (active_index_to_module_id[i] == module_id::null)) {
+                for (module_id::type j{module_count}; (j--) > (i + 1);) {
+                  active_index_to_module_id[j] =
+                      active_index_to_module_id[j - 1];
+                }
+                active_index_to_module_id[i] = cur_module_id;
+                for (module_id::type j{cur_module_id + 1}; j < module_count;
+                     ++j) {
+                  if (module_id_to_active_index[j] != module_id::null) {
+                    ++module_id_to_active_index[j];
+                  }
+                }
+                module_id_to_active_index[cur_module_id] = i;
+                break;
+              }
+            }
+          }
+
+          for (module_id::type i{0}; i < module_count; ++i) {
+            if (!hide_block::get(content_cache.first[i])) {
+              content_cache.first[i].data.program = make_block::content(
+                  config.theme, content_cache.second[i],
+                  (((module_id_to_active_index[i]) % 2) != 0),
+                  custom_separators_enabled);
+            }
+          }
+
+          if (custom_separators_enabled) {
+            i3bar_protocol::print_statusline(
+                content_cache.first, content_string_cache,
+                [module_count, &module_id_to_active_index,
+                 &active_index_to_module_id, &make_separator_left,
+                 &make_separator_right]() -> std::vector<i3bar_data::block> {
+                  if (active_index_to_module_id.front() == module_id::null) {
+                    return std::vector<i3bar_data::block>{
+                        (module_count + 1),
+                        i3bar_data::block{.data{.module{hide_block::set<
+                            struct i3bar_data::block::data::module>()}}}};
+                  } else {
+                    std::vector<i3bar_data::block> ret_val;
+                    ret_val.reserve(module_count + 1);
+                    module_id::type last_module_id{module_id::null};
+                    for (module_id::type i{0}; i < module_count; ++i) {
+                      if ((active_index_to_module_id[i] == module_id::null) &&
+                          (last_module_id == module_id::null)) {
+                        last_module_id = active_index_to_module_id[i - 1];
+                      }
+                      ret_val.emplace_back(
+                          make_separator_left(
+                              (module_id_to_active_index[i] != module_id::null)
+                                  ? (i)
+                                  : (module_id::null))
+                              .first);
+                    }
+                    last_module_id = ((last_module_id == module_id::null)
+                                          ? (module_count - 1)
+                                          : (last_module_id));
+                    ret_val.emplace_back(
+                        make_separator_right(last_module_id).first);
+                    return ret_val;
+                  }
+                }(),
+                separator_string_cache, true);
+          } else {
+            i3bar_protocol::print_statusline(content_cache.first,
+                                             content_string_cache, true);
+          }
+
+        } else if (!hide_current) {
+          content_cache.first[cur_module_id].data.program = make_block::content(
+              config.theme, content_cache.second[cur_module_id],
+              (((module_id_to_active_index[cur_module_id]) % 2) != 0),
+              custom_separators_enabled);
+
+          if (custom_separators_enabled) {
+            std::pair<std::pair<i3bar_data::block, module_id::type>,
+                      std::pair<i3bar_data::block, module_id::type>>
+                separators{make_separators(cur_module_id)};
+
+            i3bar_protocol::print_statusline(
+                content_cache.first[cur_module_id], cur_module_id,
+                content_string_cache, separators.first.first,
+                separators.first.second, separators.second.first,
+                separators.second.second, separator_string_cache, true);
+          } else {
+            i3bar_protocol::print_statusline(content_cache.first[cur_module_id],
+                                             cur_module_id,
+                                             content_string_cache, true);
+          }
         }
       }
     }

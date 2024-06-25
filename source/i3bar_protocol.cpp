@@ -4,12 +4,14 @@
 #include "i3bar_data.hpp"
 #include "i3bar_data_conversions.hpp"
 #include "misc.hpp"
+#include "module_id.hpp"
 
+#include "bits-and-bytes/stream_append.hpp"
 #include "libconfigfile/color.hpp"
 
+#include <cassert>
 #include <charconv>
 #include <iostream>
-#include <limits>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -17,10 +19,12 @@
 #include <utility>
 #include <vector>
 
+using namespace bits_and_bytes::stream_append;
+
 void i3neostatus::i3bar_protocol::print_header(
     const i3bar_data::header &value, std::ostream &stream /*= std::cout */) {
-  stream << impl::serialize_header(value) << json_constants::k_newline
-         << std::flush;
+  impl::serialize_header(stream, value);
+  stream << json_constants::k_newline << std::flush;
 }
 
 void i3neostatus::i3bar_protocol::init_statusline(
@@ -34,50 +38,75 @@ void i3neostatus::i3bar_protocol::init_statusline(
 }
 
 void i3neostatus::i3bar_protocol::print_statusline(
-    const std::vector<i3bar_data::block> &value, bool hide_empty /*= true*/,
+    const std::vector<struct i3bar_data::block> &content, const bool hide_empty,
     std::ostream &stream /*= std::cout*/) {
-  impl::print_statusline(
-      [&value, &hide_empty]() -> std::vector<std::string> {
-        std::vector<std::string> ret_val;
-        for (std::size_t i{0}; i < ret_val.size(); ++i) {
-          ret_val.emplace_back(
-              ((hide_block::get(value[i]) && hide_empty)
-                   ? (hide_block::set<std::string>())
-                   : (impl::serialize_block(value[i]))));
-        }
-        return ret_val;
-      }(),
-      stream);
+  impl::print_statusline(impl::serialize_blocks(content, hide_empty),
+                         hide_empty, stream);
 }
 
 void i3neostatus::i3bar_protocol::print_statusline(
-    const std::pair<i3bar_data::block, std::size_t> &value,
-    std::vector<std::string> &cache, bool hide_empty /* = true*/,
+    const std::vector<struct i3bar_data::block> &content,
+    const std::vector<i3bar_data::block> &separators, const bool hide_empty,
     std::ostream &stream /*= std::cout*/) {
-  cache[value.second] =
-      ((hide_block::get(value.first) && hide_empty)
-           ? (hide_block::set<std::string>())
-           : (impl::serialize_block(value.first)));
-  impl::print_statusline(cache, stream);
+  impl::print_statusline(impl::serialize_blocks(content, hide_empty),
+                         impl::serialize_blocks(separators, hide_empty),
+                         hide_empty, stream);
 }
 
 void i3neostatus::i3bar_protocol::print_statusline(
-    const std::vector<std::pair<i3bar_data::block, std::size_t>> &value,
-    std::vector<std::string> &cache, bool hide_empty /*= true*/,
+    const struct i3bar_data::block &content,
+    const module_id::type content_index,
+    std::vector<std::string> &content_cache, const bool hide_empty,
     std::ostream &stream /*= std::cout*/) {
-  for (std::size_t i{0}; i < value.size(); ++i) {
-    cache[value[i].second] =
-        ((hide_block::get(value[i].first) && hide_empty)
-             ? (hide_block::set<std::string>())
-             : (impl::serialize_block(value[i].first)));
-  }
-  impl::print_statusline(cache, stream);
+  content_cache[content_index].clear();
+  impl::serialize_block(content_cache[content_index], content, hide_empty);
+  impl::print_statusline(content_cache, hide_empty, stream);
+}
+
+void i3neostatus::i3bar_protocol::print_statusline(
+    const struct i3bar_data::block &content,
+    const module_id::type content_index,
+    std::vector<std::string> &content_cache,
+    const i3bar_data::block &separator_left,
+    const module_id::type separator_left_index,
+    const i3bar_data::block &separator_right,
+    const module_id::type separator_right_index,
+    std::vector<std::string> &separator_cache, const bool hide_empty,
+    std::ostream &stream) {
+  content_cache[content_index].clear();
+  impl::serialize_block(content_cache[content_index], content, hide_empty);
+  separator_cache[separator_left_index].clear();
+  impl::serialize_block(separator_cache[separator_left_index], separator_left,
+                        hide_empty);
+  separator_cache[separator_right_index].clear();
+  impl::serialize_block(separator_cache[separator_right_index], separator_right,
+                        hide_empty);
+  impl::print_statusline(content_cache, separator_cache, hide_empty, stream);
+}
+
+void i3neostatus::i3bar_protocol::print_statusline(
+    const std::vector<struct i3bar_data::block> &content,
+    std::vector<std::string> &content_cache, const bool hide_empty,
+    std::ostream &stream /*= std::cout*/) {
+  content_cache = impl::serialize_blocks(content, hide_empty);
+  impl::print_statusline(content_cache, hide_empty, stream);
+}
+
+void i3neostatus::i3bar_protocol::print_statusline(
+    const std::vector<struct i3bar_data::block> &content,
+    std::vector<std::string> &content_cache,
+    const std::vector<i3bar_data::block> &separators,
+    std::vector<std::string> &separator_cache, const bool hide_empty,
+    std::ostream &stream /*= std::cout*/) {
+  content_cache = impl::serialize_blocks(content, hide_empty);
+  separator_cache = impl::serialize_blocks(separators, hide_empty);
+  impl::print_statusline(content_cache, separator_cache, hide_empty, stream);
 }
 
 void i3neostatus::i3bar_protocol::init_click_event(
-    std::istream &input_stream /*=std::cin*/) {
-  input_stream.ignore(std::numeric_limits<std::streamsize>::max(),
-                      json_constants::k_array_opening_delimiter);
+    std::istream &input_stream /*= std::cin*/) {
+  input_stream.ignore(1, json_constants::k_array_opening_delimiter);
+  input_stream.ignore(1, json_constants::k_newline);
 }
 
 i3neostatus::i3bar_data::click_event
@@ -90,170 +119,267 @@ i3neostatus::i3bar_protocol::read_click_event(
 }
 
 void i3neostatus::i3bar_protocol::impl::print_statusline(
-    const std::vector<std::string> &value,
+    const std::vector<std::string> &content, const bool hide_empty,
     std::ostream &stream /*= std::cout*/) {
-  stream << json_constants::k_element_separator << serialize_array(value)
-         << json_constants::k_newline << std::flush;
+  stream << json_constants::k_element_separator;
+  serialize_array(stream, content, hide_empty);
+  stream << json_constants::k_newline << std::flush;
 }
 
-std::string i3neostatus::i3bar_protocol::impl::serialize_header(
-    const i3bar_data::header &header) {
+void i3neostatus::i3bar_protocol::impl::print_statusline(
+    const std::vector<std::string> &content,
+    const std::vector<std::string> &separators, const bool hide_empty,
+    std::ostream &stream /*= std::cout*/) {
+  assert((content.size() + 1) == separators.size());
+  stream << json_constants::k_element_separator;
+  serialize_array_interleave(stream, separators, content, hide_empty);
+  stream << json_constants::k_newline << std::flush;
+}
+
+template <typename t_output>
+t_output &i3neostatus::i3bar_protocol::impl::serialize_header(
+    t_output &output, const i3bar_data::header &header) {
   return serialize_object(
-      [&header]() -> std::vector<std::pair<std::string, std::string>> {
+      output, [&header]() -> std::vector<std::pair<std::string, std::string>> {
         std::vector<std::pair<std::string, std::string>> ret_val;
 
-        ret_val.emplace_back(json_strings::header::k_version,
-                             serialize_number(header.version));
+        ret_val.emplace_back(json_strings::header::k_version, std::string{});
+        serialize_number(ret_val.back().second, header.version);
 
-          ret_val.emplace_back(json_strings::header::k_stop_signal,
-                               serialize_number(header.stop_signal));
+        ret_val.emplace_back(json_strings::header::k_stop_signal,
+                             std::string{});
+        serialize_number(ret_val.back().second, header.stop_signal);
 
-          ret_val.emplace_back(json_strings::header::k_cont_signal,
-                               serialize_number(header.cont_signal));
+        ret_val.emplace_back(json_strings::header::k_cont_signal,
+                             std::string{});
+        serialize_number(ret_val.back().second, header.cont_signal);
 
-          ret_val.emplace_back(json_strings::header::k_click_events,
-                               serialize_bool(header.click_events));
+        ret_val.emplace_back(json_strings::header::k_click_events,
+                             std::string{});
+        serialize_bool(ret_val.back().second, header.click_events);
 
         return ret_val;
       }());
 }
 
-std::string i3neostatus::i3bar_protocol::impl::serialize_block(
-    const i3bar_data::block &block) {
-  return serialize_object(
-      [&block]() -> std::vector<std::pair<std::string, std::string>> {
-        std::vector<std::pair<std::string, std::string>> ret_val;
+template <typename t_output>
+t_output &i3neostatus::i3bar_protocol::impl::serialize_block(
+    t_output &output, const struct i3bar_data::block &block,
+    const bool hide_empty) {
+  if (hide_block::get(block) && hide_empty) {
+    output += hide_block::set<std::string>();
+  } else {
+    serialize_object(
+        output, [&block]() -> std::vector<std::pair<std::string, std::string>> {
+          std::vector<std::pair<std::string, std::string>> ret_val;
 
-          ret_val.emplace_back(json_strings::block::k_name,
-                               serialize_string(block.id.name));
+          ret_val.emplace_back(json_strings::block::k_name, std::string{});
+          serialize_string(ret_val.back().second, block.id.name);
 
-          ret_val.emplace_back(
-              json_strings::block::k_instance,
-              serialize_string(std::to_string(block.id.instance)));
+          ret_val.emplace_back(json_strings::block::k_instance, std::string{});
+          serialize_string(ret_val.back().second,
+                           std::to_string(block.id.instance));
 
-        ret_val.emplace_back(json_strings::block::k_full_text,
-                             serialize_string(block.data.module.full_text));
+          ret_val.emplace_back(json_strings::block::k_separator, std::string{});
+          serialize_bool(ret_val.back().second,
+                         block.data.program.global.separator);
 
-        if (block.data.module.short_text.has_value()) {
-          ret_val.emplace_back(
-              json_strings::block::k_short_text,
-              serialize_string(*block.data.module.short_text));
-        }
+          ret_val.emplace_back(json_strings::block::k_separator_block_width,
+                               std::string{});
+          serialize_number(ret_val.back().second,
+                           block.data.program.global.separator_block_width);
 
-          ret_val.emplace_back(json_strings::block::k_color,
-                               serialize_string(libconfigfile::color::to_string(
-                                   block.data.program.theme.color)));
+          ret_val.emplace_back(json_strings::block::k_color, std::string{});
+          serialize_string(
+              ret_val.back().second,
+              libconfigfile::color::to_string(block.data.program.theme.color));
 
           ret_val.emplace_back(json_strings::block::k_background,
-                               serialize_string(libconfigfile::color::to_string(
-                                   block.data.program.theme.background)));
+                               std::string{});
+          serialize_string(ret_val.back().second,
+                           libconfigfile::color::to_string(
+                               block.data.program.theme.background));
 
-          ret_val.emplace_back(json_strings::block::k_border,
-                               serialize_string(libconfigfile::color::to_string(
-                                   block.data.program.theme.border)));
+          ret_val.emplace_back(json_strings::block::k_border, std::string{});
+          serialize_string(
+              ret_val.back().second,
+              libconfigfile::color::to_string(block.data.program.theme.border));
 
-          ret_val.emplace_back(
-              json_strings::block::k_border_top,
-              serialize_number(block.data.program.theme.border_top));
+          ret_val.emplace_back(json_strings::block::k_border_top,
+                               std::string{});
+          serialize_number(ret_val.back().second,
+                           block.data.program.theme.border_top);
 
-          ret_val.emplace_back(
-              json_strings::block::k_border_right,
-              serialize_number(block.data.program.theme.border_right));
+          ret_val.emplace_back(json_strings::block::k_border_right,
+                               std::string{});
+          serialize_number(ret_val.back().second,
+                           block.data.program.theme.border_right);
 
-          ret_val.emplace_back(
-              json_strings::block::k_border_bottom,
-              serialize_number(block.data.program.theme.border_bottom));
+          ret_val.emplace_back(json_strings::block::k_border_bottom,
+                               std::string{});
+          serialize_number(ret_val.back().second,
+                           block.data.program.theme.border_bottom);
 
-          ret_val.emplace_back(
-              json_strings::block::k_border_left,
-              serialize_number(block.data.program.theme.border_left));
+          ret_val.emplace_back(json_strings::block::k_border_left,
+                               std::string{});
+          serialize_number(ret_val.back().second,
+                           block.data.program.theme.border_left);
 
-        if (block.data.module.min_width.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_min_width,
-                               ((block.data.module.min_width->index() == 0)
-                                    ? (serialize_number(std::get<0>(
-                                          *block.data.module.min_width)))
-                                    : (serialize_string(std::get<1>(
-                                          *block.data.module.min_width)))));
-        }
+          ret_val.emplace_back(json_strings::block::k_full_text, std::string{});
+          serialize_string(ret_val.back().second, block.data.module.full_text);
 
-        if (block.data.module.align.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_align,
-                               serialize_string(i3bar_data::types::to_string(
-                                   *block.data.module.align)));
-        }
+          if (block.data.module.short_text.has_value()) {
+            ret_val.emplace_back(json_strings::block::k_short_text,
+                                 std::string{});
+            serialize_string(ret_val.back().second,
+                             *block.data.module.short_text);
+          }
 
-        if (block.data.module.urgent.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_urgent,
-                               serialize_bool(*block.data.module.urgent));
-        }
+          if (block.data.module.min_width.has_value()) {
+            ret_val.emplace_back(json_strings::block::k_min_width,
+                                 std::string{});
+            ((block.data.module.min_width->index() == 0)
+                 ? (serialize_number(ret_val.back().second,
+                                     std::get<0>(*block.data.module.min_width)))
+                 : (serialize_string(
+                       ret_val.back().second,
+                       std::get<1>(*block.data.module.min_width))));
+          }
 
-          ret_val.emplace_back(json_strings::block::k_separator,
-                               serialize_bool(block.data.program.global.separator));
+          if (block.data.module.align.has_value()) {
+            ret_val.emplace_back(json_strings::block::k_align, std::string{});
+            serialize_string(
+                ret_val.back().second,
+                i3bar_data::types::to_string(*block.data.module.align));
+          }
 
-          ret_val.emplace_back(
-              json_strings::block::k_separator_block_width,
-              serialize_number(block.data.program.global.separator_block_width));
+          if (block.data.module.urgent.has_value()) {
+            ret_val.emplace_back(json_strings::block::k_urgent, std::string{});
+            serialize_bool(ret_val.back().second, *block.data.module.urgent);
+          }
 
-        if (block.data.module.markup.has_value()) {
-          ret_val.emplace_back(json_strings::block::k_markup,
-                               serialize_string(i3bar_data::types::to_string(
-                                   *block.data.module.markup)));
-        }
+          if (block.data.module.markup.has_value()) {
+            ret_val.emplace_back(json_strings::block::k_markup, std::string{});
+            serialize_string(
+                ret_val.back().second,
+                i3bar_data::types::to_string(*block.data.module.markup));
+          }
 
-        return ret_val;
-      }());
+          return ret_val;
+        }());
+  }
+  return output;
 }
 
-std::string i3neostatus::i3bar_protocol::impl::serialize_name_value(
-    const std::pair<std::string, std::string> &name_value) {
-
-  return std::string{json_constants::k_string_delimiter + name_value.first +
-                     json_constants::k_string_delimiter +
-                     json_constants::k_name_value_separator +
-                     name_value.second};
+std::vector<std::string> i3neostatus::i3bar_protocol::impl::serialize_blocks(
+    const std::vector<struct i3bar_data::block> &blocks,
+    const bool hide_empty) {
+  std::vector<std::string> ret_val(blocks.size());
+  for (std::size_t i{0}; i < ret_val.size(); ++i) {
+    impl::serialize_block(ret_val[i], blocks[i], hide_empty);
+  }
+  return ret_val;
 }
 
-std::string i3neostatus::i3bar_protocol::impl::serialize_object(
+template <typename t_output>
+t_output &i3neostatus::i3bar_protocol::impl::serialize_name_value(
+    t_output &output, const std::string &name, const std::string &value) {
+
+  output += json_constants::k_string_delimiter;
+  output += name;
+  output += json_constants::k_string_delimiter;
+  output += json_constants::k_name_value_separator;
+  output += value;
+  return output;
+}
+
+template <typename t_output>
+t_output &i3neostatus::i3bar_protocol::impl::serialize_object(
+    t_output &output,
     const std::vector<std::pair<std::string, std::string>> &object) {
-  std::string ret_val;
-
-  ret_val += json_constants::k_object_opening_delimiter;
+  output += json_constants::k_object_opening_delimiter;
 
   for (std::size_t i{0}; i < object.size(); ++i) {
     if (i != 0) {
-      ret_val += json_constants::k_element_separator;
+      output += json_constants::k_element_separator;
     }
-    ret_val += serialize_name_value(object[i]);
+    serialize_name_value(output, object[i].first, object[i].second);
   }
 
-  ret_val += json_constants::k_object_closing_delimiter;
+  output += json_constants::k_object_closing_delimiter;
 
-  return ret_val;
+  return output;
 }
 
-std::string i3neostatus::i3bar_protocol::impl::serialize_array(
-    const std::vector<std::string> &array) {
-  std::string ret_val;
+template <typename t_output>
+t_output &i3neostatus::i3bar_protocol::impl::serialize_array(
+    t_output &output, const std::vector<std::string> &array,
+    const bool hide_empty) {
+  output += json_constants::k_array_opening_delimiter;
 
-  ret_val += json_constants::k_array_opening_delimiter;
-
+  bool first{true};
   for (std::size_t i{0}; i < array.size(); ++i) {
-    if (!hide_block::get(array[i])) {
-      if ((i != 0) && (!hide_block::get(array[i - 1]))) {
-        ret_val += json_constants::k_element_separator;
+    if (!(hide_block::get(array[i]) && hide_empty)) {
+      if (first) {
+        first = false;
+      } else {
+        output += json_constants::k_element_separator;
       }
-      ret_val += array[i];
+      output += array[i];
     }
   }
 
-  ret_val += json_constants::k_array_closing_delimiter;
+  output += json_constants::k_array_closing_delimiter;
 
-  return ret_val;
+  return output;
 }
 
-std::string i3neostatus::i3bar_protocol::impl::serialize_string(
-    const std::string_view string) {
+template <typename t_output>
+t_output &i3neostatus::i3bar_protocol::impl::serialize_array_interleave(
+    t_output &output, const std::vector<std::string> &array1,
+    const std::vector<std::string> &array2, const bool hide_empty) {
+  int remaining{2};
+  bool first{true};
+  std::size_t idx1{0};
+  std::size_t idx2{0};
+
+  const auto do_serialize{
+      [hide_empty, &remaining, &first](const std::vector<std::string> &a,
+                                       std::size_t &i) {
+        for (;; ++i) {
+          if (i == a.size()) {
+            --remaining;
+            break;
+          } else if (i > a.size()) {
+            break;
+          } else if (hide_block::get(a[i]) && hide_empty) {
+            continue;
+          } else {
+            if (first) {
+              first = false;
+            } else {
+              std::cout << json_constants::k_element_separator;
+            }
+            std::cout << a[i];
+            break;
+          }
+        }
+        ++i;
+      }};
+
+  output += json_constants::k_array_opening_delimiter;
+  while (remaining) {
+    do_serialize(array1, idx1);
+    do_serialize(array2, idx2);
+  }
+  output += json_constants::k_array_closing_delimiter;
+
+  return output;
+}
+
+template <typename t_output>
+t_output &i3neostatus::i3bar_protocol::impl::serialize_string(
+    t_output &output, const std::string_view string) {
   static const std::string k_control_chars{
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
       0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
@@ -273,10 +399,9 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_string(
       k_control_chars + json_constants::k_string_delimiter +
       json_constants::k_escape_leader};
 
-  std::string ret_val;
-  ret_val.reserve(string.size() + 2);
+  // ret_val.reserve(string.size() + 2);
 
-  ret_val += json_constants::k_string_delimiter;
+  output += json_constants::k_string_delimiter;
 
   std::string::size_type pos{0};
   std::string::size_type pos_prev{0};
@@ -285,37 +410,36 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_string(
     if (pos == std::string::npos) {
       break;
     } else {
-      ret_val += string.substr(pos_prev, (pos - pos_prev));
-      ret_val += json_constants::k_escape_leader;
+      output += string.substr(pos_prev, (pos - pos_prev));
+      output += json_constants::k_escape_leader;
 
       switch (string[pos]) {
       case json_constants::k_string_delimiter: {
-        ret_val += json_constants::k_string_delimiter;
+        output += json_constants::k_string_delimiter;
       } break;
       case json_constants::k_escape_leader: {
-        ret_val += json_constants::k_escape_leader;
+        output += json_constants::k_escape_leader;
       } break;
       default: {
-        ret_val += k_control_char_codes.at(string[pos]);
+        output += k_control_char_codes.at(string[pos]);
       } break;
       }
 
       pos_prev = pos + 1;
     }
   }
-  ret_val += string.substr(pos_prev);
+  output += string.substr(pos_prev);
 
-  ret_val += json_constants::k_string_delimiter;
+  output += json_constants::k_string_delimiter;
 
-  return ret_val;
+  return output;
 }
 
-std::string i3neostatus::i3bar_protocol::impl::serialize_bool(const bool b) {
-  if (b) {
-    return "true";
-  } else {
-    return "false";
-  }
+template <typename t_output>
+t_output &i3neostatus::i3bar_protocol::impl::serialize_bool(t_output &output,
+                                                            const bool b) {
+  output += ((b) ? ("true") : ("false"));
+  return output;
 }
 
 i3neostatus::i3bar_data::click_event
@@ -384,7 +508,7 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
       json_strings::click_event::k_height.size(),
       json_strings::click_event::k_modifiers.size()));
 
-  i3bar_data::click_event ret_val;
+  i3bar_data::click_event ret_val{};
 
   std::string::size_type continue_from_pos{0};
 
@@ -479,17 +603,19 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
             json_constants::k_array_opening_delimiter, name_end_pos + 2)};
         std::string::size_type array_end_pos{click_event.find(
             json_constants::k_array_closing_delimiter, array_begin_pos)};
-        for (std::string::size_type i{array_begin_pos}; i < array_end_pos;) {
-          std::string::size_type value_begin_pos{
-              click_event.find(json_constants::k_string_delimiter, i) + 1};
-          std::string::size_type value_end_pos{
-              click_event.find(json_constants::k_string_delimiter,
-                               value_begin_pos) -
-              1};
-          ret_val.data.modifiers |= i3bar_data::types::from_string<
-              i3bar_data::types::click_modifiers>(
-              std::string{substr(click_event, value_begin_pos, value_end_pos)});
-          i = value_end_pos + 2;
+        if ((array_begin_pos + 1) != array_end_pos) {
+          for (std::string::size_type i{array_begin_pos}; i < array_end_pos;) {
+            std::string::size_type value_begin_pos{
+                click_event.find(json_constants::k_string_delimiter, i) + 1};
+            std::string::size_type value_end_pos{
+                click_event.find(json_constants::k_string_delimiter,
+                                 value_begin_pos) -
+                1};
+            ret_val.data.modifiers |= i3bar_data::types::from_string<
+                i3bar_data::types::click_modifiers>(std::string{
+                substr(click_event, value_begin_pos, value_end_pos)});
+            i = value_end_pos + 2;
+          }
         }
         continue_from_pos = array_end_pos + 1;
       } break;
