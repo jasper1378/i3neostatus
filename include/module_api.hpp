@@ -8,14 +8,13 @@
 
 #include <exception>
 #include <string>
+#include <utility>
 
 namespace i3neostatus {
 
 namespace thread_comm {
 template <typename t_value> class producer;
 }
-
-namespace theme{ class theme; }
 
 class module_api {
 public:
@@ -28,12 +27,12 @@ public:
     static const std::string k_valid_name_chars;
   };
 
-  using block = struct i3bar_data::block::data::module;
+  using content = struct i3bar_data::block::data::module;
+  using block = std::pair<content, block_state>;
   using click_event = struct i3bar_data::click_event::data;
 
 private:
   thread_comm::producer<block> *m_thread_comm_producer;
-  theme::theme *m_theme;
 
 public:
   module_api(thread_comm::producer<block> *thread_comm_producer);
@@ -54,7 +53,7 @@ public:
   void put_error(const std::exception &error);
   void put_error(std::exception &&error);
 
-  void set_theme(block &block, const block_state state);
+  void hide();
 };
 
 } // namespace i3neostatus
