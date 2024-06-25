@@ -79,15 +79,20 @@ i3neostatus::config_file::parsed i3neostatus::config_file::read() {
 
   static const std::filesystem::path k_conf_path_1{
       (k_env_xdg_config_home != nullptr)
-          ? (std::filesystem::path{k_env_xdg_config_home} / "i3neostatus/config")
-          : (k_home_dir / ".config/i3neostatus/config")};
+          ? (std::filesystem::path{k_env_xdg_config_home} /
+             (program_constants::k_name + "/config"))
+          : (k_home_dir /
+             (".config/" + program_constants::k_name + "/config"))};
   static const std::filesystem::path k_conf_path_2{
       (k_env_xdg_config_dirs != nullptr)
-          ? (std::filesystem::path{k_env_xdg_config_dirs} / "i3neostatus/config")
-          : ("/etc/xdg/i3neostatus/config")};
-  static const std::filesystem::path k_conf_path_3{k_home_dir /
-                                                 ".i3neostatus.conf"};
-  static const std::filesystem::path k_conf_path_4{"/etc/i3neostatus.conf"};
+          ? (std::filesystem::path{k_env_xdg_config_dirs} /
+             (program_constants::k_name + "/config"))
+          : (std::filesystem::path{"/etc/xdg/" + program_constants::k_name +
+                                   "/config"})};
+  static const std::filesystem::path k_conf_path_3{
+      k_home_dir / ("." + program_constants::k_name + ".conf")};
+  static const std::filesystem::path k_conf_path_4{
+      "/etc/" + program_constants::k_name + ".conf"};
 
   if (std::filesystem::exists(k_conf_path_1)) {
     return config_file::read(k_conf_path_1);
