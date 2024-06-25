@@ -15,7 +15,7 @@ namespace thread_comm {
 template <typename t_value> class producer;
 }
 
-class theme;
+namespace theme{ class theme; }
 
 class module_api {
 public:
@@ -33,7 +33,7 @@ public:
 
 private:
   thread_comm::producer<block> *m_thread_comm_producer;
-  theme *m_theme;
+  theme::theme *m_theme;
 
 public:
   module_api(thread_comm::producer<block> *thread_comm_producer);
