@@ -3,6 +3,9 @@
 
 #include "i3bar_data.hpp"
 
+#include "bits-and-bytes/stream_append.hpp"
+
+#include <concepts>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -73,38 +76,85 @@ static constexpr char k_array_closing_delimiter{']'};
 void print_header(const i3bar_data::header &value,
                   std::ostream &stream = std::cout);
 void init_statusline(std::ostream &stream = std::cout);
-void print_statusline(const std::vector<i3bar_data::block> &value,
-                      bool hide_empty = true, std::ostream &stream = std::cout);
-void print_statusline(const std::pair<i3bar_data::block, std::size_t> &value,
-                      std::vector<std::string> &cache, bool hide_emtpy = true,
-                      std::ostream &stream = std::cout);
-void print_statusline(
-    const std::vector<std::pair<i3bar_data::block, std::size_t>> &value,
-    std::vector<std::string> &cache, bool hide_empty = true,
-    std::ostream &stream = std::cout);
+
+void print_statusline(const std::vector<struct i3bar_data::block> &content,
+                      const bool hide_empty, std::ostream &stream = std::cout);
+void print_statusline(const std::vector<struct i3bar_data::block> &content,
+                      const std::vector<i3bar_data::block> &separators,
+                      const bool hide_empty, std::ostream &stream = std::cout);
+
+void print_statusline(const struct i3bar_data::block &content,
+                      const module_id::type content_index,
+                      std::vector<std::string> &content_cache,
+                      const bool hide_empty, std::ostream &stream = std::cout);
+void print_statusline(const struct i3bar_data::block &content,
+                      const module_id::type content_index,
+                      std::vector<std::string> &content_cache,
+                      const i3bar_data::block &separator_left,
+                      const module_id::type separator_left_index,
+                      const i3bar_data::block &separator_right,
+                      const module_id::type separator_right_index,
+                      std::vector<std::string> &separator_cache,
+                      const bool hide_empty, std::ostream &stream = std::cout);
+
+void print_statusline(const std::vector<struct i3bar_data::block> &content,
+                      std::vector<std::string> &content_cache,
+                      const bool hide_empty, std::ostream &stream = std::cout);
+void print_statusline(const std::vector<struct i3bar_data::block> &content,
+                      std::vector<std::string> &content_cache,
+                      const std::vector<i3bar_data::block> &separators,
+                      std::vector<std::string> &separator_cache,
+                      const bool hide_empty, std::ostream &stream = std::cout);
+
 void init_click_event(std::istream &input_stream = std::cin);
 i3bar_data::click_event read_click_event(std::istream &input_stream = std::cin);
 
 namespace impl {
-void print_statusline(const std::vector<std::string> &value,
-                      std::ostream &stream = std::cout);
+void print_statusline(const std::vector<std::string> &content,
+                      const bool hide_empty, std::ostream &stream = std::cout);
+void print_statusline(const std::vector<std::string> &content,
+                      const std::vector<std::string> &separators,
+                      const bool hide_empty, std::ostream &stream = std::cout);
 
-std::string serialize_header(const i3bar_data::header &header);
-std::string serialize_block(const i3bar_data::block &block);
+template <typename t_output>
+t_output &serialize_header(t_output &output, const i3bar_data::header &header);
+template <typename t_output>
+t_output &serialize_block(t_output &output,
+                          const struct i3bar_data::block &block,
+                          const bool hide_empty);
+std::vector<std::string>
+serialize_blocks(const std::vector<struct i3bar_data::block> &blocks,
+                 const bool hide_empty);
 
-std::string
-serialize_name_value(const std::pair<std::string, std::string> &name_value);
-std::string serialize_object(
+template <typename t_output>
+t_output &serialize_name_value(t_output &output, const std::string &name,
+                               const std::string &value);
+template <typename t_output>
+t_output &serialize_object(
+    t_output &output,
     const std::vector<std::pair<std::string, std::string>> &object);
-std::string serialize_array(const std::vector<std::string> &array);
-std::string serialize_number(auto number)
+template <typename t_output>
+t_output &serialize_array(t_output &output,
+                          const std::vector<std::string> &array,
+                          const bool hide_empty);
+template <typename t_output>
+t_output &serialize_array_interleave(t_output &output,
+                                     const std::vector<std::string> &array1,
+                                     const std::vector<std::string> &array2,
+                                     const bool hide_empty);
+template <typename t_output>
+t_output &serialize_number(t_output &output, auto number)
   requires(std::integral<decltype(number)> ||
            std::floating_point<decltype(number)>)
 {
-  return std::to_string(number);
+  using namespace bits_and_bytes::stream_append;
+  output += std::to_string(number);
+  return output;
 }
-std::string serialize_string(const std::string_view string);
-std::string serialize_bool(const bool b);
+template <typename t_output>
+t_output &serialize_string(t_output &output, const std::string_view string);
+template <typename t_output>
+t_output &serialize_bool(t_output &output, const bool b);
 
 i3bar_data::click_event parse_click_event(const std::string_view click_event);
 } // namespace impl
