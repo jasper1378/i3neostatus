@@ -2,7 +2,6 @@
 
 #include "i3bar_data.hpp"
 #include "i3bar_protocol.hpp"
-#include "theme.hpp"
 #include "thread_comm.hpp"
 
 #include "libconfigfile/libconfigfile.hpp"
@@ -58,6 +57,6 @@ void i3neostatus::module_api::put_error(std::exception &&error) {
   m_thread_comm_producer->put_exception(std::move(error));
 }
 
-void i3neostatus::module_api::set_theme(block &block, const block_state state) {
-  // TODO
+void i3neostatus::module_api::hide() {
+ // TODO
 }
