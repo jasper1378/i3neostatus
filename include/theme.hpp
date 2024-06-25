@@ -69,6 +69,59 @@ struct theme {
   pixel_count_t border_width_left;
 };
 
+static_assert(block_state::idle < block_state::info &&
+              block_state::info < block_state::good &&
+              block_state::good < block_state::warning &&
+              block_state::warning < block_state::critical &&
+              block_state::critical < block_state::error);
+static constexpr theme k_default{
+    .state_dependent_color_foreground{
+        color{{0xff, 0xff, 0xff}, 0xff}, // idle
+        color{{0xff, 0xff, 0xff}, 0xff}, // info
+        color{{0xff, 0xff, 0xff}, 0xff}, // good
+        color{{0xff, 0xff, 0xff}, 0xff}, // warning
+        color{{0xff, 0xff, 0xff}, 0xff}, // critical
+        color{{0xff, 0xff, 0xff}, 0xff}, // error
+    },
+    .state_dependent_color_background{
+        color{{0x00, 0x00, 0x00}, 0xff}, // idle
+        color{{0x00, 0x00, 0x00}, 0xff}, // info
+        color{{0x00, 0x00, 0x00}, 0xff}, // good
+        color{{0x00, 0x00, 0x00}, 0xff}, // warning
+        color{{0x00, 0x00, 0x00}, 0xff}, // critical
+        color{{0x00, 0x00, 0x00}, 0xff}, // error
+    },
+    .state_dependent_color_border{
+        special_border_color{special_border_color::background}, // idle
+        special_border_color{special_border_color::background}, // info
+        special_border_color{special_border_color::background}, // good
+        special_border_color{special_border_color::background}, // warning
+        special_border_color{special_border_color::background}, // critical
+        special_border_color{special_border_color::background}, // error
+    },
+
+    .alternating_tint_color_foreground{color{{0x00, 0x00, 0x00}, 0x00}},
+    .alternating_tint_color_background{color{{0x00, 0x00, 0x00}, 0x00}},
+    .alternating_tint_color_border{color{{0x00, 0x00, 0x00}, 0x00}},
+
+    .separator_middle_sequence{" | "},
+    .separator_middle_color_foreground{color{{0xff, 0xff, 0xff}, 0xff}},
+    .separator_middle_color_background{color{{0x00, 0x00, 0x00}, 0xff}},
+
+    .separator_begin_sequence{""},
+    .separator_begin_color_foreground{color{{0xff, 0xff, 0xff}, 0xff}},
+    .separator_begin_color_background{color{{0x00, 0x00, 0x00}, 0xff}},
+
+    .separator_end_sequence{""},
+    .separator_end_color_foreground{color{{0xff, 0xff, 0xff}, 0xff}},
+    .separator_end_color_background{color{{0x00, 0x00, 0x00}, 0xff}},
+
+    .border_width_top{1},
+    .border_width_right{1},
+    .border_width_bottom{1},
+    .border_width_left{1},
+};
+
 namespace impl {
 template <separator_type type>
 struct separator_type_enum_to_special_separator_color_enum;
