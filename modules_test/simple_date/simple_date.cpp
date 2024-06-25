@@ -7,45 +7,42 @@
 #include <chrono>
 #include <condition_variable>
 #include <ctime>
-#include <exception>
 #include <mutex>
 #include <stdexcept>
 #include <string>
 
-using namespace i3neostatus::module_dev;
+namespace i3ns = i3neostatus::module_dev;
 
-class simple_date : public base {
+class simple_date : public i3ns::base {
 private:
   static constexpr std::string k_name{"simple_date"};
 
 private:
-  enum class state {
+  enum class action {
     cont,
     wait,
     stop,
   };
 
 private:
-  static constexpr misc_types::color m_k_color_a{0xff, 0xff, 0xff};
-  static constexpr misc_types::color m_k_color_b{0xff, 0x00, 0x00};
-
-private:
-  api *m_api;
+  i3ns::api *m_api;
   std::string m_format;
-  std::atomic<const i3neostatus::color::rgb *> m_color;
-  state m_state;
-  std::mutex m_state_mtx;
-  std::condition_variable m_state_cv;
+  std::atomic<i3ns::state> m_state;
+  std::atomic<bool> m_hidden;
+  action m_action;
+  std::mutex m_action_mtx;
+  std::condition_variable m_action_cv;
 
 public:
   simple_date()
-      : m_api{}, m_format{}, m_color{&m_k_color_a}, m_state{state::cont},
-        m_state_mtx{}, m_state_cv{} {}
+      : m_api{}, m_format{}, m_state{i3ns::state::good}, m_hidden{false},
+        m_action{action::cont}, m_action_mtx{}, m_action_cv{} {}
 
   virtual ~simple_date() {}
 
 public:
-  virtual api::config_out init(api *api, api::config_in &&config) override {
+  virtual i3ns::config_out init(i3ns::api *api,
+                                i3ns::config_in &&config) override {
     m_api = api;
 
     if (libconfigfile::node_ptr<libconfigfile::node> np;
@@ -96,18 +93,25 @@ public:
         }
       }
 
-      api::block block{.theme{.color{*m_color.load()}}, .full_text{buf}};
-      m_api->put_block(std::move(block));
+      if (m_hidden.load()) {
+        m_api->hide();
+      } else {
+        m_api->put_block(i3ns::block{{.full_text{buf}}, {m_state.load()}});
+      }
+      if (m_hidden.load()) {
+        std::this_thread::sleep_for(std::chrono::seconds{2});
+        m_hidden.store(false);
+      }
 
-      std::unique_lock<std::mutex> lock_m_state_mtx{m_state_mtx};
-      m_state = state::wait;
-      m_state_cv.wait_until(
-          lock_m_state_mtx, get_next_whole_second(),
-          [this]() -> bool { return m_state != state::wait; });
-      if (m_state == state::stop) {
+      std::unique_lock<std::mutex> lock_m_action_mtx{m_action_mtx};
+      m_action = action::wait;
+      m_action_cv.wait_until(
+          lock_m_action_mtx, get_next_whole_second(),
+          [this]() -> bool { return m_action != action::wait; });
+      if (m_action == action::stop) {
         break;
       } else {
-        m_state = state::cont;
+        m_action = action::cont;
       }
     }
     free(buf);
@@ -115,31 +119,35 @@ public:
 
   virtual void term() override {
     {
-      std::lock_guard<std::mutex> lock_m_state_mtx{m_state_mtx};
-      m_state = state::stop;
+      std::lock_guard<std::mutex> lock_m_action_mtx{m_action_mtx};
+      m_action = action::stop;
     }
-    m_state_cv.notify_all();
+    m_action_cv.notify_all();
   }
 
-  virtual void on_click_event(api::click_event &&click_event) override {
-    (void)click_event;
-    if (m_color.load() == &m_k_color_a) {
-      m_color.store(&m_k_color_b);
+  virtual void on_click_event(i3ns::click_event &&click_event) override {
+    if ((click_event.modifiers & i3ns::types::click_modifiers::shift) !=
+        i3ns::types::click_modifiers::none) {
+      m_hidden.store(!m_hidden.load());
     } else {
-      m_color.store(&m_k_color_a);
+      if (m_state.load() == i3ns::state::good) {
+        m_state.store(i3ns::state::warning);
+      } else {
+        m_state.store(i3ns::state::good);
+      }
     }
     {
-      std::lock_guard<std::mutex> lock_m_state_mtx{m_state_mtx};
-      m_state = state::cont;
+      std::lock_guard<std::mutex> lock_m_action_mtx{m_action_mtx};
+      m_action = action::cont;
     }
-    m_state_cv.notify_all();
+    m_action_cv.notify_all();
   }
 };
 
 extern "C" {
-base *allocator() { return new simple_date{}; }
+i3ns::base *allocator() { return new simple_date{}; }
 
-void deleter(base *m) { delete m; }
+void deleter(i3ns::base *m) { delete m; }
 }
 
 #endif
