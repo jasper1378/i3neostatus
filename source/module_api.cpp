@@ -1,5 +1,6 @@
 #include "module_api.hpp"
 
+#include "hide_block.hpp"
 #include "i3bar_data.hpp"
 #include "i3bar_protocol.hpp"
 #include "thread_comm.hpp"
@@ -58,5 +59,6 @@ void i3neostatus::module_api::put_error(std::exception &&error) {
 }
 
 void i3neostatus::module_api::hide() {
- // TODO
+  put_block(block{hide_block::set<struct i3bar_data::block::data::module>(),
+                  block_state::idle});
 }
