@@ -1,5 +1,6 @@
 #include "click_event_listener.hpp"
 #include "config_file.hpp"
+#include "hide_block.hpp"
 #include "i3bar_data.hpp"
 #include "i3bar_protocol.hpp"
 #include "message_printing.hpp"

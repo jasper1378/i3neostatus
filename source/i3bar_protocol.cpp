@@ -1,5 +1,6 @@
 #include "i3bar_protocol.hpp"
 
+#include "hide_block.hpp"
 #include "i3bar_data.hpp"
 #include "i3bar_data_conversions.hpp"
 #include "misc.hpp"
@@ -40,8 +41,8 @@ void i3neostatus::i3bar_protocol::print_statusline(
         std::vector<std::string> ret_val;
         for (std::size_t i{0}; i < ret_val.size(); ++i) {
           ret_val.emplace_back(
-              ((value[i].data.module.full_text.empty() && hide_empty)
-                   ? ("")
+              ((hide_block::get(value[i]) && hide_empty)
+                   ? (hide_block::set<std::string>())
                    : (impl::serialize_block(value[i]))));
         }
         return ret_val;
@@ -54,8 +55,8 @@ void i3neostatus::i3bar_protocol::print_statusline(
     std::vector<std::string> &cache, bool hide_empty /* = true*/,
     std::ostream &stream /*= std::cout*/) {
   cache[value.second] =
-      ((value.first.data.module.full_text.empty() && hide_empty)
-           ? ("")
+      ((hide_block::get(value.first) && hide_empty)
+           ? (hide_block::set<std::string>())
            : (impl::serialize_block(value.first)));
   impl::print_statusline(cache, stream);
 }
@@ -66,8 +67,8 @@ void i3neostatus::i3bar_protocol::print_statusline(
     std::ostream &stream /*= std::cout*/) {
   for (std::size_t i{0}; i < value.size(); ++i) {
     cache[value[i].second] =
-        ((value[i].first.data.module.full_text.empty() && hide_empty)
-             ? ("")
+        ((hide_block::get(value[i].first) && hide_empty)
+             ? (hide_block::set<std::string>())
              : (impl::serialize_block(value[i].first)));
   }
   impl::print_statusline(cache, stream);
@@ -238,8 +239,8 @@ std::string i3neostatus::i3bar_protocol::impl::serialize_array(
   ret_val += json_constants::k_array_opening_delimiter;
 
   for (std::size_t i{0}; i < array.size(); ++i) {
-    if (!array[i].empty()) {
-      if ((i != 0) && (!array[i - 1].empty())) {
+    if (!hide_block::get(array[i])) {
+      if ((i != 0) && (!hide_block::get(array[i - 1]))) {
         ret_val += json_constants::k_element_separator;
       }
       ret_val += array[i];
