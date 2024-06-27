@@ -189,13 +189,13 @@ i3neostatus::config_file::impl::read(const std::string &file_path) {
 
     for (auto ptr{libcf_parsed->begin()}; ptr != libcf_parsed->end(); ++ptr) {
       switch (misc::constexpr_hash_string::hash(ptr->first)) {
-      case misc::constexpr_hash_string::hash(constants::option_str::general): {
+      case misc::constexpr_hash_string::hash(constants::option_str::k_general): {
         parsed.general = section_handlers::general(file_path, ptr->second);
       } break;
-      case misc::constexpr_hash_string::hash(constants::option_str::theme): {
+      case misc::constexpr_hash_string::hash(constants::option_str::k_theme): {
         parsed.theme = section_handlers::theme(file_path, ptr->second);
       } break;
-      case misc::constexpr_hash_string::hash(constants::option_str::modules): {
+      case misc::constexpr_hash_string::hash(constants::option_str::k_modules): {
         parsed.modules = section_handlers::modules(file_path, ptr->second);
       } break;
       default: {
@@ -223,7 +223,7 @@ i3neostatus::config_file::impl::section_handlers::general(
     }
   } else {
     throw error_helpers::invalid_data_type_for(
-        file_path, constants::option_str::general,
+        file_path, constants::option_str::k_general,
         libconfigfile::node_type_to_str(libconfigfile::node_type::Map));
   }
 
@@ -242,14 +242,14 @@ i3neostatus::config_file::impl::section_handlers::theme(
     for (auto ptr2{ptr_map->begin()}; ptr2 != ptr_map->end(); ++ptr2) {
       switch (misc::constexpr_hash_string::hash(ptr2->first)) {
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_idle_color_foreground)): {
+          constants::option_str::k_theme_idle_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::idle)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_idle_color_background)): {
+          constants::option_str::k_theme_idle_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::idle)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
@@ -257,219 +257,219 @@ i3neostatus::config_file::impl::section_handlers::theme(
       } break;
 
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_idle_color_border)): {
+          constants::option_str::k_theme_idle_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::idle)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_info_color_foreground)): {
+          constants::option_str::k_theme_info_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::info)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_info_color_background)): {
+          constants::option_str::k_theme_info_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::info)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_info_color_border)): {
+          constants::option_str::k_theme_info_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::info)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_good_color_foreground)): {
+          constants::option_str::k_theme_good_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::good)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_good_color_background)): {
+          constants::option_str::k_theme_good_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::good)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_good_color_border)): {
+          constants::option_str::k_theme_good_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::good)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_warning_color_foreground)): {
+          constants::option_str::k_theme_warning_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::warning)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_warning_color_background)): {
+          constants::option_str::k_theme_warning_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::warning)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_warning_color_border)): {
+          constants::option_str::k_theme_warning_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::warning)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_critical_color_foreground)): {
+          constants::option_str::k_theme_critical_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::critical)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_critical_color_background)): {
+          constants::option_str::k_theme_critical_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::critical)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_critical_color_border)): {
+          constants::option_str::k_theme_critical_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::critical)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_error_color_foreground)): {
+          constants::option_str::k_theme_error_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::error)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_error_color_background)): {
+          constants::option_str::k_theme_error_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::error)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_error_color_border)): {
+          constants::option_str::k_theme_error_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::error)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_alternating_tint_color_foreground)): {
+          constants::option_str::k_theme_alternating_tint_color_foreground)): {
         ret_val.alternating_tint_color_foreground =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_alternating_tint_color_background)): {
+          constants::option_str::k_theme_alternating_tint_color_background)): {
         ret_val.alternating_tint_color_background =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_alternating_tint_color_border)): {
+          constants::option_str::k_theme_alternating_tint_color_border)): {
         ret_val.alternating_tint_color_border =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_separator_middle_sequence)): {
+          constants::option_str::k_theme_separator_middle_sequence)): {
         ret_val.separator_middle_sequence =
             theme_helpers::read_separator_sequence(file_path, ptr2->second,
                                                    ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_separator_middle_color_foreground)): {
+          constants::option_str::k_theme_separator_middle_color_foreground)): {
         ret_val.separator_middle_color_foreground =
             theme_helpers::read_separator_color<theme::separator_type::middle>(
                 file_path, ptr2->second, ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_separator_middle_color_background)): {
+          constants::option_str::k_theme_separator_middle_color_background)): {
         ret_val.separator_middle_color_background =
             theme_helpers::read_separator_color<theme::separator_type::middle>(
                 file_path, ptr2->second, ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_separator_begin_sequence)): {
+          constants::option_str::k_theme_separator_begin_sequence)): {
         ret_val.separator_begin_sequence =
             theme_helpers::read_separator_sequence(file_path, ptr2->second,
                                                    ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_separator_begin_color_foreground)): {
+          constants::option_str::k_theme_separator_begin_color_foreground)): {
         ret_val.separator_begin_color_foreground =
             theme_helpers::read_separator_color<theme::separator_type::begin>(
                 file_path, ptr2->second, ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_separator_begin_color_background)): {
+          constants::option_str::k_theme_separator_begin_color_background)): {
         ret_val.separator_begin_color_background =
             theme_helpers::read_separator_color<theme::separator_type::begin>(
                 file_path, ptr2->second, ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_separator_end_sequence)): {
+          constants::option_str::k_theme_separator_end_sequence)): {
         ret_val.separator_end_sequence = theme_helpers::read_separator_sequence(
             file_path, ptr2->second, ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_separator_end_color_foreground)): {
+          constants::option_str::k_theme_separator_end_color_foreground)): {
         ret_val.separator_end_color_foreground =
             theme_helpers::read_separator_color<theme::separator_type::end>(
                 file_path, ptr2->second, ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_separator_end_color_background)): {
+          constants::option_str::k_theme_separator_end_color_background)): {
         ret_val.separator_end_color_background =
             theme_helpers::read_separator_color<theme::separator_type::end>(
                 file_path, ptr2->second, ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_border_width_top)): {
+          constants::option_str::k_theme_border_width_top)): {
         ret_val.border_width_top = theme_helpers::read_border_width(
             file_path, ptr2->second, ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_border_width_right)): {
+          constants::option_str::k_theme_border_width_right)): {
         ret_val.border_width_right = theme_helpers::read_border_width(
             file_path, ptr2->second, ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_border_width_bottom)): {
+          constants::option_str::k_theme_border_width_bottom)): {
         ret_val.border_width_bottom = theme_helpers::read_border_width(
             file_path, ptr2->second, ptr2->first);
       } break;
       case (misc::constexpr_hash_string::hash(
-          constants::option_str::theme_border_width_left)): {
+          constants::option_str::k_theme_border_width_left)): {
         ret_val.border_width_left = theme_helpers::read_border_width(
             file_path, ptr2->second, ptr2->first);
       } break;
       default: {
         throw error_helpers::invalid_option(
             file_path,
-            (constants::option_str::theme +
-             error_helpers::nested_option_separator_char + ptr2->first));
+            (constants::option_str::k_theme +
+             error_helpers::k_nested_option_separator_char + ptr2->first));
       } break;
       }
     }
   } else {
     throw error_helpers::invalid_data_type_for(
-        file_path, constants::option_str::theme,
+        file_path, constants::option_str::k_theme,
         libconfigfile::node_type_to_str(libconfigfile::node_type::Map));
   }
 
@@ -498,9 +498,9 @@ i3neostatus::config_file::impl::section_handlers::theme_helpers::
         default: {
           throw error_helpers::invalid_format_for(
               file_path,
-              (constants::option_str::theme +
-               error_helpers::nested_option_separator_char + option_str),
-              constants::error_str::format_color_or_special_str);
+              (constants::option_str::k_theme +
+               error_helpers::k_nested_option_separator_char + option_str),
+              constants::error_str::k_format_color_or_special_str);
         } break;
         }
       });
@@ -517,8 +517,8 @@ std::string i3neostatus::config_file::impl::section_handlers::theme_helpers::
   } else {
     throw error_helpers::invalid_data_type_for(
         file_path,
-        (constants::option_str::theme +
-         error_helpers::nested_option_separator_char + option_str),
+        (constants::option_str::k_theme +
+         error_helpers::k_nested_option_separator_char + option_str),
         libconfigfile::node_type_to_str(libconfigfile::node_type::String));
   }
 }
@@ -537,15 +537,15 @@ i3neostatus::config_file::impl::section_handlers::theme_helpers::
     } else {
       throw error_helpers::invalid_range_for(
           file_path,
-          (constants::option_str::theme +
-           error_helpers::nested_option_separator_char + option_str),
-          constants::error_str::range_pixel_count);
+          (constants::option_str::k_theme +
+           error_helpers::k_nested_option_separator_char + option_str),
+          constants::error_str::k_range_pixel_count);
     }
   } else {
     throw error_helpers::invalid_data_type_for(
         file_path,
-        (constants::option_str::theme +
-         error_helpers::nested_option_separator_char + option_str),
+        (constants::option_str::k_theme +
+         error_helpers::k_nested_option_separator_char + option_str),
         libconfigfile::node_type_to_str(libconfigfile::node_type::Integer));
   }
 }
@@ -568,7 +568,7 @@ i3neostatus::config_file::impl::section_handlers::modules(
         for (auto ptr3{ptr2_map->begin()}; ptr3 != ptr2_map->end(); ++ptr3) {
           switch (misc::constexpr_hash_string::hash(ptr3->first)) {
           case (misc::constexpr_hash_string::hash(
-              constants::option_str::modules_path)): {
+              constants::option_str::k_modules_path)): {
             if (ptr3->second->get_node_type() ==
                 libconfigfile::node_type::String) {
               std::string module_file_path{
@@ -576,12 +576,12 @@ i3neostatus::config_file::impl::section_handlers::modules(
                       *libconfigfile::node_ptr_cast<libconfigfile::string_node>(
                           std::move(ptr3->second))))};
               if (module_file_path.front() ==
-                  constants::misc::builtin_file_prefix_remove) {
+                  constants::misc::k_builtin_file_prefix_remove) {
                 ret_val[std::distance(ptr1_array->begin(), ptr2)].file_path =
                     file_path::resolve(
-                        constants::misc::builtin_module_path /
+                        constants::misc::k_builtin_module_path /
                         (module_file_path.substr(1) +
-                         constants::misc::builtin_module_file_suffix_add));
+                         constants::misc::k_builtin_module_file_suffix_add));
               } else {
                 ret_val[std::distance(ptr1_array->begin(), ptr2)].file_path =
                     file_path::resolve(std::move(module_file_path));
@@ -589,14 +589,14 @@ i3neostatus::config_file::impl::section_handlers::modules(
             } else {
               throw error_helpers::invalid_data_type_for(
                   file_path,
-                  (constants::option_str::modules +
-                   error_helpers::nested_option_separator_char + ptr3->first),
+                  (constants::option_str::k_modules +
+                   error_helpers::k_nested_option_separator_char + ptr3->first),
                   libconfigfile::node_type_to_str(
                       libconfigfile::node_type::String));
             }
           } break;
           case (misc::constexpr_hash_string::hash(
-              constants::option_str::modules_config)): {
+              constants::option_str::k_modules_config)): {
             if (ptr3->second->get_node_type() ==
                 libconfigfile::node_type::Map) {
               ret_val[std::distance(ptr1_array->begin(), ptr2)].config =
@@ -606,8 +606,8 @@ i3neostatus::config_file::impl::section_handlers::modules(
             } else {
               throw error_helpers::invalid_data_type_for(
                   file_path,
-                  (constants::option_str::modules +
-                   error_helpers::nested_option_separator_char + ptr3->first),
+                  (constants::option_str::k_modules +
+                   error_helpers::k_nested_option_separator_char + ptr3->first),
                   libconfigfile::node_type_to_str(
                       libconfigfile::node_type::Map));
             }
@@ -615,27 +615,27 @@ i3neostatus::config_file::impl::section_handlers::modules(
           default: {
             throw error_helpers::invalid_option(
                 file_path,
-                (constants::option_str::modules +
-                 error_helpers::nested_option_separator_char + ptr3->first));
+                (constants::option_str::k_modules +
+                 error_helpers::k_nested_option_separator_char + ptr3->first));
           } break;
           }
         }
         if (ret_val[std::distance(ptr1_array->begin(), ptr2)]
                 .file_path.empty()) {
           throw error_helpers::missing_option(
-              file_path, (constants::option_str::modules +
-                          error_helpers::nested_option_separator_char +
-                          constants::option_str::modules_path));
+              file_path, (constants::option_str::k_modules +
+                          error_helpers::k_nested_option_separator_char +
+                          constants::option_str::k_modules_path));
         }
       } else {
         throw error_helpers::invalid_data_type_in(
-            file_path, constants::option_str::modules,
+            file_path, constants::option_str::k_modules,
             libconfigfile::node_type_to_str(libconfigfile::node_type::Map));
       }
     }
   } else {
     throw error_helpers::invalid_data_type_for(
-        file_path, constants::option_str::modules,
+        file_path, constants::option_str::k_modules,
         libconfigfile::node_type_to_str(libconfigfile::node_type::Array));
   }
 
