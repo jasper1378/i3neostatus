@@ -3,7 +3,6 @@
 
 #include "bits-and-bytes/enum_flag_operators.hpp"
 
-#include <exception>
 #include <filesystem>
 #include <stdexcept>
 #include <string>
@@ -44,9 +43,9 @@ enum class dlopen_flags : unsigned int {
 BITS_AND_BYTES_DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(dlopen_flags);
 
 namespace dlsym_pseudohandles {
-using type = void *const;
-static type DEFAULT{RTLD_DEFAULT};
-static type NEXT{RTLD_NEXT};
+using type = void *;
+static const type DEFAULT{RTLD_DEFAULT};
+static const type NEXT{RTLD_NEXT};
 } // namespace dlsym_pseudohandles
 
 class lib {
@@ -84,8 +83,8 @@ public:
 
 public:
   template <typename T>
-  static T *get_symbol(dlsym_pseudohandles::type handle, const char *symbol,
-                       const char *version = "") {
+  static T *get_symbol(const dlsym_pseudohandles::type handle,
+                       const char *symbol, const char *version = "") {
     T *ret_val{nullptr};
     (*reinterpret_cast<void **>(&ret_val)) =
         get_symbol_impl(handle, symbol, version);
@@ -93,7 +92,7 @@ public:
   }
 
   template <typename T>
-  static T *get_symbol(dlsym_pseudohandles::type handle,
+  static T *get_symbol(const dlsym_pseudohandles::type handle,
                        const std::string &symbol,
                        const std::string &version = "") {
     return get_symbol<T>(handle, symbol.c_str(), version.c_str());
@@ -107,7 +106,7 @@ private:
   static void *get_symbol_impl(void *handle, const char *symbol,
                                const char *version = "\0");
 
-  static Dl_info get_info_impl(void *addr);
+  static Dl_info get_info_impl(const void *addr);
 };
 } // namespace dyn_load_lib
 
