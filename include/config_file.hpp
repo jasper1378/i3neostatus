@@ -71,103 +71,107 @@ libconfigfile_parse_file_wrapper(const std::string &file_path);
 
 namespace constants {
 namespace misc {
-static const std::filesystem::path builtin_module_path{
+static const std::filesystem::path k_builtin_module_path{
     program_constants::k_install_path / "lib"};
-static const std::filesystem::path builtin_theme_path{
+static const std::filesystem::path k_builtin_theme_path{
     program_constants::k_install_path / "share"};
-static constexpr char builtin_file_prefix_remove{'_'};
-static constexpr std::string builtin_module_file_suffix_add{".so"};
-static constexpr std::string builtin_theme_file_suffix_add{".conf"};
+static constexpr char k_builtin_file_prefix_remove{'_'};
+static constexpr std::string k_builtin_module_file_suffix_add{".so"};
+static constexpr std::string k_builtin_theme_file_suffix_add{".conf"};
 } // namespace misc
 
 namespace option_str {
-static constexpr std::string general{"general"};
+static constexpr std::string k_general{"general"};
 
-static constexpr std::string theme{"theme"};
-static constexpr std::string_view theme_idle_color_foreground{
+static constexpr std::string k_theme{"theme"};
+static constexpr std::string_view k_theme_idle_color_foreground{
     "idle_color_foreground"};
-static constexpr std::string_view theme_idle_color_background{
+static constexpr std::string_view k_theme_idle_color_background{
     "idle_color_background"};
-static constexpr std::string_view theme_idle_color_border{"idle_color_border"};
-static constexpr std::string_view theme_info_color_foreground{
+static constexpr std::string_view k_theme_idle_color_border{
+    "idle_color_border"};
+static constexpr std::string_view k_theme_info_color_foreground{
     "info_color_foreground"};
-static constexpr std::string_view theme_info_color_background{
+static constexpr std::string_view k_theme_info_color_background{
     "info_color_background"};
-static constexpr std::string_view theme_info_color_border{"info_color_border"};
-static constexpr std::string_view theme_good_color_foreground{
+static constexpr std::string_view k_theme_info_color_border{
+    "info_color_border"};
+static constexpr std::string_view k_theme_good_color_foreground{
     "good_color_foreground"};
-static constexpr std::string_view theme_good_color_background{
+static constexpr std::string_view k_theme_good_color_background{
     "good_color_background"};
-static constexpr std::string_view theme_good_color_border{"good_color_border"};
-static constexpr std::string_view theme_warning_color_foreground{
+static constexpr std::string_view k_theme_good_color_border{
+    "good_color_border"};
+static constexpr std::string_view k_theme_warning_color_foreground{
     "warning_color_foreground"};
-static constexpr std::string_view theme_warning_color_background{
+static constexpr std::string_view k_theme_warning_color_background{
     "warning_color_background"};
-static constexpr std::string_view theme_warning_color_border{
+static constexpr std::string_view k_theme_warning_color_border{
     "warning_color_border"};
-static constexpr std::string_view theme_critical_color_foreground{
+static constexpr std::string_view k_theme_critical_color_foreground{
     "critical_color_foreground"};
-static constexpr std::string_view theme_critical_color_background{
+static constexpr std::string_view k_theme_critical_color_background{
     "critical_color_background"};
-static constexpr std::string_view theme_critical_color_border{
+static constexpr std::string_view k_theme_critical_color_border{
     "critical_color_border"};
-static constexpr std::string_view theme_error_color_foreground{
+static constexpr std::string_view k_theme_error_color_foreground{
     "error_color_foreground"};
-static constexpr std::string_view theme_error_color_background{
+static constexpr std::string_view k_theme_error_color_background{
     "error_color_background"};
-static constexpr std::string_view theme_error_color_border{
+static constexpr std::string_view k_theme_error_color_border{
     "error_color_border"};
-static constexpr std::string_view theme_alternating_tint_color_foreground{
+static constexpr std::string_view k_theme_alternating_tint_color_foreground{
     "alternating_tint_color_foreground"};
-static constexpr std::string_view theme_alternating_tint_color_background{
+static constexpr std::string_view k_theme_alternating_tint_color_background{
     "alternating_tint_color_background"};
-static constexpr std::string_view theme_alternating_tint_color_border{
+static constexpr std::string_view k_theme_alternating_tint_color_border{
     "alternating_tint_color_border"};
-static constexpr std::string_view theme_separator_middle_sequence{
+static constexpr std::string_view k_theme_separator_middle_sequence{
     "separator_middle_sequence"};
-static constexpr std::string_view theme_separator_middle_color_foreground{
+static constexpr std::string_view k_theme_separator_middle_color_foreground{
     "separator_middle_color_foreground"};
-static constexpr std::string_view theme_separator_middle_color_background{
+static constexpr std::string_view k_theme_separator_middle_color_background{
     "separator_middle_color_background"};
-static constexpr std::string_view theme_separator_begin_sequence{
+static constexpr std::string_view k_theme_separator_begin_sequence{
     "separator_begin_sequence"};
-static constexpr std::string_view theme_separator_begin_color_foreground{
+static constexpr std::string_view k_theme_separator_begin_color_foreground{
     "separator_begin_color_foreground"};
-static constexpr std::string_view theme_separator_begin_color_background{
+static constexpr std::string_view k_theme_separator_begin_color_background{
     "separator_begin_color_background"};
-static constexpr std::string_view theme_separator_end_sequence{
+static constexpr std::string_view k_theme_separator_end_sequence{
     "separator_end_sequence"};
-static constexpr std::string_view theme_separator_end_color_foreground{
+static constexpr std::string_view k_theme_separator_end_color_foreground{
     "separator_end_color_foreground"};
-static constexpr std::string_view theme_separator_end_color_background{
+static constexpr std::string_view k_theme_separator_end_color_background{
     "separator_end_color_background"};
-static constexpr std::string_view theme_border_width_top{"border_width_top"};
-static constexpr std::string_view theme_border_width_right{
+static constexpr std::string_view k_theme_border_width_top{"border_width_top"};
+static constexpr std::string_view k_theme_border_width_right{
     "border_width_right"};
-static constexpr std::string_view theme_border_width_bottom{
+static constexpr std::string_view k_theme_border_width_bottom{
     "border_width_bottom"};
-static constexpr std::string_view theme_border_width_left{"border_width_left"};
+static constexpr std::string_view k_theme_border_width_left{
+    "border_width_left"};
 
-static constexpr std::string modules{"modules"};
-static constexpr std::string modules_path{"path"};
-static constexpr std::string modules_config{"config"};
+static constexpr std::string k_modules{"modules"};
+static constexpr std::string k_modules_path{"path"};
+static constexpr std::string k_modules_config{"config"};
 } // namespace option_str
 
 namespace error_str {
-static constexpr std::string format_color{
+static constexpr std::string k_format_color{
     (std::is_same_v<theme::color, libconfigfile::color::rgba>)
         ? ("\"#RRGGBBA\"")
         : ("\"#RRGGBB\"")};
-static const std::string format_color_or_special_str{format_color +
-                                                     " or special string"};
+static const std::string k_format_color_or_special_str{k_format_color +
+                                                       " or special string"};
 static constexpr std::pair<theme::pixel_count_t, theme::pixel_count_t>
-    range_pixel_count{std::numeric_limits<theme::pixel_count_t>::lowest(),
-                      std::numeric_limits<theme::pixel_count_t>::max()};
+    k_range_pixel_count{std::numeric_limits<theme::pixel_count_t>::lowest(),
+                        std::numeric_limits<theme::pixel_count_t>::max()};
 } // namespace error_str
 } // namespace constants
 
 namespace error_helpers {
-static constexpr char nested_option_separator_char{'/'};
+static constexpr char k_nested_option_separator_char{'/'};
 error invalid_option(const std::string &file_path,
                      const std::string &option_str);
 error missing_option(const std::string &file_path,
@@ -234,16 +238,16 @@ read_color(const std::string &file_path,
       } else {
         throw error_helpers::invalid_format_for(
             file_path,
-            (constants::option_str::theme +
-             error_helpers::nested_option_separator_char + option_str),
-            constants::error_str::format_color);
+            (constants::option_str::k_theme +
+             error_helpers::k_nested_option_separator_char + option_str),
+            constants::error_str::k_format_color);
       }
     }
   } else {
     throw error_helpers::invalid_data_type_for(
         file_path,
-        (constants::option_str::theme +
-         error_helpers::nested_option_separator_char + option_str),
+        (constants::option_str::k_theme +
+         error_helpers::k_nested_option_separator_char + option_str),
         libconfigfile::node_type_to_str(libconfigfile::node_type::String));
   }
 }
@@ -272,9 +276,9 @@ read_separator_color(const std::string &file_path,
         const auto throw_error{[&file_path, &option_str]() -> void {
           throw error_helpers::invalid_format_for(
               file_path,
-              (constants::option_str::theme +
-               error_helpers::nested_option_separator_char + option_str),
-              constants::error_str::format_color_or_special_str);
+              (constants::option_str::k_theme +
+               error_helpers::k_nested_option_separator_char + option_str),
+              constants::error_str::k_format_color_or_special_str);
         }};
         switch (misc::constexpr_hash_string::hash(value)) {
         case (misc::constexpr_hash_string::hash(k_special_str_left)): {
