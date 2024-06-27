@@ -46,7 +46,7 @@ public:
 
 struct parsed {
   struct general {
-    int dummy_TODO;
+    bool custom_separators;
   };
 
   struct module {
@@ -83,6 +83,8 @@ static constexpr std::string k_builtin_theme_file_suffix_add{".conf"};
 
 namespace option_str {
 static constexpr std::string k_general{"general"};
+static constexpr std::string_view k_general_custom_separators{
+    "custom_separators"};
 
 static constexpr std::string k_theme{"theme"};
 static constexpr std::string_view k_theme_idle_color_foreground{
