@@ -234,7 +234,7 @@ decltype(i3neostatus::config_file::parsed::theme)
 i3neostatus::config_file::impl::section_handlers::theme(
     const std::string &file_path,
     const libconfigfile::node_ptr<libconfigfile::node, true> &ptr) {
-  theme::theme ret_val{theme::k_default};
+  decltype(parsed::theme) ret_val{theme::k_default};
 
   if (ptr->get_node_type() == libconfigfile::node_type::Map) {
     libconfigfile::node_ptr<libconfigfile::map_node> ptr_map{
