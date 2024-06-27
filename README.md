@@ -43,7 +43,7 @@ The basic idea of i3neostatus is that you can specify which "modules" should be 
 
 The configuration file has three main sections: `general` (`map`), which contains global options affecting the whole program; `theme` (`map`) which specifies the appearance of the status line; and `modules` (`array`) which contains the configuration for each module.
 
-Currently, there are no options implemented in `general`.
+The only option currently implemented in `general` is `custom_separators` (`integer`). Setting this to a non-zero value (default) will enable custom separators. Otherwise, the default i3bar separators are used.
 
 The `theme` sections contains a variety of options that affect the styling of the status line. All options are optional (pun unintentional), those not set will possess default values.
 
