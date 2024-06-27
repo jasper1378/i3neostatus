@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -204,19 +205,19 @@ std::string resolve(std::string &&file_path);
 namespace section_handlers {
 decltype(parsed::general)
 general(const std::string &file_path,
-        const libconfigfile::node_ptr<libconfigfile::node, true> &ptr);
+        libconfigfile::node_ptr<libconfigfile::node, true> &&ptr);
 namespace general_helpers {}
 
 decltype(parsed::theme)
 theme(const std::string &file_path,
-      const libconfigfile::node_ptr<libconfigfile::node, true> &ptr);
+      libconfigfile::node_ptr<libconfigfile::node, true> &&ptr);
 namespace theme_helpers {
 template <bool or_special_str, typename t_special = void *,
           typename t_special_handler = void *>
 std::conditional_t<or_special_str, std::variant<theme::color, t_special>,
                    theme::color>
 read_color(const std::string &file_path,
-           const libconfigfile::node_ptr<libconfigfile::node> &ptr,
+           libconfigfile::node_ptr<libconfigfile::node> &&ptr,
            const std::string &option_str,
            t_special_handler special_handler = {})
   requires((!or_special_str) ||
@@ -226,7 +227,8 @@ read_color(const std::string &file_path,
 {
   if (ptr->get_node_type() == libconfigfile::node_type::String) {
     libconfigfile::node_ptr<libconfigfile::string_node> ptr_string{
-        libconfigfile::node_ptr_cast<libconfigfile::string_node>(ptr)};
+        libconfigfile::node_ptr_cast<libconfigfile::string_node>(
+            std::move(ptr))};
     std::optional<theme::color> color{
         libconfigfile::color::from_string<theme::color>(
             ptr_string->data(), (ptr_string->data() + ptr_string->size()))};
@@ -234,7 +236,8 @@ read_color(const std::string &file_path,
       return *color;
     } else {
       if constexpr (or_special_str) {
-        return special_handler(libconfigfile::node_to_base(*ptr_string));
+        return special_handler(
+            libconfigfile::node_to_base(std::move(*ptr_string)));
       } else {
         throw error_helpers::invalid_format_for(
             file_path,
@@ -254,7 +257,7 @@ read_color(const std::string &file_path,
 
 std::variant<theme::color, theme::special_border_color>
 read_border_color(const std::string &file_path,
-                  const libconfigfile::node_ptr<libconfigfile::node> &ptr,
+                  libconfigfile::node_ptr<libconfigfile::node> &&ptr,
                   const std::string &option_str);
 
 template <theme::separator_type separator_type>
@@ -262,13 +265,13 @@ std::variant<theme::color,
              theme::impl::separator_type_enum_to_special_separator_color_enum_t<
                  separator_type>>
 read_separator_color(const std::string &file_path,
-                     const libconfigfile::node_ptr<libconfigfile::node> &ptr,
+                     libconfigfile::node_ptr<libconfigfile::node> &&ptr,
                      const std::string &option_str) {
   using special_separator_color =
       theme::impl::separator_type_enum_to_special_separator_color_enum_t<
           separator_type>;
   return read_color<true, special_separator_color>(
-      file_path, ptr, option_str,
+      file_path, std::move(ptr), option_str,
       [&file_path,
        &option_str](const std::string &value) -> special_separator_color {
         static constexpr std::string k_special_str_left{"left"};
@@ -306,19 +309,19 @@ read_separator_color(const std::string &file_path,
 
 std::string
 read_separator_sequence(const std::string &file_path,
-                        const libconfigfile::node_ptr<libconfigfile::node> &ptr,
+                        libconfigfile::node_ptr<libconfigfile::node> &&ptr,
                         const std::string &option_str);
 
 theme::pixel_count_t
 read_border_width(const std::string &file_path,
-                  const libconfigfile::node_ptr<libconfigfile::node> &ptr,
+                  libconfigfile::node_ptr<libconfigfile::node> &&ptr,
                   const std::string &option_str);
 
 } // namespace theme_helpers
 
 decltype(parsed::modules)
 modules(const std::string &file_path,
-        const libconfigfile::node_ptr<libconfigfile::node, true> &ptr);
+        libconfigfile::node_ptr<libconfigfile::node, true> &&ptr);
 namespace modules_helpers {}
 } // namespace section_handlers
 } // namespace impl

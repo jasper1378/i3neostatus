@@ -189,14 +189,19 @@ i3neostatus::config_file::impl::read(const std::string &file_path) {
 
     for (auto ptr{libcf_parsed->begin()}; ptr != libcf_parsed->end(); ++ptr) {
       switch (misc::constexpr_hash_string::hash(ptr->first)) {
-      case misc::constexpr_hash_string::hash(constants::option_str::k_general): {
-        parsed.general = section_handlers::general(file_path, ptr->second);
+      case misc::constexpr_hash_string::hash(
+          constants::option_str::k_general): {
+        parsed.general =
+            section_handlers::general(file_path, std::move(ptr->second));
       } break;
       case misc::constexpr_hash_string::hash(constants::option_str::k_theme): {
-        parsed.theme = section_handlers::theme(file_path, ptr->second);
+        parsed.theme =
+            section_handlers::theme(file_path, std::move(ptr->second));
       } break;
-      case misc::constexpr_hash_string::hash(constants::option_str::k_modules): {
-        parsed.modules = section_handlers::modules(file_path, ptr->second);
+      case misc::constexpr_hash_string::hash(
+          constants::option_str::k_modules): {
+        parsed.modules =
+            section_handlers::modules(file_path, std::move(ptr->second));
       } break;
       default: {
         throw error_helpers::invalid_option(file_path, ptr->first);
@@ -211,7 +216,7 @@ i3neostatus::config_file::impl::read(const std::string &file_path) {
 decltype(i3neostatus::config_file::parsed::general)
 i3neostatus::config_file::impl::section_handlers::general(
     const std::string &file_path,
-    const libconfigfile::node_ptr<libconfigfile::node, true> &ptr) {
+    libconfigfile::node_ptr<libconfigfile::node, true> &&ptr) {
   decltype(parsed::general) ret_val{};
 
   if (ptr->get_node_type() == libconfigfile::node_type::Map) {
@@ -233,12 +238,12 @@ i3neostatus::config_file::impl::section_handlers::general(
 decltype(i3neostatus::config_file::parsed::theme)
 i3neostatus::config_file::impl::section_handlers::theme(
     const std::string &file_path,
-    const libconfigfile::node_ptr<libconfigfile::node, true> &ptr) {
+    libconfigfile::node_ptr<libconfigfile::node, true> &&ptr) {
   decltype(parsed::theme) ret_val{theme::k_default};
 
   if (ptr->get_node_type() == libconfigfile::node_type::Map) {
     libconfigfile::node_ptr<libconfigfile::map_node> ptr_map{
-        libconfigfile::node_ptr_cast<libconfigfile::map_node>(ptr)};
+        libconfigfile::node_ptr_cast<libconfigfile::map_node>(std::move(ptr))};
     for (auto ptr2{ptr_map->begin()}; ptr2 != ptr_map->end(); ++ptr2) {
       switch (misc::constexpr_hash_string::hash(ptr2->first)) {
       case (misc::constexpr_hash_string::hash(
@@ -480,10 +485,10 @@ std::variant<i3neostatus::theme::color,
              i3neostatus::theme::special_border_color>
 i3neostatus::config_file::impl::section_handlers::theme_helpers::
     read_border_color(const std::string &file_path,
-                      const libconfigfile::node_ptr<libconfigfile::node> &ptr,
+                      libconfigfile::node_ptr<libconfigfile::node> &&ptr,
                       const std::string &option_str) {
   return read_color<true, theme::special_border_color>(
-      file_path, ptr, option_str,
+      file_path, std::move(ptr), option_str,
       [&file_path,
        &option_str](const std::string &value) -> theme::special_border_color {
         static constexpr std::string k_special_str_foreground{"foreground"};
@@ -507,13 +512,13 @@ i3neostatus::config_file::impl::section_handlers::theme_helpers::
 }
 
 std::string i3neostatus::config_file::impl::section_handlers::theme_helpers::
-    read_separator_sequence(
-        const std::string &file_path,
-        const libconfigfile::node_ptr<libconfigfile::node> &ptr,
-        const std::string &option_str) {
+    read_separator_sequence(const std::string &file_path,
+                            libconfigfile::node_ptr<libconfigfile::node> &&ptr,
+                            const std::string &option_str) {
   if (ptr->get_node_type() == libconfigfile::node_type::String) {
     return libconfigfile::node_to_base(
-        *libconfigfile::node_ptr_cast<libconfigfile::string_node>(ptr));
+        std::move(*libconfigfile::node_ptr_cast<libconfigfile::string_node>(
+            std::move(ptr))));
   } else {
     throw error_helpers::invalid_data_type_for(
         file_path,
@@ -526,11 +531,12 @@ std::string i3neostatus::config_file::impl::section_handlers::theme_helpers::
 i3neostatus::theme::pixel_count_t
 i3neostatus::config_file::impl::section_handlers::theme_helpers::
     read_border_width(const std::string &file_path,
-                      const libconfigfile::node_ptr<libconfigfile::node> &ptr,
+                      libconfigfile::node_ptr<libconfigfile::node> &&ptr,
                       const std::string &option_str) {
   if (ptr->get_node_type() == libconfigfile::node_type::Integer) {
-    libconfigfile::integer_node::base_t value{
-        libconfigfile::node_ptr_cast<libconfigfile::integer_node>(ptr)->get()};
+    libconfigfile::integer_node::base_t value{libconfigfile::node_to_base(
+        std::move(*libconfigfile::node_ptr_cast<libconfigfile::integer_node>(
+            std::move(ptr))))};
     if ((value <= std::numeric_limits<theme::pixel_count_t>::max()) &&
         (value >= std::numeric_limits<theme::pixel_count_t>::lowest())) {
       return static_cast<theme::pixel_count_t>(value);
@@ -553,7 +559,7 @@ i3neostatus::config_file::impl::section_handlers::theme_helpers::
 decltype(i3neostatus::config_file::parsed::modules)
 i3neostatus::config_file::impl::section_handlers::modules(
     const std::string &file_path,
-    const libconfigfile::node_ptr<libconfigfile::node, true> &ptr) {
+    libconfigfile::node_ptr<libconfigfile::node, true> &&ptr) {
   decltype(parsed::modules) ret_val{};
 
   if (ptr->get_node_type() == libconfigfile::node_type::Array) {
@@ -564,7 +570,8 @@ i3neostatus::config_file::impl::section_handlers::modules(
     for (auto ptr2{ptr1_array->begin()}; ptr2 != ptr1_array->end(); ++ptr2) {
       if ((*ptr2)->get_node_type() == libconfigfile::node_type::Map) {
         libconfigfile::node_ptr<libconfigfile::map_node> ptr2_map{
-            libconfigfile::node_ptr_cast<libconfigfile::map_node>(*ptr2)};
+            libconfigfile::node_ptr_cast<libconfigfile::map_node>(
+                std::move(*ptr2))};
         for (auto ptr3{ptr2_map->begin()}; ptr3 != ptr2_map->end(); ++ptr3) {
           switch (misc::constexpr_hash_string::hash(ptr3->first)) {
           case (misc::constexpr_hash_string::hash(
