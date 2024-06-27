@@ -217,14 +217,37 @@ decltype(i3neostatus::config_file::parsed::general)
 i3neostatus::config_file::impl::section_handlers::general(
     const std::string &file_path,
     libconfigfile::node_ptr<libconfigfile::node, true> &&ptr) {
-  decltype(parsed::general) ret_val{};
+  decltype(parsed::general) ret_val{.custom_separators{false}};
 
   if (ptr->get_node_type() == libconfigfile::node_type::Map) {
     libconfigfile::node_ptr<libconfigfile::map_node> ptr1_map{
         libconfigfile::node_ptr_cast<libconfigfile::map_node>(std::move(ptr))};
     for (auto ptr2{ptr1_map->begin()}; ptr2 != ptr1_map->end(); ++ptr2) {
-      ret_val.dummy_TODO = 1378;
-      // TODO handle stuff within "general"
+      switch (misc::constexpr_hash_string::hash(ptr2->first)) {
+      case (misc::constexpr_hash_string::hash(
+          constants::option_str::k_general_custom_separators)): {
+        if (ptr2->second->get_node_type() ==
+            libconfigfile::node_type::Integer) {
+          ret_val.custom_separators =
+              static_cast<bool>(libconfigfile::node_to_base(std::move(
+                  *libconfigfile::node_ptr_cast<libconfigfile::integer_node>(
+                      std::move(ptr2->second)))));
+        } else {
+          throw error_helpers::invalid_data_type_for(
+              file_path,
+              (constants::option_str::k_general +
+               error_helpers::k_nested_option_separator_char + ptr2->first),
+              libconfigfile::node_type_to_str(
+                  libconfigfile::node_type::Integer));
+        }
+      } break;
+      default: {
+        throw error_helpers::invalid_option(
+            file_path,
+            (constants::option_str::k_general +
+             error_helpers::k_nested_option_separator_char + ptr2->first));
+      } break;
+      }
     }
   } else {
     throw error_helpers::invalid_data_type_for(

@@ -200,7 +200,6 @@ int main(int argc, char *argv[]) {
       message_printing::error("Fool! That's too many modules!", true);
     }
     const module_id::type module_count{config.modules.size()};
-    const bool custom_separators_enabled{true}; // TODO
     bool click_events_enabled{false};
 
     std::vector<module_handle> module_handles{};
@@ -220,7 +219,7 @@ int main(int argc, char *argv[]) {
 
     std::vector<std::string> content_string_cache(module_count);
     std::vector<std::string> separator_string_cache(
-        (custom_separators_enabled) ? (module_count + 1) : (0));
+        (config.general.custom_separators) ? (module_count + 1) : (0));
 
     const auto module_callback{
         [](void *userdata,
@@ -404,11 +403,11 @@ int main(int argc, char *argv[]) {
               content_cache.first[i].data.program = make_block::content(
                   config.theme, content_cache.second[i],
                   (((module_id_to_active_index[i]) % 2) != 0),
-                  custom_separators_enabled);
+                  config.general.custom_separators);
             }
           }
 
-          if (custom_separators_enabled) {
+          if (config.general.custom_separators) {
             i3bar_protocol::print_statusline(
                 content_cache.first, content_string_cache,
                 [module_count, &module_id_to_active_index,
@@ -453,9 +452,9 @@ int main(int argc, char *argv[]) {
           content_cache.first[cur_module_id].data.program = make_block::content(
               config.theme, content_cache.second[cur_module_id],
               (((module_id_to_active_index[cur_module_id]) % 2) != 0),
-              custom_separators_enabled);
+              config.general.custom_separators);
 
-          if (custom_separators_enabled) {
+          if (config.general.custom_separators) {
             std::pair<std::pair<i3bar_data::block, module_id::type>,
                       std::pair<i3bar_data::block, module_id::type>>
                 separators{make_separators(cur_module_id)};
