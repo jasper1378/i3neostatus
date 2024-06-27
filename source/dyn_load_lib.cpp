@@ -2,7 +2,6 @@
 
 #include <dlfcn.h>
 
-#include <exception>
 #include <filesystem>
 #include <stdexcept>
 #include <string>
@@ -85,7 +84,7 @@ void *i3neostatus::dyn_load_lib::lib::get_symbol_impl(
   }
 }
 
-Dl_info i3neostatus::dyn_load_lib::lib::get_info_impl(void *addr) {
+Dl_info i3neostatus::dyn_load_lib::lib::get_info_impl(const void *addr) {
   dlerror();
   Dl_info ret_val;
   if (dladdr(addr, &ret_val) != 0) {
