@@ -77,8 +77,8 @@ void *i3neostatus::dyn_load_lib::lib::get_symbol_impl(
   void *sym_addr{nullptr};
   sym_addr = ((version[0] == '\0') ? (dlsym(handle, symbol))
                                    : (dlvsym(handle, symbol, version)));
-  if (sym_addr == nullptr) {
-    throw error{std::string{"dlsym(): "} + dlerror()};
+  if (const char *err{dlerror()}; (sym_addr == nullptr) && (err != nullptr)) {
+    throw error{std::string{"dlsym(): "} + err};
   } else {
     return sym_addr;
   }
