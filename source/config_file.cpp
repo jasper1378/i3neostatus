@@ -1,10 +1,10 @@
 #include "config_file.hpp"
 
-#include "misc.hpp"
 #include "program_constants.hpp"
 #include "theme.hpp"
 
 #include "bits-and-bytes/constexpr_hash_string.hpp"
+#include "bits-and-bytes/resolve_tilde.hpp"
 
 #include <cstdlib>
 #include <exception>
@@ -164,8 +164,8 @@ i3neostatus::config_file::impl::error_helpers::invalid_format_for(
 }
 std::string i3neostatus::config_file::impl::file_path::resolve(
     const std::string &file_path) {
-  if (misc::resolve_tilde::would_resolve_tilde(file_path)) {
-    return misc::resolve_tilde::resolve_tilde(file_path);
+  if (bits_and_bytes::resolve_tilde::would_resolve_tilde(file_path)) {
+    return bits_and_bytes::resolve_tilde::resolve_tilde(file_path);
   } else {
     return file_path;
   }
@@ -173,8 +173,8 @@ std::string i3neostatus::config_file::impl::file_path::resolve(
 
 std::string
 i3neostatus::config_file::impl::file_path::resolve(std::string &&file_path) {
-  if (misc::resolve_tilde::would_resolve_tilde(file_path)) {
-    return misc::resolve_tilde::resolve_tilde(file_path);
+  if (bits_and_bytes::resolve_tilde::would_resolve_tilde(file_path)) {
+    return bits_and_bytes::resolve_tilde::resolve_tilde(file_path);
   } else {
     return file_path;
   }

@@ -1,7 +1,6 @@
 #include "i3bar_data_conversions.hpp"
 
 #include "i3bar_data.hpp"
-#include "misc.hpp"
 
 #include "bits-and-bytes/constexpr_hash_string.hpp"
 
