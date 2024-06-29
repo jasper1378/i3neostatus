@@ -30,22 +30,6 @@ constexpr auto min(const T &t, const U &...u) {
 }
 } // namespace constexpr_minmax
 
-namespace same_as_template {
-namespace impl {
-template <template <typename...> typename T, template <typename...> typename U>
-struct is_same : std::false_type {};
-
-template <template <typename...> typename T>
-struct is_same<T, T> : std::true_type {};
-
-template <template <typename...> typename T, template <typename...> typename U>
-inline constexpr bool is_same_v = is_same<T, U>::value;
-} // namespace impl
-
-template <template <typename...> typename T, template <typename...> typename U>
-concept same_as = impl::is_same_v<T, U> && impl::is_same_v<U, T>;
-} // namespace same_as_template
-
 namespace constexpr_hash_string {
 // copied from GCC implementation of std::hash<std::string>, modified to execute
 // at compile time
