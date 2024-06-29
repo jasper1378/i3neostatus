@@ -1,7 +1,6 @@
 #ifndef I3NEOSTATUS_CONFIG_FILE_HPP
 #define I3NEOSTATUS_CONFIG_FILE_HPP
 
-#include "misc.hpp"
 #include "program_constants.hpp"
 #include "theme.hpp"
 

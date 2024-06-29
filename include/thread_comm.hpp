@@ -2,7 +2,6 @@
 #define I3NEOSTATUS_THREAD_COMM_HPP
 
 #include "generic_callback.hpp"
-#include "misc.hpp"
 
 #include "bits-and-bytes/enum_flag_operators.hpp"
 #include "bits-and-bytes/is_same_template.hpp"

@@ -3,7 +3,6 @@
 #include "hide_block.hpp"
 #include "i3bar_data.hpp"
 #include "i3bar_data_conversions.hpp"
-#include "misc.hpp"
 #include "module_id.hpp"
 
 #include "bits-and-bytes/constexpr_hash_string.hpp"

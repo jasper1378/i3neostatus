@@ -6,7 +6,6 @@
 #include "i3bar_protocol.hpp"
 #include "make_block.hpp"
 #include "message_printing.hpp"
-#include "misc.hpp"
 #include "module_api.hpp"
 #include "module_error.hpp"
 #include "module_handle.hpp"
