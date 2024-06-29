@@ -17,19 +17,6 @@ bool would_resolve_tilde(const std::string_view str);
 std::string resolve_tilde(const std::string &str);
 } // namespace resolve_tilde
 
-namespace constexpr_minmax {
-template <typename T> consteval auto max(const T &t) { return t; }
-template <typename T, typename... U>
-consteval auto max(const T &t, const U &...u) {
-  return ((t > max(u...)) ? (t) : (max(u...)));
-}
-template <typename T> constexpr auto min(const T &t) { return t; }
-template <typename T, typename... U>
-constexpr auto min(const T &t, const U &...u) {
-  return ((t < min(u...)) ? (t) : (min(u...)));
-}
-} // namespace constexpr_minmax
-
 namespace constexpr_hash_string {
 // copied from GCC implementation of std::hash<std::string>, modified to execute
 // at compile time
