@@ -6,6 +6,7 @@
 #include "misc.hpp"
 #include "module_id.hpp"
 
+#include "bits-and-bytes/constexpr_hash_string.hpp"
 #include "bits-and-bytes/constexpr_min_max.hpp"
 #include "bits-and-bytes/stream_append.hpp"
 #include "libconfigfile/color.hpp"
@@ -526,79 +527,81 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
            1);
       name_buf = substr(click_event, name_begin_pos, name_end_pos);
 
-      switch (misc::constexpr_hash_string::hash(name_buf)) {
-      case misc::constexpr_hash_string::hash(
+      switch (bits_and_bytes::constexpr_hash_string::hash(name_buf)) {
+      case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_name): {
         ret_val.id.name =
             read_string_value(click_event, name_end_pos, continue_from_pos);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_instance): {
         ret_val.id.instance = module_id::from_string(
             read_string_value(click_event, name_end_pos, continue_from_pos));
       } break;
-      case misc::constexpr_hash_string::hash(json_strings::click_event::k_x): {
+      case bits_and_bytes::constexpr_hash_string::hash(
+          json_strings::click_event::k_x): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.x);
       } break;
-      case misc::constexpr_hash_string::hash(json_strings::click_event::k_y): {
+      case bits_and_bytes::constexpr_hash_string::hash(
+          json_strings::click_event::k_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.y);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_button): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.button);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_relative_x): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.relative_x);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_relative_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.relative_y);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_output_x): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.output_x);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_output_y): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.output_y);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_width): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.width);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_height): {
         std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.height);
       } break;
-      case misc::constexpr_hash_string::hash(
+      case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_modifiers): {
         std::string::size_type array_begin_pos{click_event.find(
             json_constants::k_array_opening_delimiter, name_end_pos + 2)};

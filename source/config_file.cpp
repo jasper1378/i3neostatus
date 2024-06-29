@@ -4,6 +4,8 @@
 #include "program_constants.hpp"
 #include "theme.hpp"
 
+#include "bits-and-bytes/constexpr_hash_string.hpp"
+
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
@@ -188,17 +190,18 @@ i3neostatus::config_file::impl::read(const std::string &file_path) {
     parsed parsed{};
 
     for (auto ptr{libcf_parsed->begin()}; ptr != libcf_parsed->end(); ++ptr) {
-      switch (misc::constexpr_hash_string::hash(ptr->first)) {
-      case misc::constexpr_hash_string::hash(
+      switch (bits_and_bytes::constexpr_hash_string::hash(ptr->first)) {
+      case bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_general): {
         parsed.general =
             section_handlers::general(file_path, std::move(ptr->second));
       } break;
-      case misc::constexpr_hash_string::hash(constants::option_str::k_theme): {
+      case bits_and_bytes::constexpr_hash_string::hash(
+          constants::option_str::k_theme): {
         parsed.theme =
             section_handlers::theme(file_path, std::move(ptr->second));
       } break;
-      case misc::constexpr_hash_string::hash(
+      case bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_modules): {
         parsed.modules =
             section_handlers::modules(file_path, std::move(ptr->second));
@@ -223,8 +226,8 @@ i3neostatus::config_file::impl::section_handlers::general(
     libconfigfile::node_ptr<libconfigfile::map_node> ptr1_map{
         libconfigfile::node_ptr_cast<libconfigfile::map_node>(std::move(ptr))};
     for (auto ptr2{ptr1_map->begin()}; ptr2 != ptr1_map->end(); ++ptr2) {
-      switch (misc::constexpr_hash_string::hash(ptr2->first)) {
-      case (misc::constexpr_hash_string::hash(
+      switch (bits_and_bytes::constexpr_hash_string::hash(ptr2->first)) {
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_general_custom_separators)): {
         if (ptr2->second->get_node_type() ==
             libconfigfile::node_type::Integer) {
@@ -268,15 +271,15 @@ i3neostatus::config_file::impl::section_handlers::theme(
     libconfigfile::node_ptr<libconfigfile::map_node> ptr_map{
         libconfigfile::node_ptr_cast<libconfigfile::map_node>(std::move(ptr))};
     for (auto ptr2{ptr_map->begin()}; ptr2 != ptr_map->end(); ++ptr2) {
-      switch (misc::constexpr_hash_string::hash(ptr2->first)) {
-      case (misc::constexpr_hash_string::hash(
+      switch (bits_and_bytes::constexpr_hash_string::hash(ptr2->first)) {
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_idle_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::idle)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_idle_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::idle)] =
@@ -284,205 +287,205 @@ i3neostatus::config_file::impl::section_handlers::theme(
                                              ptr2->first);
       } break;
 
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_idle_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::idle)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_info_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::info)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_info_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::info)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_info_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::info)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_good_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::good)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_good_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::good)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_good_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::good)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_warning_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::warning)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_warning_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::warning)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_warning_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::warning)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_critical_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::critical)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_critical_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::critical)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_critical_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::critical)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_error_color_foreground)): {
         ret_val.state_dependent_color_foreground[static_cast<std::size_t>(
             block_state::error)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_error_color_background)): {
         ret_val.state_dependent_color_background[static_cast<std::size_t>(
             block_state::error)] =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_error_color_border)): {
         ret_val.state_dependent_color_border[static_cast<std::size_t>(
             block_state::error)] =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_alternating_tint_color_foreground)): {
         ret_val.alternating_tint_color_foreground =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_alternating_tint_color_background)): {
         ret_val.alternating_tint_color_background =
             theme_helpers::read_color<false>(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_alternating_tint_color_border)): {
         ret_val.alternating_tint_color_border =
             theme_helpers::read_border_color(file_path, ptr2->second,
                                              ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_separator_middle_sequence)): {
         ret_val.separator_middle_sequence =
             theme_helpers::read_separator_sequence(file_path, ptr2->second,
                                                    ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_separator_middle_color_foreground)): {
         ret_val.separator_middle_color_foreground =
             theme_helpers::read_separator_color<theme::separator_type::middle>(
                 file_path, ptr2->second, ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_separator_middle_color_background)): {
         ret_val.separator_middle_color_background =
             theme_helpers::read_separator_color<theme::separator_type::middle>(
                 file_path, ptr2->second, ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_separator_begin_sequence)): {
         ret_val.separator_begin_sequence =
             theme_helpers::read_separator_sequence(file_path, ptr2->second,
                                                    ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_separator_begin_color_foreground)): {
         ret_val.separator_begin_color_foreground =
             theme_helpers::read_separator_color<theme::separator_type::begin>(
                 file_path, ptr2->second, ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_separator_begin_color_background)): {
         ret_val.separator_begin_color_background =
             theme_helpers::read_separator_color<theme::separator_type::begin>(
                 file_path, ptr2->second, ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_separator_end_sequence)): {
         ret_val.separator_end_sequence = theme_helpers::read_separator_sequence(
             file_path, ptr2->second, ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_separator_end_color_foreground)): {
         ret_val.separator_end_color_foreground =
             theme_helpers::read_separator_color<theme::separator_type::end>(
                 file_path, ptr2->second, ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_separator_end_color_background)): {
         ret_val.separator_end_color_background =
             theme_helpers::read_separator_color<theme::separator_type::end>(
                 file_path, ptr2->second, ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_border_width_top)): {
         ret_val.border_width_top = theme_helpers::read_border_width(
             file_path, ptr2->second, ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_border_width_right)): {
         ret_val.border_width_right = theme_helpers::read_border_width(
             file_path, ptr2->second, ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_border_width_bottom)): {
         ret_val.border_width_bottom = theme_helpers::read_border_width(
             file_path, ptr2->second, ptr2->first);
       } break;
-      case (misc::constexpr_hash_string::hash(
+      case (bits_and_bytes::constexpr_hash_string::hash(
           constants::option_str::k_theme_border_width_left)): {
         ret_val.border_width_left = theme_helpers::read_border_width(
             file_path, ptr2->second, ptr2->first);
@@ -516,11 +519,13 @@ i3neostatus::config_file::impl::section_handlers::theme_helpers::
        &option_str](const std::string &value) -> theme::special_border_color {
         static constexpr std::string k_special_str_foreground{"foreground"};
         static constexpr std::string k_special_str_background{"background"};
-        switch (misc::constexpr_hash_string::hash(value)) {
-        case (misc::constexpr_hash_string::hash(k_special_str_foreground)): {
+        switch (bits_and_bytes::constexpr_hash_string::hash(value)) {
+        case (bits_and_bytes::constexpr_hash_string::hash(
+            k_special_str_foreground)): {
           return theme::special_border_color::foreground;
         } break;
-        case (misc::constexpr_hash_string::hash(k_special_str_background)): {
+        case (bits_and_bytes::constexpr_hash_string::hash(
+            k_special_str_background)): {
           return theme::special_border_color::background;
         } break;
         default: {
@@ -596,8 +601,8 @@ i3neostatus::config_file::impl::section_handlers::modules(
             libconfigfile::node_ptr_cast<libconfigfile::map_node>(
                 std::move(*ptr2))};
         for (auto ptr3{ptr2_map->begin()}; ptr3 != ptr2_map->end(); ++ptr3) {
-          switch (misc::constexpr_hash_string::hash(ptr3->first)) {
-          case (misc::constexpr_hash_string::hash(
+          switch (bits_and_bytes::constexpr_hash_string::hash(ptr3->first)) {
+          case (bits_and_bytes::constexpr_hash_string::hash(
               constants::option_str::k_modules_path)): {
             if (ptr3->second->get_node_type() ==
                 libconfigfile::node_type::String) {
@@ -625,7 +630,7 @@ i3neostatus::config_file::impl::section_handlers::modules(
                       libconfigfile::node_type::String));
             }
           } break;
-          case (misc::constexpr_hash_string::hash(
+          case (bits_and_bytes::constexpr_hash_string::hash(
               constants::option_str::k_modules_config)): {
             if (ptr3->second->get_node_type() ==
                 libconfigfile::node_type::Map) {

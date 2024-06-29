@@ -3,6 +3,8 @@
 #include "i3bar_data.hpp"
 #include "misc.hpp"
 
+#include "bits-and-bytes/constexpr_hash_string.hpp"
+
 #include <array>
 #include <cstddef>
 #include <string>
@@ -40,29 +42,29 @@ i3neostatus::i3bar_data::types::from_string<
   static constexpr std::string k_str_control{"Control"};
   static constexpr std::string k_str_lock{"Lock"};
 
-  switch (misc::constexpr_hash_string::hash(string)) {
-  case misc::constexpr_hash_string::hash(k_str_mod1): {
+  switch (bits_and_bytes::constexpr_hash_string::hash(string)) {
+  case bits_and_bytes::constexpr_hash_string::hash(k_str_mod1): {
     return click_modifiers::mod1;
   } break;
-  case misc::constexpr_hash_string::hash(k_str_mod2): {
+  case bits_and_bytes::constexpr_hash_string::hash(k_str_mod2): {
     return click_modifiers::mod2;
   } break;
-  case misc::constexpr_hash_string::hash(k_str_mod3): {
+  case bits_and_bytes::constexpr_hash_string::hash(k_str_mod3): {
     return click_modifiers::mod3;
   } break;
-  case misc::constexpr_hash_string::hash(k_str_mod4): {
+  case bits_and_bytes::constexpr_hash_string::hash(k_str_mod4): {
     return click_modifiers::mod4;
   } break;
-  case misc::constexpr_hash_string::hash(k_str_mod5): {
+  case bits_and_bytes::constexpr_hash_string::hash(k_str_mod5): {
     return click_modifiers::mod5;
   } break;
-  case misc::constexpr_hash_string::hash(k_str_shift): {
+  case bits_and_bytes::constexpr_hash_string::hash(k_str_shift): {
     return click_modifiers::shift;
   } break;
-  case misc::constexpr_hash_string::hash(k_str_control): {
+  case bits_and_bytes::constexpr_hash_string::hash(k_str_control): {
     return click_modifiers::control;
   } break;
-  case misc::constexpr_hash_string::hash(k_str_lock): {
+  case bits_and_bytes::constexpr_hash_string::hash(k_str_lock): {
     return click_modifiers::lock;
   } break;
   default: {
