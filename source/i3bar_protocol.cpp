@@ -6,6 +6,7 @@
 #include "misc.hpp"
 #include "module_id.hpp"
 
+#include "bits-and-bytes/constexpr_min_max.hpp"
 #include "bits-and-bytes/stream_append.hpp"
 #include "libconfigfile/color.hpp"
 
@@ -494,7 +495,7 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
       }};
 
   std::string name_buf;
-  name_buf.resize(misc::constexpr_minmax::max(
+  name_buf.resize(bits_and_bytes::constexpr_min_max::max(
       json_strings::click_event::k_name.size(),
       json_strings::click_event::k_instance.size(),
       json_strings::click_event::k_x.size(),
