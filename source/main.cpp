@@ -12,6 +12,7 @@
 #include "module_handle.hpp"
 #include "module_id.hpp"
 
+#include "bits-and-bytes/constexpr_hash_string.hpp"
 #include "bits-and-bytes/unreachable_error.hpp"
 
 #include <algorithm>
@@ -157,9 +158,9 @@ int main(int argc, char *argv[]) {
     const char *configuration_file_path{""};
 
     for (int cur_arg{1}; cur_arg < argc; ++cur_arg) {
-      switch (misc::constexpr_hash_string::hash(argv[cur_arg])) {
-      case misc::constexpr_hash_string::hash("-c"):
-      case misc::constexpr_hash_string::hash("--config"): {
+      switch (bits_and_bytes::constexpr_hash_string::hash(argv[cur_arg])) {
+      case bits_and_bytes::constexpr_hash_string::hash("-c"):
+      case bits_and_bytes::constexpr_hash_string::hash("--config"): {
         if (((cur_arg + 1) < argc) && (*argv[cur_arg + 1] != '-')) {
           if (*configuration_file_path == '\0') {
             configuration_file_path = argv[++cur_arg];
@@ -174,13 +175,13 @@ int main(int argc, char *argv[]) {
                                   true);
         }
       } break;
-      case misc::constexpr_hash_string::hash("-h"):
-      case misc::constexpr_hash_string::hash("--help"): {
+      case bits_and_bytes::constexpr_hash_string::hash("-h"):
+      case bits_and_bytes::constexpr_hash_string::hash("--help"): {
         message_printing::help(argv[0]);
         return EXIT_SUCCESS;
       } break;
-      case misc::constexpr_hash_string::hash("-v"):
-      case misc::constexpr_hash_string::hash("--version"): {
+      case bits_and_bytes::constexpr_hash_string::hash("-v"):
+      case bits_and_bytes::constexpr_hash_string::hash("--version"): {
         message_printing::version();
         return EXIT_SUCCESS;
       } break;

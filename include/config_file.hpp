@@ -5,6 +5,7 @@
 #include "program_constants.hpp"
 #include "theme.hpp"
 
+#include "bits-and-bytes/constexpr_hash_string.hpp"
 #include "libconfigfile/libconfigfile.hpp"
 
 #include <filesystem>
@@ -285,8 +286,9 @@ read_separator_color(const std::string &file_path,
                error_helpers::k_nested_option_separator_char + option_str),
               constants::error_str::k_format_color_or_special_str);
         }};
-        switch (misc::constexpr_hash_string::hash(value)) {
-        case (misc::constexpr_hash_string::hash(k_special_str_left)): {
+        switch (bits_and_bytes::constexpr_hash_string::hash(value)) {
+        case (
+            bits_and_bytes::constexpr_hash_string::hash(k_special_str_left)): {
           if constexpr ((separator_type == theme::separator_type::middle ||
                          separator_type == theme::separator_type::end)) {
             return special_separator_color::left;
@@ -294,7 +296,8 @@ read_separator_color(const std::string &file_path,
             throw_error();
           }
         } break;
-        case (misc::constexpr_hash_string::hash(k_special_str_right)): {
+        case (
+            bits_and_bytes::constexpr_hash_string::hash(k_special_str_right)): {
           if constexpr ((separator_type == theme::separator_type::middle) ||
                         (separator_type == theme::separator_type::begin)) {
             return special_separator_color::right;
