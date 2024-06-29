@@ -5,6 +5,8 @@
 #include "module_id.hpp"
 #include "theme.hpp"
 
+#include "bits-and-bytes/unreachable_error.hpp"
+
 #include <cassert>
 #include <cstddef>
 #include <optional>
@@ -33,7 +35,7 @@ struct i3neostatus::i3bar_data::block i3neostatus::make_block::separator(
     } else if (right) {
       return theme::separator_type::begin;
     } else {
-      throw std::runtime_error{"impossible!"};
+      throw bits_and_bytes::unreachable_error{};
     }
   }()};
 
@@ -103,12 +105,12 @@ i3neostatus::make_block::impl::content_theme(const theme::theme &theme,
                 return background;
               } break;
               default: {
-                throw std::runtime_error{"impossible!"};
+                throw bits_and_bytes::unreachable_error{};
               } break;
               }
             } break;
             default: {
-              throw std::runtime_error{"impossible!"};
+              throw bits_and_bytes::unreachable_error{};
             } break;
             }
           }(),
@@ -126,12 +128,12 @@ i3neostatus::make_block::impl::content_theme(const theme::theme &theme,
                 return theme.alternating_tint_color_background;
               } break;
               default: {
-                throw std::runtime_error{"impossible!"};
+                throw bits_and_bytes::unreachable_error{};
               } break;
               }
             } break;
             default: {
-              throw std::runtime_error{"impossible!"};
+              throw bits_and_bytes::unreachable_error{};
             } break;
             }
           }(),
@@ -163,7 +165,7 @@ i3neostatus::make_block::impl::separator_theme(
             }
           } break;
           default: {
-            throw std::runtime_error{"impossible!"};
+            throw bits_and_bytes::unreachable_error{};
           } break;
           }
         }()},
@@ -180,7 +182,7 @@ i3neostatus::make_block::impl::separator_theme(
             }
           } break;
           default: {
-            throw std::runtime_error{"impossible!"};
+            throw bits_and_bytes::unreachable_error{};
           } break;
           }
         }()},
@@ -208,7 +210,7 @@ i3neostatus::make_block::impl::separator_theme(
             }
           } break;
           default: {
-            throw std::runtime_error{"impossible!"};
+            throw bits_and_bytes::unreachable_error{};
           } break;
           }
         }()},
@@ -228,7 +230,7 @@ i3neostatus::make_block::impl::separator_theme(
             }
           } break;
           default: {
-            throw std::runtime_error{"impossible!"};
+            throw bits_and_bytes::unreachable_error{};
           } break;
           }
         }()},
@@ -253,7 +255,7 @@ i3neostatus::make_block::impl::separator_theme(
             }
           } break;
           default: {
-            throw std::runtime_error{"impossible!"};
+            throw bits_and_bytes::unreachable_error{};
           } break;
           }
         }()},
@@ -270,7 +272,7 @@ i3neostatus::make_block::impl::separator_theme(
             }
           } break;
           default: {
-            throw std::runtime_error{"impossible!"};
+            throw bits_and_bytes::unreachable_error{};
           } break;
           }
         }()},
