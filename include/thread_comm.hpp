@@ -5,6 +5,7 @@
 #include "misc.hpp"
 
 #include "bits-and-bytes/enum_flag_operators.hpp"
+#include "bits-and-bytes/unreachable_error.hpp"
 
 #include <atomic>
 #include <compare>
@@ -174,8 +175,8 @@ public:
                     value_or_exception_idx::exception)>(
                     std::move(m_value_or_exception));
               } break;
-              default: { // impossible
-                return {};
+              default: {
+                throw bits_and_bytes::unreachable_error{};
               }
               }
             }()};

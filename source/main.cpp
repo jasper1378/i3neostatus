@@ -12,6 +12,8 @@
 #include "module_handle.hpp"
 #include "module_id.hpp"
 
+#include "bits-and-bytes/unreachable_error.hpp"
+
 #include <algorithm>
 #include <atomic>
 #include <csignal>
@@ -296,7 +298,7 @@ int main(int argc, char *argv[]) {
           }
         } break;
         default: {
-          throw std::runtime_error{"impossible!"};
+          throw bits_and_bytes::unreachable_error{};
         } break;
         }
 
