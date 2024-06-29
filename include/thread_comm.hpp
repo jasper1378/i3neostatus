@@ -5,6 +5,7 @@
 #include "misc.hpp"
 
 #include "bits-and-bytes/enum_flag_operators.hpp"
+#include "bits-and-bytes/is_same_template.hpp"
 #include "bits-and-bytes/unreachable_error.hpp"
 
 #include <atomic>
@@ -38,8 +39,9 @@ template <typename t_value> class producer;
 template <typename t_value> class consumer;
 
 template <template <typename> typename t_intf>
-concept concept_interface = misc::same_as_template::same_as<t_intf, producer> ||
-                            misc::same_as_template::same_as<t_intf, consumer>;
+concept concept_interface =
+    bits_and_bytes::is_same_template::is_same_v<t_intf, producer> ||
+    bits_and_bytes::is_same_template::is_same_v<t_intf, consumer>;
 
 template <typename t_value> class shared_state {
 private:
