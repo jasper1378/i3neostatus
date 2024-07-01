@@ -8,6 +8,7 @@
 #include "bits-and-bytes/constexpr_hash_string.hpp"
 #include "bits-and-bytes/constexpr_min_max.hpp"
 #include "bits-and-bytes/stream_append.hpp"
+#include "bits-and-bytes/unreachable_error.hpp"
 #include "libconfigfile/color.hpp"
 
 #include <cassert>
@@ -475,9 +476,9 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
       [&substr](const std::string_view str,
                 const std::string::size_type name_end_pos,
                 std::string::size_type &continue_from_pos) -> std::string {
-        std::string::size_type value_begin_pos{
+        const std::string::size_type value_begin_pos{
             str.find(json_constants::k_string_delimiter, name_end_pos + 2) + 1};
-        std::string::size_type value_end_pos{
+        const std::string::size_type value_end_pos{
             str.find(json_constants::k_string_delimiter, value_begin_pos) - 1};
         continue_from_pos = value_end_pos + 2;
         return std::string{substr(str, value_begin_pos, value_end_pos)};
@@ -486,9 +487,9 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
       [&substr, &find_first_digit, &find_first_not_digit](
           const std::string_view str, const std::string::size_type name_end_pos,
           std::string::size_type &continue_from_pos) -> std::string_view {
-        std::string::size_type value_begin_pos{
+        const std::string::size_type value_begin_pos{
             find_first_digit(str, name_end_pos + 2)};
-        std::string::size_type value_end_pos{
+        const std::string::size_type value_end_pos{
             find_first_not_digit(str, value_begin_pos)};
         continue_from_pos = value_end_pos + 1;
         return substr(str, value_begin_pos, value_end_pos);
@@ -520,7 +521,7 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
       break;
     } else {
       ++name_begin_pos;
-      std::string::size_type name_end_pos =
+      const std::string::size_type name_end_pos =
           (click_event.find(json_constants::k_string_delimiter,
                             name_begin_pos) -
            1);
@@ -539,78 +540,78 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_x): {
-        std::string_view value{
+        const std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.x);
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_y): {
-        std::string_view value{
+        const std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.y);
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_button): {
-        std::string_view value{
+        const std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.button);
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_relative_x): {
-        std::string_view value{
+        const std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.relative_x);
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_relative_y): {
-        std::string_view value{
+        const std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.relative_y);
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_output_x): {
-        std::string_view value{
+        const std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.output_x);
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_output_y): {
-        std::string_view value{
+        const std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.output_y);
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_width): {
-        std::string_view value{
+        const std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.width);
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_height): {
-        std::string_view value{
+        const std::string_view value{
             read_numeric_value(click_event, name_end_pos, continue_from_pos)};
         std::from_chars(value.data(), value.data() + value.size(),
                         ret_val.data.height);
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_modifiers): {
-        std::string::size_type array_begin_pos{click_event.find(
+        const std::string::size_type array_begin_pos{click_event.find(
             json_constants::k_array_opening_delimiter, name_end_pos + 2)};
-        std::string::size_type array_end_pos{click_event.find(
+        const std::string::size_type array_end_pos{click_event.find(
             json_constants::k_array_closing_delimiter, array_begin_pos)};
         if ((array_begin_pos + 1) != array_end_pos) {
           for (std::string::size_type i{array_begin_pos}; i < array_end_pos;) {
-            std::string::size_type value_begin_pos{
+            const std::string::size_type value_begin_pos{
                 click_event.find(json_constants::k_string_delimiter, i) + 1};
-            std::string::size_type value_end_pos{
+            const std::string::size_type value_end_pos{
                 click_event.find(json_constants::k_string_delimiter,
                                  value_begin_pos) -
                 1};
@@ -621,6 +622,9 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
           }
         }
         continue_from_pos = array_end_pos + 1;
+      } break;
+      default: {
+        throw bits_and_bytes::unreachable_error{};
       } break;
       }
     }
