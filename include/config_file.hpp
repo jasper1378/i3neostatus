@@ -30,7 +30,7 @@ private:
 public:
   error(const std::string &message, const std::string &file_path = "",
         const long long pos_line = -1, const long long pos_char = -1);
-  error(const char *what_arg, const char *file_path = "",
+  error(const char *message, const char *file_path = "",
         const long long pos_line = -1, const long long pos_char = -1);
   error(const error &other);
 
@@ -201,7 +201,6 @@ error invalid_range_for(const std::string &file_path,
 
 namespace file_path {
 std::string resolve(const std::string &file_path);
-std::string resolve(std::string &&file_path);
 } // namespace file_path
 
 namespace section_handlers {
@@ -305,7 +304,8 @@ read_separator_color(const std::string &file_path,
           }
         } break;
         default: {
-          throw_error();
+          // throw_error();
+          throw int{};
         } break;
         }
       });

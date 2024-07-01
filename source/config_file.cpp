@@ -171,21 +171,12 @@ std::string i3neostatus::config_file::impl::file_path::resolve(
   }
 }
 
-std::string
-i3neostatus::config_file::impl::file_path::resolve(std::string &&file_path) {
-  if (bits_and_bytes::resolve_tilde::would_resolve_tilde(file_path)) {
-    return bits_and_bytes::resolve_tilde::resolve_tilde(file_path);
-  } else {
-    return file_path;
-  }
-}
-
 i3neostatus::config_file::parsed
 i3neostatus::config_file::impl::read(const std::string &file_path) {
   if (!std::filesystem::exists(file_path)) {
     throw error{"configuration file does not exist", file_path};
   } else {
-    libconfigfile::node_ptr<libconfigfile::map_node> libcf_parsed{
+    const libconfigfile::node_ptr<libconfigfile::map_node> libcf_parsed{
         libconfigfile_parse_file_wrapper(file_path)};
     parsed parsed{};
 
@@ -223,7 +214,7 @@ i3neostatus::config_file::impl::section_handlers::general(
   decltype(parsed::general) ret_val{.custom_separators{false}};
 
   if (ptr->get_node_type() == libconfigfile::node_type::Map) {
-    libconfigfile::node_ptr<libconfigfile::map_node> ptr1_map{
+    const libconfigfile::node_ptr<libconfigfile::map_node> ptr1_map{
         libconfigfile::node_ptr_cast<libconfigfile::map_node>(std::move(ptr))};
     for (auto ptr2{ptr1_map->begin()}; ptr2 != ptr1_map->end(); ++ptr2) {
       switch (bits_and_bytes::constexpr_hash_string::hash(ptr2->first)) {
@@ -268,7 +259,7 @@ i3neostatus::config_file::impl::section_handlers::theme(
   decltype(parsed::theme) ret_val{theme::k_default};
 
   if (ptr->get_node_type() == libconfigfile::node_type::Map) {
-    libconfigfile::node_ptr<libconfigfile::map_node> ptr_map{
+    const libconfigfile::node_ptr<libconfigfile::map_node> ptr_map{
         libconfigfile::node_ptr_cast<libconfigfile::map_node>(std::move(ptr))};
     for (auto ptr2{ptr_map->begin()}; ptr2 != ptr_map->end(); ++ptr2) {
       switch (bits_and_bytes::constexpr_hash_string::hash(ptr2->first)) {
@@ -562,7 +553,7 @@ i3neostatus::config_file::impl::section_handlers::theme_helpers::
                       libconfigfile::node_ptr<libconfigfile::node> &&ptr,
                       const std::string &option_str) {
   if (ptr->get_node_type() == libconfigfile::node_type::Integer) {
-    libconfigfile::integer_node::base_t value{libconfigfile::node_to_base(
+    const libconfigfile::integer_node::base_t value{libconfigfile::node_to_base(
         std::move(*libconfigfile::node_ptr_cast<libconfigfile::integer_node>(
             std::move(ptr))))};
     if ((value <= std::numeric_limits<theme::pixel_count_t>::max()) &&
@@ -591,13 +582,13 @@ i3neostatus::config_file::impl::section_handlers::modules(
   decltype(parsed::modules) ret_val{};
 
   if (ptr->get_node_type() == libconfigfile::node_type::Array) {
-    libconfigfile::node_ptr<libconfigfile::array_node> ptr1_array{
+    const libconfigfile::node_ptr<libconfigfile::array_node> ptr1_array{
         libconfigfile::node_ptr_cast<libconfigfile::array_node>(
             std::move(ptr))};
     ret_val.resize(ptr1_array->size());
     for (auto ptr2{ptr1_array->begin()}; ptr2 != ptr1_array->end(); ++ptr2) {
       if ((*ptr2)->get_node_type() == libconfigfile::node_type::Map) {
-        libconfigfile::node_ptr<libconfigfile::map_node> ptr2_map{
+        const libconfigfile::node_ptr<libconfigfile::map_node> ptr2_map{
             libconfigfile::node_ptr_cast<libconfigfile::map_node>(
                 std::move(*ptr2))};
         for (auto ptr3{ptr2_map->begin()}; ptr3 != ptr2_map->end(); ++ptr3) {
@@ -619,7 +610,7 @@ i3neostatus::config_file::impl::section_handlers::modules(
                          constants::misc::k_builtin_module_file_suffix_add));
               } else {
                 ret_val[std::distance(ptr1_array->begin(), ptr2)].file_path =
-                    file_path::resolve(std::move(module_file_path));
+                    file_path::resolve(module_file_path);
               }
             } else {
               throw error_helpers::invalid_data_type_for(

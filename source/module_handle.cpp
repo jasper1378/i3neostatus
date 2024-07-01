@@ -143,7 +143,7 @@ void i3neostatus::module_handle::do_ctor(libconfigfile::map_node &&conf) {
     throw module_error{m_id, "UNKNOWN", m_file_path, "allocator() failed"};
   }
 
-  module_api mod_api{&m_thread_comm_producer_module};
+  const module_api mod_api{&m_thread_comm_producer_module};
 
   try {
     module_api::config_out conf_out{

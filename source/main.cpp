@@ -33,15 +33,16 @@ public:
     class update_queue *update_queue;
     std::atomic<bool> is_buffered;
 
-    update_info(module_id::type id, class update_queue *update_queue = nullptr,
-                std::atomic<bool> is_buffered = false)
+    explicit update_info(module_id::type id,
+                         class update_queue *update_queue = nullptr,
+                         std::atomic<bool> is_buffered = false)
         : id{id}, update_queue{update_queue}, is_buffered{is_buffered.load()} {}
 
     update_info(const update_info &other)
         : id{other.id}, update_queue{other.update_queue},
           is_buffered{other.is_buffered.load()} {}
 
-    update_info(update_info &&other)
+    update_info(update_info &&other) noexcept
         : id{other.id}, update_queue{other.update_queue},
           is_buffered{other.is_buffered.load()} {
       other.id = module_id::null;
@@ -60,7 +61,7 @@ public:
       return *this;
     }
 
-    update_info &operator=(update_info &&other) {
+    update_info &operator=(update_info &&other) noexcept {
       if (this != &other) {
         id = other.id;
         update_queue = other.update_queue;
@@ -83,13 +84,13 @@ private:
   std::size_t m_read;
 
 public:
-  update_queue(std::size_t capacity)
+  explicit update_queue(std::size_t capacity)
       : m_capacity{capacity}, m_buffer{new module_id::type[m_capacity]{}},
         m_count{0}, m_write{0}, m_read{0} {
     std::fill(m_buffer, m_buffer + m_capacity, module_id::null);
   }
 
-  update_queue(update_queue &&other)
+  update_queue(update_queue &&other) noexcept
       : m_capacity{other.m_capacity}, m_buffer{other.m_buffer},
         m_count{other.m_count.load()}, m_write{other.m_write},
         m_read{other.m_read} {
@@ -104,7 +105,7 @@ public:
 
   ~update_queue() { delete[] m_buffer; }
 
-  update_queue &operator=(update_queue &&other) {
+  update_queue &operator=(update_queue &&other) noexcept {
     if (this != &other) {
       delete[] m_buffer;
 
@@ -128,7 +129,7 @@ public:
 public:
   void put(const module_id::type id) {
     {
-      std::lock_guard<std::mutex> lock_m_write_mtx{m_write_mtx};
+      const std::lock_guard<std::mutex> lock_m_write_mtx{m_write_mtx};
       m_buffer[m_write] = id;
       m_write = inc_and_mod(m_write);
     }
@@ -137,7 +138,7 @@ public:
   }
 
   module_id::type get() {
-    module_id::type id{m_buffer[m_read]};
+    const module_id::type id{m_buffer[m_read]};
     m_read = inc_and_mod(m_read);
     --m_count;
     m_count.notify_all();
@@ -147,7 +148,7 @@ public:
   const std::atomic<std::size_t> &count() const { return m_count; }
 
 private:
-  std::size_t inc_and_mod(const std::size_t i) {
+  std::size_t inc_and_mod(const std::size_t i) const {
     return ((i + 1) % m_capacity);
   }
 };
@@ -196,7 +197,7 @@ int main(int argc, char *argv[]) {
         ((*configuration_file_path == '\0')
              ? (config_file::read())
              : (config_file::read(configuration_file_path)))};
-    if (config.modules.size() == 0) {
+    if (config.modules.empty()) {
       message_printing::error("Umm... Are you forgetting something?", true);
     } else if (config.modules.size() > module_id::max) {
       message_printing::error("Fool! That's too many modules!", true);
@@ -228,7 +229,7 @@ int main(int argc, char *argv[]) {
            [[maybe_unused]] module_handle::state_change_type state) -> void {
           update_queue::update_info *module_update{
               static_cast<update_queue::update_info *>(userdata)};
-          if (module_update->is_buffered.load() == false) {
+          if (!module_update->is_buffered.load()) {
             module_update->is_buffered.store(true);
             module_update->update_queue->put(module_update->id);
           }
@@ -269,7 +270,8 @@ int main(int argc, char *argv[]) {
         const module_id::type cur_module_id{update_queue.get()};
         module_updates[cur_module_id].is_buffered.store(false);
 
-        bool hide_previous{hide_block::get(content_cache.first[cur_module_id])};
+        const bool hide_previous{
+            hide_block::get(content_cache.first[cur_module_id])};
         std::variant<module_api::block, std::exception_ptr> content_module{
             module_handles[cur_module_id].get_comm().get()};
 
@@ -302,10 +304,11 @@ int main(int argc, char *argv[]) {
         } break;
         }
 
-        bool hide_current{hide_block::get(content_cache.first[cur_module_id])};
+        const bool hide_current{
+            hide_block::get(content_cache.first[cur_module_id])};
 
         const auto make_separator_left{
-            [&config, module_count, &content_cache, &module_id_to_active_index,
+            [&config, &content_cache, &module_id_to_active_index,
              &active_index_to_module_id](const module_id::type cur_module_id)
                 -> std::pair<i3bar_data::block, module_id::type> {
               if (cur_module_id == module_id::null) {
@@ -313,7 +316,7 @@ int main(int argc, char *argv[]) {
                             struct i3bar_data::block::data::module>()}}},
                         module_id::null};
               }
-              module_id::type left_module_id{
+              const module_id::type left_module_id{
                   ((module_id_to_active_index[cur_module_id] != 0)
                        ? (active_index_to_module_id
                               [module_id_to_active_index[cur_module_id] - 1])
@@ -337,7 +340,7 @@ int main(int argc, char *argv[]) {
                             struct i3bar_data::block::data::module>()}}},
                         module_id::null};
               }
-              module_id::type right_module_id{
+              const module_id::type right_module_id{
                   ((((module_id_to_active_index[cur_module_id] + 1 <
                       module_count)) &&
                     (active_index_to_module_id
@@ -457,8 +460,8 @@ int main(int argc, char *argv[]) {
               config.general.custom_separators);
 
           if (config.general.custom_separators) {
-            std::pair<std::pair<i3bar_data::block, module_id::type>,
-                      std::pair<i3bar_data::block, module_id::type>>
+            const std::pair<std::pair<i3bar_data::block, module_id::type>,
+                            std::pair<i3bar_data::block, module_id::type>>
                 separators{make_separators(cur_module_id)};
 
             i3bar_protocol::print_statusline(
