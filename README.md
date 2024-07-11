@@ -10,9 +10,11 @@ Acquire the sources
 ```
 $ git clone https://github.com/jasper1378/i3neostatus.git
 $ cd i3neostatus
+$ git submodule update --init --recursive --remote
 ```
 Build
 ```
+$ make -C submods/libconfigfile
 $ make
 ```
 Install
