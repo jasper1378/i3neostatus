@@ -14,7 +14,7 @@ $ git submodule update --init --recursive --remote
 ```
 Build
 ```
-$ make -C submods/libconfigfile
+$ make -C deps/libconfigfile
 $ make
 ```
 Install

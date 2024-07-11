@@ -15,7 +15,7 @@ HEADER_FILE_EXT := .hpp
 SOURCE_DIRS := ./source
 INCLUDE_DIRS := ./include
 INCLUDE_INSTALL_DIRS := ./include_install
-SUBMODULE_DIR := ./submods
+SUBMODULE_DIR := ./deps
 INSTALL_PATH := /usr/local
 
 ##########
