@@ -1,20 +1,18 @@
 #include "message_printing.hpp"
 
-#include "program_constants.hpp"
+#include "config.h"
 
 #include <iostream>
 #include <string_view>
 
 void i3neostatus::message_printing::program_info(
     std::ostream &output_stream /*= std::cout*/) {
-  output_stream << program_constants::k_name << ' '
-                << program_constants::k_version << " © "
-                << program_constants::k_year << ' '
-                << program_constants::k_authors << '\n';
+  output_stream << PACKAGE_NAME << ' ' << PACKAGE_VERSION << " © "
+                << "2024" << ' ' << "Jasper Young" << '\n';
 }
 
 void i3neostatus::message_printing::help(
-    const std::string_view argv_0 /*= program_constants::k_name*/,
+    const std::string_view argv_0 /*= PACKAGE_NAME*/,
     std::ostream &output_stream /*= std::cout*/) {
   program_info(output_stream);
   output_stream << "Syntax: " << argv_0 << " [-c <configfile>] [-h] [-v]\n";

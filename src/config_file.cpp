@@ -1,7 +1,8 @@
 #include "config_file.hpp"
 
-#include "program_constants.hpp"
 #include "theme.hpp"
+
+#include "config.h"
 
 #include "bits-and-bytes/constexpr_hash_string.hpp"
 #include "bits-and-bytes/resolve_tilde.hpp"
@@ -70,8 +71,7 @@ i3neostatus::config_file::read(const std::filesystem::path &file_path) {
 
 i3neostatus::config_file::parsed i3neostatus::config_file::read() {
   static const std::string k_file_name_short{"config"};
-  static const std::string k_file_name_long{program_constants::k_name +
-                                            ".conf"};
+  static const std::string k_file_name_long{PACKAGE_NAME ".conf"};
 
   static const char *k_env_home{std::getenv("HOME")};
   if (k_env_home == nullptr) {
@@ -85,19 +85,17 @@ i3neostatus::config_file::parsed i3neostatus::config_file::read() {
   static const std::filesystem::path k_conf_path_1{
       (k_env_xdg_config_home != nullptr)
           ? (std::filesystem::path{k_env_xdg_config_home} /
-             (program_constants::k_name + "/config"))
-          : (k_home_dir /
-             (".config/" + program_constants::k_name + "/config"))};
+             (PACKAGE_NAME "/config"))
+          : (k_home_dir / (".config/" PACKAGE_NAME "/config"))};
   static const std::filesystem::path k_conf_path_2{
       (k_env_xdg_config_dirs != nullptr)
           ? (std::filesystem::path{k_env_xdg_config_dirs} /
-             (program_constants::k_name + "/config"))
-          : (std::filesystem::path{"/etc/xdg/" + program_constants::k_name +
-                                   "/config"})};
-  static const std::filesystem::path k_conf_path_3{
-      k_home_dir / ("." + program_constants::k_name + ".conf")};
-  static const std::filesystem::path k_conf_path_4{
-      "/etc/" + program_constants::k_name + ".conf"};
+             (PACKAGE_NAME "/config"))
+          : (std::filesystem::path{"/etc/xdg/" PACKAGE_NAME "/config"})};
+  static const std::filesystem::path k_conf_path_3{k_home_dir /
+                                                   ("." PACKAGE_NAME ".conf")};
+  static const std::filesystem::path k_conf_path_4{"/etc/" PACKAGE_NAME
+                                                   ".conf"};
 
   if (std::filesystem::exists(k_conf_path_1)) {
     return config_file::read(k_conf_path_1);

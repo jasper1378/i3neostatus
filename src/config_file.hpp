@@ -1,7 +1,6 @@
 #ifndef I3NEOSTATUS_CONFIG_FILE_HPP
 #define I3NEOSTATUS_CONFIG_FILE_HPP
 
-#include "program_constants.hpp"
 #include "theme.hpp"
 
 #include "bits-and-bytes/constexpr_hash_string.hpp"
@@ -72,10 +71,10 @@ libconfigfile_parse_file_wrapper(const std::string &file_path);
 
 namespace constants {
 namespace misc {
-static const std::filesystem::path k_builtin_module_path{
-    program_constants::k_install_path / "lib"};
-static const std::filesystem::path k_builtin_theme_path{
-    program_constants::k_install_path / "share"};
+static const std::filesystem::path k_builtin_module_path{AM_PKGLIBDIR
+                                                         "/modules"};
+static const std::filesystem::path k_builtin_theme_path{AM_PKGDATADIR
+                                                        "/themes"};
 static constexpr char k_builtin_file_prefix_remove{'_'};
 static constexpr std::string k_builtin_module_file_suffix_add{".so"};
 static constexpr std::string k_builtin_theme_file_suffix_add{".conf"};
