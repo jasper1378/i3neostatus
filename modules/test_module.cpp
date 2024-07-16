@@ -1,5 +1,5 @@
-#ifndef SIMPLE_DATE_HPP
-#define SIMPLE_DATE_HPP
+#ifndef I3NEOSTATUS_MODULES_TEST_MODULE_HPP
+#define I3NEOSTATUS_MODULES_TEST_MODULE_HPP
 
 #include "i3neostatus/module_dev.hpp"
 
