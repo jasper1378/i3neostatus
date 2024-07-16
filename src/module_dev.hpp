@@ -8,6 +8,12 @@
 
 #include "libconfigfile/libconfigfile.hpp"
 
+#define I3NEOSTATUS_MODULE_DEV_DEFINE_ALLOC(module_)                           \
+  extern "C" {                                                                 \
+  i3neostatus::module_dev::base *allocator() { return new module_{}; }         \
+  void deleter(i3neostatus::module_dev::base *m) { delete m; }                 \
+  }
+
 namespace i3neostatus {
 namespace module_dev {
 using base = i3neostatus::module_base;

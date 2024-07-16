@@ -144,10 +144,6 @@ public:
   }
 };
 
-extern "C" {
-i3ns::base *allocator() { return new test_module{}; }
-
-void deleter(i3ns::base *m) { delete m; }
-}
+I3NEOSTATUS_MODULE_DEV_DEFINE_ALLOC(test_module)
 
 #endif
