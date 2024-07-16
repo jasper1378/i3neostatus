@@ -1,7 +1,7 @@
 #ifndef I3NEOSTATUS_MESSAGE_PRINTING_HPP
 #define I3NEOSTATUS_MESSAGE_PRINTING_HPP
 
-#include "program_constants.hpp"
+#include "config.h"
 
 #include <iostream>
 #include <string_view>
@@ -9,7 +9,7 @@
 namespace i3neostatus {
 namespace message_printing {
 void program_info(std::ostream &output_stream = std::cout);
-void help(const std::string_view argv_0 = program_constants::k_name,
+void help(const std::string_view argv_0 = PACKAGE_NAME,
           std::ostream &output_stream = std::cout);
 void version(std::ostream &output_stream = std::cout);
 void error(const std::string_view error, bool exit = false,

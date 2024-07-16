@@ -1,7 +1,7 @@
 #ifndef SIMPLE_DATE_HPP
 #define SIMPLE_DATE_HPP
 
-#include "module_dev.hpp"
+#include "i3neostatus/module_dev.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -13,9 +13,9 @@
 
 namespace i3ns = i3neostatus::module_dev;
 
-class simple_date : public i3ns::base {
+class test_module : public i3ns::base {
 private:
-  static constexpr std::string k_name{"simple_date"};
+  static constexpr std::string k_name{"test_module"};
 
 private:
   enum class action {
@@ -34,11 +34,11 @@ private:
   std::condition_variable m_action_cv;
 
 public:
-  simple_date()
+  test_module()
       : m_api{}, m_format{}, m_state{i3ns::state::good}, m_hidden{false},
         m_action{action::cont}, m_action_mtx{}, m_action_cv{} {}
 
-  virtual ~simple_date() {}
+  virtual ~test_module() {}
 
 public:
   virtual i3ns::config_out init(i3ns::api *api,
@@ -145,7 +145,7 @@ public:
 };
 
 extern "C" {
-i3ns::base *allocator() { return new simple_date{}; }
+i3ns::base *allocator() { return new test_module{}; }
 
 void deleter(i3ns::base *m) { delete m; }
 }

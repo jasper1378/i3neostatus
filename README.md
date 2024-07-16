@@ -6,20 +6,30 @@ i3neostatus is a powerful and modular i3status replacement.
 
 ## Installation
 
-Acquire the sources
+### 1a. Acquire the sources (git repository).
+
 ```
 $ git clone https://github.com/jasper1378/i3neostatus.git
 $ cd i3neostatus
-$ git submodule update --init --recursive --remote
+$ git submodule update --init --recursive
+$ autoreconf -i
 ```
-Build
+
+### 1b. Acquire the sources (distribution tarball).
+
 ```
-$ make -C deps/libconfigfile
+$ tar -xvf i3neostatus.tar.gz
+$ cd i3neostatus
+```
+
+### 2. Configure, build, and install.
+
+```
+$ mkdir build
+$ cd build
+$ ../configure # try `--help` for options
 $ make
-```
-Install
-```
-$ make install
+$ sudo make install
 ```
 
 ## Usage
@@ -155,7 +165,7 @@ Modules are not responsible for setting their own theme, instead they pass a "st
 
 Note that i3neostatus uses [libconfigfile](https://github.com/jasper1378/libconfigfile) to interface with its configuration file. If you wish for your module to be user-configurable, familiarity with this library is recommended.
 
-Throughout the following `module_test` will serve as a stand-in for the name of your module.
+Throughout the following `test_module` will serve as a stand-in for the name of your module.
 
 All i3neostatus code relevant to module development is found within the `i3neostatus::module_dev` namespace. It might be a good idea to start your module with a namespace alias to save yourself some typing. The following code examples assume that this line is present.
 
@@ -172,16 +182,16 @@ Start by including the `i3neostatus/module_dev.hpp` header file. If i3neostatus 
 The basic structure of a module is a class that inherits from `i3ns::base`.
 
 ```cpp
-class module_test : public i3ns::base {
+class test_module : public i3ns::base {
 };
 ```
 
-Before we start implementing the `module_test` class, i3neostatus needs a way to create and destroy instances of your module. This is accomplished by defining a pair of allocator and deleter functions in the global namespace of your module. Note that these functions are wrapped in an `extern "C"` block to prevent name mangling issues when i3neostatus loads you module.
+Before we start implementing the `test_module` class, i3neostatus needs a way to create and destroy instances of your module. This is accomplished by defining a pair of allocator and deleter functions in the global namespace of your module. Note that these functions are wrapped in an `extern "C"` block to prevent name mangling issues when i3neostatus loads you module.
 
 ```cpp
 extern "C" {
 i3ns::base* allocator() {
-  return new module_test{};
+  return new test_module{};
 }
 
 void deleter(i3ns::base *m) {
@@ -193,18 +203,18 @@ void deleter(i3ns::base *m) {
 Your module class must be default constructible. It's recommended that this constructor does little to nothing; proper initialization of your module will be preformed later.
 
 ```cpp
-class module_test : i3ns::public base {
+class test_module : i3ns::public base {
 public:
-  module_test();
+  test_module();
 };
 ```
 
 Just like any other child class, your module class must have a virtual destructor. It's recommended that this destructor does little to nothing; proper termination of your module will be preformed earlier.
 
 ```cpp
-class module_test : i3ns::public base {
+class test_module : i3ns::public base {
 public:
-  virtual ~module_test();
+  virtual ~test_module();
 };
 ```
 
@@ -342,7 +352,7 @@ The first is `init()`, which should verify user configuration and initialize you
 ```cpp
 #include <stdexcept>
 
-class module_test : public i3ns::base {
+class test_module : public i3ns::base {
 private:
   i3ns::api* m_api;
 
@@ -359,7 +369,7 @@ public:
     }
 
     // return module information
-    return {.name{"module_test"}, .click_events_enabled{true}};
+    return {.name{"test_module"}, .click_events_enabled{true}};
   }
 };
 ```
@@ -369,7 +379,7 @@ The next is `run()`, which is the main update loop of your module. This function
 ```cpp
 #include <utility>
 
-class module_test : public i3ns::base {
+class test_module : public i3ns::base {
 private:
   i3ns::api* m_api;
 
@@ -390,7 +400,7 @@ public:
 Then we have `term()`, which should signal `run()` to exit and preform any needed cleanup. Due to the nature of i3neostatus (typically runs until your computer is shut off), it is not guaranteed that this function will be called.
 
 ```cpp
-class module_test : public i3ns::base {
+class test_module : public i3ns::base {
 public:
   virtual void term() override {
     // signal run() to exit
@@ -402,7 +412,7 @@ public:
 Finally, there is `on_click_event()`, which will be called when a user clicks on your module. This function only needs to be overriden if you want to receive click events.
 
 ```cpp
-class module_test : public i3ns::base {
+class test_module : public i3ns::base {
   virtual void on_click_event(i3ns::click_event &&click_event) override {
     // do something based on click event
   }
@@ -417,7 +427,7 @@ Because `run()` will be executed concurrently, some level of synchronization wil
 #include <mutex>
 #include <utility>
 
-class module_test : public i3ns::base {
+class test_module : public i3ns::base {
 private:
   enum class action {
     cont,
@@ -432,7 +442,7 @@ private:
   std::condition_variable m_action_cv;
 
 public:
-  module_test()
+  test_module()
     : m_action{action::cont}, m_action_mtx{}, m_action_cv{}
   {}
 
@@ -486,7 +496,7 @@ public:
 When fully completed, your module should look something like the following.
 
 ```cpp
-// module_test.cpp
+// test_module.cpp
 
 #include <i3neostatus/module_dev.hpp>
 
@@ -496,7 +506,7 @@ When fully completed, your module should look something like the following.
 #include <stdexcept>
 #include <utility>
 
-class module_test : public i3ns::base {
+class test_module : public i3ns::base {
 private:
   enum class action {
     cont,
@@ -511,11 +521,11 @@ private:
   std::condition_variable m_action_cv;
 
 public:
-  module_test()
+  test_module()
     : m_api{}, m_action{action::cont}, m_action_mtx{}, m_action_cv{}
   {}
 
-  virtual ~module_test() {
+  virtual ~test_module() {
   }
 
 public:
@@ -528,7 +538,7 @@ public:
       throw std::runtime_error{"invalid configuration"};
     }
 
-    return {.name{"module_test"}, .click_events_enabled{true}};
+    return {.name{"test_module"}, .click_events_enabled{true}};
   }
 
   virtual void run() override {
@@ -574,7 +584,7 @@ public:
 
 extern "C" {
 i3ns::base* allocator() {
-  return new module_test{};
+  return new test_module{};
 }
 
 void deleter(i3ns::base *m) {
@@ -583,12 +593,9 @@ void deleter(i3ns::base *m) {
 }
 ```
 
-The final step is to compile your module to a shared object that can be loaded by i3neostatus. I3neostatus uses C++20, your module should as well. If using GCC, the following command should do the trick.
-```
-g++ -std=c++20 -Wall -Wextra -g -O2 -fPIC -shared module_test.cpp -o module_test
-```
-For more complex projects, I recommend using the Makefile found here: [generic-makefile/C++/library/Makefile](https://github.com/jasper1378/generic-makefile/blob/main/C%2B%2B/library/Makefile).
-This binary can be placed anywhere, however, `/usr/local/lib/i3neostatus/modules/module_test` is recommended for consistency between third-party modules. The only naming convention that the binary file must follow is that it cannot be prefixed with an underscore, as i3neostatus reserves this as a shorthand to refer to built-in modules.
+The final step is to compile your module as a shared library that can be dynamically loaded by i3neostatus. I3neostatus uses C++20, your module should as well.
+
+The module binary file name cannot begin with an underscore, as i3neostatus reserves this as a shorthand to refer to built-in modules.
 
 As a final piece of advice, be very wary of calling any non-thread-safe library functions in your module in order to avoid race conditions with other modules that may be loaded.
 
