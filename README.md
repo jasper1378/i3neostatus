@@ -186,18 +186,10 @@ class test_module : public i3ns::base {
 };
 ```
 
-Before we start implementing the `test_module` class, i3neostatus needs a way to create and destroy instances of your module. This is accomplished by defining a pair of allocator and deleter functions in the global namespace of your module. Note that these functions are wrapped in an `extern "C"` block to prevent name mangling issues when i3neostatus loads you module.
+Before we start implementing the `test_module` class, i3neostatus needs a way to create and destroy instances of your module. This is handled for you by invoking the macro `I3NEOSTATUS_MODULE_DEV_DEFINE_ALLOC()` with an argument corresponding to the name of your module class.
 
 ```cpp
-extern "C" {
-i3ns::base* allocator() {
-  return new test_module{};
-}
-
-void deleter(i3ns::base *m) {
-  delete m;
-}
-}
+I3NEOSTATUS_MODULE_DEV_DEFINE_ALLOC(test_module);
 ```
 
 Your module class must be default constructible. It's recommended that this constructor does little to nothing; proper initialization of your module will be preformed later.
@@ -582,15 +574,7 @@ public:
   }
 };
 
-extern "C" {
-i3ns::base* allocator() {
-  return new test_module{};
-}
-
-void deleter(i3ns::base *m) {
-  delete m;
-}
-}
+I3NEOSTATUS_MODULE_DEV_DEFINE_ALLOC(test_module);
 ```
 
 The final step is to compile your module as a shared library that can be dynamically loaded by i3neostatus. I3neostatus uses C++20, your module should as well.
