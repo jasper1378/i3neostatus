@@ -1,7 +1,7 @@
-#ifndef I3NEOSTATUS_MODULES_TEST_MODULE_HPP
-#define I3NEOSTATUS_MODULES_TEST_MODULE_HPP
+#ifndef I3NEOSTATUS_PLUGINS_TEST_PLUGIN_HPP
+#define I3NEOSTATUS_PLUGINS_TEST_PLUGIN_HPP
 
-#include "i3neostatus/module_dev.hpp"
+#include "i3neostatus/plugin_dev.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -11,11 +11,11 @@
 #include <stdexcept>
 #include <string>
 
-namespace i3ns = i3neostatus::module_dev;
+namespace i3ns = i3neostatus::plugin_dev;
 
-class test_module : public i3ns::base {
+class test_plugin : public i3ns::base {
 private:
-  static constexpr std::string k_name{"test_module"};
+  static constexpr std::string k_name{"test_plugin"};
 
 private:
   enum class action {
@@ -34,11 +34,11 @@ private:
   std::condition_variable m_action_cv;
 
 public:
-  test_module()
+  test_plugin()
       : m_api{}, m_format{}, m_state{i3ns::state::good}, m_hidden{false},
         m_action{action::cont}, m_action_mtx{}, m_action_cv{} {}
 
-  virtual ~test_module() {}
+  virtual ~test_plugin() {}
 
 public:
   virtual i3ns::config_out init(i3ns::api *api,
@@ -144,6 +144,6 @@ public:
   }
 };
 
-I3NEOSTATUS_MODULE_DEV_DEFINE_ALLOC(test_module)
+I3NEOSTATUS_PLUGIN_DEV_DEFINE_ALLOC(test_plugin)
 
 #endif

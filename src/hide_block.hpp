@@ -9,7 +9,7 @@ namespace i3neostatus {
 namespace hide_block {
 template <typename t_set> t_set set();
 template <> std::string set();
-template <> struct i3bar_data::block::data::module set();
+template <> struct i3bar_data::block::data::plugin set();
 
 template <typename t_get> bool get(const t_get &val);
 template <> bool get(const std::string &string);

@@ -2,7 +2,7 @@
 
 #include "block_state.hpp"
 #include "i3bar_data.hpp"
-#include "module_id.hpp"
+#include "plugin_id.hpp"
 #include "theme.hpp"
 
 #include "bits-and-bytes/unreachable_error.hpp"
@@ -40,16 +40,16 @@ struct i3neostatus::i3bar_data::block i3neostatus::make_block::separator(
   }()};
 
   return i3bar_data::block{
-      .id{.name{}, .instance{module_id::null}},
+      .id{.name{}, .instance{plugin_id::null}},
       .data{
           .program{
               .global{impl::global(true)},
               .theme{impl::separator_theme(theme, type, left, right)},
           },
-          .module{
+          .plugin{
               .full_text{
                   [&theme, type]()
-                      -> decltype(i3bar_data::block::data::module::full_text) {
+                      -> decltype(i3bar_data::block::data::plugin::full_text) {
                     switch (type) {
                     case theme::separator_type::begin: {
                       return theme.separator_begin_sequence;

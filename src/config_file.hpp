@@ -48,14 +48,14 @@ struct parsed {
     bool custom_separators;
   };
 
-  struct module {
+  struct plugin {
     std::filesystem::path file_path;
     libconfigfile::map_node config;
   };
 
   struct general general;
   struct theme::theme theme;
-  std::vector<module> modules;
+  std::vector<plugin> plugins;
 };
 
 parsed read(const char *file_path);
@@ -71,12 +71,12 @@ libconfigfile_parse_file_wrapper(const std::string &file_path);
 
 namespace constants {
 namespace misc {
-static const std::filesystem::path k_builtin_module_path{AM_PKGLIBDIR
-                                                         "/modules"};
+static const std::filesystem::path k_builtin_plugin_path{AM_PKGLIBDIR
+                                                         "/plugins"};
 static const std::filesystem::path k_builtin_theme_path{AM_PKGDATADIR
                                                         "/themes"};
 static constexpr char k_builtin_file_prefix_remove{'_'};
-static constexpr std::string k_builtin_module_file_suffix_add{".so"};
+static constexpr std::string k_builtin_plugin_file_suffix_add{".so"};
 static constexpr std::string k_builtin_theme_file_suffix_add{".conf"};
 } // namespace misc
 
@@ -154,9 +154,9 @@ static constexpr std::string_view k_theme_border_width_bottom{
 static constexpr std::string_view k_theme_border_width_left{
     "border_width_left"};
 
-static constexpr std::string k_modules{"modules"};
-static constexpr std::string k_modules_path{"path"};
-static constexpr std::string k_modules_config{"config"};
+static constexpr std::string k_plugins{"plugins"};
+static constexpr std::string k_plugins_path{"path"};
+static constexpr std::string k_plugins_config{"config"};
 } // namespace option_str
 
 namespace error_str {
@@ -322,10 +322,10 @@ read_border_width(const std::string &file_path,
 
 } // namespace theme_helpers
 
-decltype(parsed::modules)
-modules(const std::string &file_path,
+decltype(parsed::plugins)
+plugins(const std::string &file_path,
         libconfigfile::node_ptr<libconfigfile::node, true> &&ptr);
-namespace modules_helpers {}
+namespace plugins_helpers {}
 } // namespace section_handlers
 } // namespace impl
 } // namespace config_file

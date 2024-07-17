@@ -191,9 +191,9 @@ i3neostatus::config_file::impl::read(const std::string &file_path) {
             section_handlers::theme(file_path, std::move(ptr->second));
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
-          constants::option_str::k_modules): {
-        parsed.modules =
-            section_handlers::modules(file_path, std::move(ptr->second));
+          constants::option_str::k_plugins): {
+        parsed.plugins =
+            section_handlers::plugins(file_path, std::move(ptr->second));
       } break;
       default: {
         throw error_helpers::invalid_option(file_path, ptr->first);
@@ -573,11 +573,11 @@ i3neostatus::config_file::impl::section_handlers::theme_helpers::
   }
 }
 
-decltype(i3neostatus::config_file::parsed::modules)
-i3neostatus::config_file::impl::section_handlers::modules(
+decltype(i3neostatus::config_file::parsed::plugins)
+i3neostatus::config_file::impl::section_handlers::plugins(
     const std::string &file_path,
     libconfigfile::node_ptr<libconfigfile::node, true> &&ptr) {
-  decltype(parsed::modules) ret_val{};
+  decltype(parsed::plugins) ret_val{};
 
   if (ptr->get_node_type() == libconfigfile::node_type::Array) {
     const libconfigfile::node_ptr<libconfigfile::array_node> ptr1_array{
@@ -592,35 +592,35 @@ i3neostatus::config_file::impl::section_handlers::modules(
         for (auto ptr3{ptr2_map->begin()}; ptr3 != ptr2_map->end(); ++ptr3) {
           switch (bits_and_bytes::constexpr_hash_string::hash(ptr3->first)) {
           case (bits_and_bytes::constexpr_hash_string::hash(
-              constants::option_str::k_modules_path)): {
+              constants::option_str::k_plugins_path)): {
             if (ptr3->second->get_node_type() ==
                 libconfigfile::node_type::String) {
-              std::string module_file_path{
+              std::string plugin_file_path{
                   libconfigfile::node_to_base(std::move(
                       *libconfigfile::node_ptr_cast<libconfigfile::string_node>(
                           std::move(ptr3->second))))};
-              if (module_file_path.front() ==
+              if (plugin_file_path.front() ==
                   constants::misc::k_builtin_file_prefix_remove) {
                 ret_val[std::distance(ptr1_array->begin(), ptr2)].file_path =
                     file_path::resolve(
-                        constants::misc::k_builtin_module_path /
-                        (module_file_path.substr(1) +
-                         constants::misc::k_builtin_module_file_suffix_add));
+                        constants::misc::k_builtin_plugin_path /
+                        (plugin_file_path.substr(1) +
+                         constants::misc::k_builtin_plugin_file_suffix_add));
               } else {
                 ret_val[std::distance(ptr1_array->begin(), ptr2)].file_path =
-                    file_path::resolve(module_file_path);
+                    file_path::resolve(plugin_file_path);
               }
             } else {
               throw error_helpers::invalid_data_type_for(
                   file_path,
-                  (constants::option_str::k_modules +
+                  (constants::option_str::k_plugins +
                    error_helpers::k_nested_option_separator_char + ptr3->first),
                   libconfigfile::node_type_to_str(
                       libconfigfile::node_type::String));
             }
           } break;
           case (bits_and_bytes::constexpr_hash_string::hash(
-              constants::option_str::k_modules_config)): {
+              constants::option_str::k_plugins_config)): {
             if (ptr3->second->get_node_type() ==
                 libconfigfile::node_type::Map) {
               ret_val[std::distance(ptr1_array->begin(), ptr2)].config =
@@ -630,7 +630,7 @@ i3neostatus::config_file::impl::section_handlers::modules(
             } else {
               throw error_helpers::invalid_data_type_for(
                   file_path,
-                  (constants::option_str::k_modules +
+                  (constants::option_str::k_plugins +
                    error_helpers::k_nested_option_separator_char + ptr3->first),
                   libconfigfile::node_type_to_str(
                       libconfigfile::node_type::Map));
@@ -639,7 +639,7 @@ i3neostatus::config_file::impl::section_handlers::modules(
           default: {
             throw error_helpers::invalid_option(
                 file_path,
-                (constants::option_str::k_modules +
+                (constants::option_str::k_plugins +
                  error_helpers::k_nested_option_separator_char + ptr3->first));
           } break;
           }
@@ -647,19 +647,19 @@ i3neostatus::config_file::impl::section_handlers::modules(
         if (ret_val[std::distance(ptr1_array->begin(), ptr2)]
                 .file_path.empty()) {
           throw error_helpers::missing_option(
-              file_path, (constants::option_str::k_modules +
+              file_path, (constants::option_str::k_plugins +
                           error_helpers::k_nested_option_separator_char +
-                          constants::option_str::k_modules_path));
+                          constants::option_str::k_plugins_path));
         }
       } else {
         throw error_helpers::invalid_data_type_in(
-            file_path, constants::option_str::k_modules,
+            file_path, constants::option_str::k_plugins,
             libconfigfile::node_type_to_str(libconfigfile::node_type::Map));
       }
     }
   } else {
     throw error_helpers::invalid_data_type_for(
-        file_path, constants::option_str::k_modules,
+        file_path, constants::option_str::k_plugins,
         libconfigfile::node_type_to_str(libconfigfile::node_type::Array));
   }
 
