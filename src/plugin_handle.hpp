@@ -1,11 +1,11 @@
-#ifndef I3NEOSTATUS_MODULE_HANDLE_HPP
-#define I3NEOSTATUS_MODULE_HANDLE_HPP
+#ifndef I3NEOSTATUS_PLUGIN_HANDLE_HPP
+#define I3NEOSTATUS_PLUGIN_HANDLE_HPP
 
 #include "dyn_load_lib.hpp"
 #include "generic_callback.hpp"
-#include "module_api.hpp"
-#include "module_base.hpp"
-#include "module_id.hpp"
+#include "plugin_api.hpp"
+#include "plugin_base.hpp"
+#include "plugin_id.hpp"
 #include "thread_comm.hpp"
 
 #include "libconfigfile/libconfigfile.hpp"
@@ -16,7 +16,7 @@
 
 namespace i3neostatus {
 
-class module_handle {
+class plugin_handle {
 public:
   enum class state_change_type {
     new_block,
@@ -26,18 +26,18 @@ public:
   using state_change_callback = generic_callback<state_change_type>;
 
 private:
-  module_id::type m_id;
+  plugin_id::type m_id;
   std::string m_name;
   std::string m_file_path;
   bool m_click_events_enabled;
   state_change_callback m_state_change_callback;
   dyn_load_lib::lib m_dyn_lib;
-  std::unique_ptr<module_base, module_base::deleter_func_ptr_t> m_module;
-  thread_comm::producer<module_api::block> m_thread_comm_producer;
-  thread_comm::consumer<module_api::block> m_thread_comm_consumer;
-  thread_comm::producer<module_api::block> m_thread_comm_producer_module;
-  module_api m_module_api;
-  std::thread m_module_thread;
+  std::unique_ptr<plugin_base, plugin_base::deleter_func_ptr_t> m_plugin;
+  thread_comm::producer<plugin_api::block> m_thread_comm_producer;
+  thread_comm::consumer<plugin_api::block> m_thread_comm_consumer;
+  thread_comm::producer<plugin_api::block> m_thread_comm_producer_plugin;
+  plugin_api m_plugin_api;
+  std::thread m_plugin_thread;
 
 private:
   static const decltype(thread_comm::state_change_callback::func)
@@ -46,21 +46,21 @@ private:
       m_k_state_change_subscribed_events;
 
 public:
-  module_handle(const module_id::type id, std::string &&file_path,
+  plugin_handle(const plugin_id::type id, std::string &&file_path,
                 libconfigfile::map_node &&conf,
                 state_change_callback &&state_change_callback);
-  module_handle(const module_id::type id, const std::string &file_path,
+  plugin_handle(const plugin_id::type id, const std::string &file_path,
                 const libconfigfile::map_node &conf,
                 const state_change_callback &state_change_callback);
-  module_handle(module_handle &&other) noexcept;
-  module_handle(const module_handle &other) = delete;
+  plugin_handle(plugin_handle &&other) noexcept;
+  plugin_handle(const plugin_handle &other) = delete;
 
 public:
-  ~module_handle();
+  ~plugin_handle();
 
 public:
-  module_handle &operator=(module_handle &&other) noexcept;
-  module_handle &operator=(const module_handle &other) = delete;
+  plugin_handle &operator=(plugin_handle &&other) noexcept;
+  plugin_handle &operator=(const plugin_handle &other) = delete;
 
 private:
   void do_ctor(libconfigfile::map_node &&conf);
@@ -68,14 +68,14 @@ private:
 public:
   void run();
 
-  void send_click_event(module_api::click_event &&click_event);
+  void send_click_event(plugin_api::click_event &&click_event);
 
-  module_id::type get_id() const;
+  plugin_id::type get_id() const;
   const std::string &get_name() const;
   const std::string &get_file_path() const;
   bool get_click_events_enabled() const;
 
-  thread_comm::consumer<module_api::block> &get_comm();
+  thread_comm::consumer<plugin_api::block> &get_comm();
 };
 
 } // namespace i3neostatus

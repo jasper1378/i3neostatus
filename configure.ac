@@ -33,6 +33,6 @@ AC_FUNC_REALLOC
 
 # Output files.
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile deps/Makefile src/Makefile include/i3neostatus/Makefile modules/Makefile])
+AC_CONFIG_FILES([Makefile deps/Makefile src/Makefile include/i3neostatus/Makefile plugins/Makefile])
 AC_CONFIG_SUBDIRS([deps/bits-and-bytes deps/libconfigfile])
 AC_OUTPUT

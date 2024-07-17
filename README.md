@@ -34,7 +34,7 @@ $ sudo make install
 
 ## Usage
 
-i3neostatus is a replacement for i3status that provides a way to display a status line on bars that support the i3bar protocol. Unlike i3status, the design of i3neostatus emphasizes support for third-party modules and asynchronous updates. I3neostatus aims to posses full feature parity with i3status (and then some) while maintaining a high degree of efficiency.
+i3neostatus is a replacement for i3status that provides a way to display a status line on bars that support the i3bar protocol. Unlike i3status, the design of i3neostatus emphasizes support for third-party plugins and asynchronous updates. I3neostatus aims to posses full feature parity with i3status (and then some) while maintaining a high degree of efficiency.
 
 ### Command-line options
 
@@ -51,9 +51,9 @@ i3neostatus is a replacement for i3status that provides a way to display a statu
 
 ### Configuration
 
-The basic idea of i3neostatus is that you can specify which "modules" should be used. You can then configure each module with its own section. Note that i3neostatus uses the [libconfigfile](https://github.com/jasper1378/libconfigfile) syntax specification for its configuration file.
+The basic idea of i3neostatus is that you can specify which "plugins" should be used. You can then configure each plugin with its own section. Note that i3neostatus uses the [libconfigfile](https://github.com/jasper1378/libconfigfile) syntax specification for its configuration file.
 
-The configuration file has three main sections: `general` (`map`), which contains global options affecting the whole program; `theme` (`map`) which specifies the appearance of the status line; and `modules` (`array`) which contains the configuration for each module.
+The configuration file has three main sections: `general` (`map`), which contains global options affecting the whole program; `theme` (`map`) which specifies the appearance of the status line; and `plugins` (`array`) which contains the configuration for each plugin.
 
 The only option currently implemented in `general` is `custom_separators` (`integer`). Setting this to a non-zero value (default) will enable custom separators. Otherwise, the default i3bar separators are used.
 
@@ -63,24 +63,24 @@ A summary of these options is below.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| `<state>_color_foreground` | `string` (color) | Foreground color of modules in `<state>` state.
-| `<state>_color_background` | `string` (color) | Background color of modules in `<state>` state.
-| `<state>_color_border` | `string` (color or special) | Border color of modules in `<state>` state.
+| `<state>_color_foreground` | `string` (color) | Foreground color of plugins in `<state>` state.
+| `<state>_color_background` | `string` (color) | Background color of plugins in `<state>` state.
+| `<state>_color_border` | `string` (color or special) | Border color of plugins in `<state>` state.
 | `alternating_tint_foreground` | `string` (color) | Added to the foreground color of every other block.
 | `alternating_tint_background` | `string` (color) | Added to the background color of every other block.
 | `alternating_tint_border` | `string` (color or special) | Added to the border color of every other block.
 | `separator_<location>_sequence` | `string` (color) | String used as separator in `<location>` position.
 | `separator_<location>_color_foreground` | `string` (color or special) | Foreground color of separator in `<location>` position.
 | `separator_<location>_color_background` | `string` (color or special) | Background color of separator in `<location>` position.
-| `border_width_<position>` | `integer` | Width of the `<position>` border around modules. Units are pixels.
+| `border_width_<position>` | `integer` | Width of the `<position>` border around plugins. Units are pixels.
 
 Strings specifying colors should be in hexadecimal RGBA format (i.e., they should match `^#?[0-9a-fA-F]{8}$`).
 
-In the context of modules, `<state>` can be one of: `idle`, `info`, `good`, `warning`, `critical`, `error`. In the context of separators, `<location>` can be one of: `begin`, `middle`, `end`. In the context of borders, `<position>` can be one of: `top`, `right`, `bottom`, `left`.
+In the context of plugins, `<state>` can be one of: `idle`, `info`, `good`, `warning`, `critical`, `error`. In the context of separators, `<location>` can be one of: `begin`, `middle`, `end`. In the context of borders, `<position>` can be one of: `top`, `right`, `bottom`, `left`.
 
 In addition to a color, `<state>_color_border` and `alternating_tint_boder` may also be specified as one of two 'special' strings: `"foreground"` (take color from foreground) or `"background"` (take color from background). In addition to a color, `separator_<location>_color_ground` and `separator_<location>_color_background` may also be specified as one of two 'special' strings: `"right"` (take color from right block) or `"left"` (take color from left block). Note that `begin` separators can't use `"left"` and `end` separators can't use `"right"`.
 
-Each element (`map`) in the `modules` section must contain a `path` option (`string`) which specifies the location of the module binary to load. This location may be substituted for the name of a built-in module prefixed with a underscore. Each element may also contain a `config` option (`map`) which will be forwarded to that module as its configuration.
+Each element (`map`) in the `plugins` section must contain a `path` option (`string`) which specifies the location of the plugin binary to load. This location may be substituted for the name of a built-in plugin prefixed with a underscore. Each element may also contain a `config` option (`map`) which will be forwarded to that plugin as its configuration.
 
 Note that tildes in file paths handled by i3neostatus itself will be resolved.
 
@@ -137,7 +137,7 @@ theme = {
     border_width_left = 1;
 };
 
-modules = [
+plugins = [
     {
         path = "_simple_date";
         config = {
@@ -147,87 +147,87 @@ modules = [
 ];
 ```
 
-### Available modules
+### Available plugins
 
-Currently no modules have been implemented :)
+Currently no plugins have been implemented :)
 
 ### Bar support
 
 Currently, i3neostatus only supports bars using the i3bar protocol. Support for dzen2, xmobar, and lemonbar, etc. may be implemented in the future.
 
-### Module development
+### plugin development
 
-i3neostatus aims to deliver first-class support for third-party modules by simplifying development while still allowing a great degree of freedom. Modules are C++ shared objects that are then loaded by i3neostatus at runtime. The "built-in" modules that i3neostatus ships with are implemented identically to any third-party module, meaning that they can be used a reference during the development of your own module.
+i3neostatus aims to deliver first-class support for third-party plugins by simplifying development while still allowing a great degree of freedom. plugins are C++ shared objects that are then loaded by i3neostatus at runtime. The "built-in" plugins that i3neostatus ships with are implemented identically to any third-party plugin, meaning that they can be used a reference during the development of your own plugin.
 
 The following will walk you through the development process step-by-step.
 
-Modules are not responsible for setting their own theme, instead they pass a "state" value to i3neostatus (see below), which then uses this value, as well as a user specified global theme, to determine the visual styling of the module. If your module wants to override this theme, you can make use of the Pango markup option (see below). This is discouraged as it interferes with a cohesive status line appearance and may break certain user settings affecting separator color.
+plugins are not responsible for setting their own theme, instead they pass a "state" value to i3neostatus (see below), which then uses this value, as well as a user specified global theme, to determine the visual styling of the plugin. If your plugin wants to override this theme, you can make use of the Pango markup option (see below). This is discouraged as it interferes with a cohesive status line appearance and may break certain user settings affecting separator color.
 
-Note that i3neostatus uses [libconfigfile](https://github.com/jasper1378/libconfigfile) to interface with its configuration file. If you wish for your module to be user-configurable, familiarity with this library is recommended.
+Note that i3neostatus uses [libconfigfile](https://github.com/jasper1378/libconfigfile) to interface with its configuration file. If you wish for your plugin to be user-configurable, familiarity with this library is recommended.
 
-Throughout the following `test_module` will serve as a stand-in for the name of your module.
+Throughout the following `test_plugin` will serve as a stand-in for the name of your plugin.
 
-All i3neostatus code relevant to module development is found within the `i3neostatus::module_dev` namespace. It might be a good idea to start your module with a namespace alias to save yourself some typing. The following code examples assume that this line is present.
+All i3neostatus code relevant to plugin development is found within the `i3neostatus::plugin_dev` namespace. It might be a good idea to start your plugin with a namespace alias to save yourself some typing. The following code examples assume that this line is present.
 
 ```cpp
-namespace i3ns = i3neostatus::module_dev;
+namespace i3ns = i3neostatus::plugin_dev;
 ```
 
-Start by including the `i3neostatus/module_dev.hpp` header file. If i3neostatus has been installed to your system, this header should be found in `/usr/local/include` or something similar. This header contains all the declarations needed to interface with i3neostatus, including access to `libconfigfile`.
+Start by including the `i3neostatus/plugin_dev.hpp` header file. If i3neostatus has been installed to your system, this header should be found in `/usr/local/include` or something similar. This header contains all the declarations needed to interface with i3neostatus, including access to `libconfigfile`.
 
 ```cpp
-#include <i3neostatus/module_dev.hpp>
+#include <i3neostatus/plugin_dev.hpp>
 ```
 
-The basic structure of a module is a class that inherits from `i3ns::base`.
+The basic structure of a plugin is a class that inherits from `i3ns::base`.
 
 ```cpp
-class test_module : public i3ns::base {
+class test_plugin : public i3ns::base {
 };
 ```
 
-Before we start implementing the `test_module` class, i3neostatus needs a way to create and destroy instances of your module. This is handled for you by invoking the macro `I3NEOSTATUS_MODULE_DEV_DEFINE_ALLOC()` with an argument corresponding to the name of your module class.
+Before we start implementing the `test_plugin` class, i3neostatus needs a way to create and destroy instances of your plugin. This is handled for you by invoking the macro `I3NEOSTATUS_PLUGIN_DEV_DEFINE_ALLOC()` with an argument corresponding to the name of your plugin class.
 
 ```cpp
-I3NEOSTATUS_MODULE_DEV_DEFINE_ALLOC(test_module);
+I3NEOSTATUS_PLUGIN_DEV_DEFINE_ALLOC(test_plugin);
 ```
 
-Your module class must be default constructible. It's recommended that this constructor does little to nothing; proper initialization of your module will be preformed later.
+Your plugin class must be default constructible. It's recommended that this constructor does little to nothing; proper initialization of your plugin will be preformed later.
 
 ```cpp
-class test_module : i3ns::public base {
+class test_plugin : i3ns::public base {
 public:
-  test_module();
+  test_plugin();
 };
 ```
 
-Just like any other child class, your module class must have a virtual destructor. It's recommended that this destructor does little to nothing; proper termination of your module will be preformed earlier.
+Just like any other child class, your plugin class must have a virtual destructor. It's recommended that this destructor does little to nothing; proper termination of your plugin will be preformed earlier.
 
 ```cpp
-class test_module : i3ns::public base {
+class test_plugin : i3ns::public base {
 public:
-  virtual ~test_module();
+  virtual ~test_plugin();
 };
 ```
 
-Your module class does not need to be copyable or movable, these operations will never be preformed.
+Your plugin class does not need to be copyable or movable, these operations will never be preformed.
 
-The primary way your module will communicate with i3neostatus is through the `i3ns::api` class. Your module will receive a pointer to an instance of this class during its initialization. Thus, we should familiarize ourselves with its interface before proceeding further.
+The primary way your plugin will communicate with i3neostatus is through the `i3ns::api` class. Your plugin will receive a pointer to an instance of this class during its initialization. Thus, we should familiarize ourselves with its interface before proceeding further.
 
-There are several main data structures that will be passed between i3neostatus and your module.
+There are several main data structures that will be passed between i3neostatus and your plugin.
 
-`i3ns::config_in` represents the user configuration of your module (see [Configuration](#configuration)). It is an alias for `libconfigfile::map_node`.
+`i3ns::config_in` represents the user configuration of your plugin (see [Configuration](#configuration)). It is an alias for `libconfigfile::map_node`.
 
-`i3ns::config_out` represents the information about your module that will be passed back to i3neostatus. It is a struct containing the following members.
+`i3ns::config_out` represents the information about your plugin that will be passed back to i3neostatus. It is a struct containing the following members.
 
 ```cpp
 struct i3ns::config_out {
-  std::string name // The name of your module (valid characters are [A-Za-z_-])
-  bool click_events_enabled // Whether click events will be sent to your module
+  std::string name // The name of your plugin (valid characters are [A-Za-z_-])
+  bool click_events_enabled // Whether click events will be sent to your plugin
 };
 ```
 
-`i3ns::state` represents the current state of your module.
+`i3ns::state` represents the current state of your plugin.
 
 ```cpp
 enum class i3ns::state {
@@ -254,7 +254,7 @@ struct i3ns::content {
 };
 ```
 
-`i3ns::block` contains the primary information passed between your module and i3neostatus.
+`i3ns::block` contains the primary information passed between your plugin and i3neostatus.
 
 ```cpp
 using i3ns::block = std::pair<i3ns::content, i3ns::state>;
@@ -311,18 +311,18 @@ enum class i3ns::click_modifiers {
 
 Further information on most of the fields in the above structs (`i3ns::content`, `i3ns::click_event`, etc.) can be found by looking for their namesakes in the [i3bar protocol](https://i3wm.org/docs/i3bar-protocol.html).
 
-The `i3ns::api` class is movable but not copyable. Your module should never have to create a new instance of `i3ns::api`.
+The `i3ns::api` class is movable but not copyable. Your plugin should never have to create a new instance of `i3ns::api`.
 
-There are three primary API functions that will be called by your module.
+There are three primary API functions that will be called by your plugin.
 
-The first is `i3ns::api::put_block()`, which is used by your module to post new information to the status line.
+The first is `i3ns::api::put_block()`, which is used by your plugin to post new information to the status line.
 
 ```cpp
 void i3ns::api::put_block(const i3ns::block& block);
 void i3ns::api::put_block(i3ns::block&& block);
 ```
 
-The second is `i3ns::api::put_error()`, which is used by your module to communicate an error to i3neostatus. Note that once `i3ns::api::put_error()` has been called, no further calls to `i3ns::api::put_block()` or `api::put_error()` should be made.
+The second is `i3ns::api::put_error()`, which is used by your plugin to communicate an error to i3neostatus. Note that once `i3ns::api::put_error()` has been called, no further calls to `i3ns::api::put_block()` or `api::put_error()` should be made.
 
 ```cpp
 void i3ns::api::put_error(const std::exception& error);
@@ -331,20 +331,20 @@ void i3ns::api::put_error(const std::exception_ptr& error);
 void i3ns::api::put_error(std::exception_ptr&& error);
 ```
 
-The last is `i3ns::api::hide()`, which is used to temporarily hide your module on the status line. Call `i3ns::api::put_block()` or `i3ns::api::put_error()` to make it visible again.
+The last is `i3ns::api::hide()`, which is used to temporarily hide your plugin on the status line. Call `i3ns::api::put_block()` or `i3ns::api::put_error()` to make it visible again.
 
 ```cpp
 void i3ns::api::hide();
 ```
 
-Returning to your module, there are several virtual functions in `i3ns::base` that must be overriden by your class. Any exceptions thrown in these functions will be handled appropriately (as if by `i3ns::api::put_error()`).
+Returning to your plugin, there are several virtual functions in `i3ns::base` that must be overriden by your class. Any exceptions thrown in these functions will be handled appropriately (as if by `i3ns::api::put_error()`).
 
-The first is `init()`, which should verify user configuration and initialize your module. This function will be executed before `run()`.
+The first is `init()`, which should verify user configuration and initialize your plugin. This function will be executed before `run()`.
 
 ```cpp
 #include <stdexcept>
 
-class test_module : public i3ns::base {
+class test_plugin : public i3ns::base {
 private:
   i3ns::api* m_api;
 
@@ -360,18 +360,18 @@ public:
       throw std::runtime_error{"invalid configuration"};
     }
 
-    // return module information
-    return {.name{"test_module"}, .click_events_enabled{true}};
+    // return plugin information
+    return {.name{"test_plugin"}, .click_events_enabled{true}};
   }
 };
 ```
 
-The next is `run()`, which is the main update loop of your module. This function will be executed concurrently in its own thread by i3neostatus.
+The next is `run()`, which is the main update loop of your plugin. This function will be executed concurrently in its own thread by i3neostatus.
 
 ```cpp
 #include <utility>
 
-class test_module : public i3ns::base {
+class test_plugin : public i3ns::base {
 private:
   i3ns::api* m_api;
 
@@ -392,7 +392,7 @@ public:
 Then we have `term()`, which should signal `run()` to exit and preform any needed cleanup. Due to the nature of i3neostatus (typically runs until your computer is shut off), it is not guaranteed that this function will be called.
 
 ```cpp
-class test_module : public i3ns::base {
+class test_plugin : public i3ns::base {
 public:
   virtual void term() override {
     // signal run() to exit
@@ -401,17 +401,17 @@ public:
 };
 ```
 
-Finally, there is `on_click_event()`, which will be called when a user clicks on your module. This function only needs to be overriden if you want to receive click events.
+Finally, there is `on_click_event()`, which will be called when a user clicks on your plugin. This function only needs to be overriden if you want to receive click events.
 
 ```cpp
-class test_module : public i3ns::base {
+class test_plugin : public i3ns::base {
   virtual void on_click_event(i3ns::click_event &&click_event) override {
     // do something based on click event
   }
 };
 ```
 
-Because `run()` will be executed concurrently, some level of synchronization will likely be required in your module. Note that `i3ns::api::put_block()`/`i3ns::api::put_error()` are thread-safe. The synchronization mechanism should at least provide a means for `term()` to signal `run()` to exit. You might also wish for `on_click_event()` to be able to wake `run()` to preform an update immediately. Though synchronization can be implemented however you wish, the following example provides a starting point.
+Because `run()` will be executed concurrently, some level of synchronization will likely be required in your plugin. Note that `i3ns::api::put_block()`/`i3ns::api::put_error()` are thread-safe. The synchronization mechanism should at least provide a means for `term()` to signal `run()` to exit. You might also wish for `on_click_event()` to be able to wake `run()` to preform an update immediately. Though synchronization can be implemented however you wish, the following example provides a starting point.
 
 ```cpp
 #include <chrono>
@@ -419,7 +419,7 @@ Because `run()` will be executed concurrently, some level of synchronization wil
 #include <mutex>
 #include <utility>
 
-class test_module : public i3ns::base {
+class test_plugin : public i3ns::base {
 private:
   enum class action {
     cont,
@@ -434,7 +434,7 @@ private:
   std::condition_variable m_action_cv;
 
 public:
-  test_module()
+  test_plugin()
     : m_action{action::cont}, m_action_mtx{}, m_action_cv{}
   {}
 
@@ -485,12 +485,12 @@ public:
 };
 ```
 
-When fully completed, your module should look something like the following.
+When fully completed, your plugin should look something like the following.
 
 ```cpp
-// test_module.cpp
+// test_plugin.cpp
 
-#include <i3neostatus/module_dev.hpp>
+#include <i3neostatus/plugin_dev.hpp>
 
 #include <chrono>
 #include <condition_variable>
@@ -498,7 +498,7 @@ When fully completed, your module should look something like the following.
 #include <stdexcept>
 #include <utility>
 
-class test_module : public i3ns::base {
+class test_plugin : public i3ns::base {
 private:
   enum class action {
     cont,
@@ -513,11 +513,11 @@ private:
   std::condition_variable m_action_cv;
 
 public:
-  test_module()
+  test_plugin()
     : m_api{}, m_action{action::cont}, m_action_mtx{}, m_action_cv{}
   {}
 
-  virtual ~test_module() {
+  virtual ~test_plugin() {
   }
 
 public:
@@ -530,7 +530,7 @@ public:
       throw std::runtime_error{"invalid configuration"};
     }
 
-    return {.name{"test_module"}, .click_events_enabled{true}};
+    return {.name{"test_plugin"}, .click_events_enabled{true}};
   }
 
   virtual void run() override {
@@ -574,14 +574,14 @@ public:
   }
 };
 
-I3NEOSTATUS_MODULE_DEV_DEFINE_ALLOC(test_module);
+I3NEOSTATUS_PLUGIN_DEV_DEFINE_ALLOC(test_plugin);
 ```
 
-The final step is to compile your module as a shared library that can be dynamically loaded by i3neostatus. I3neostatus uses C++20, your module should as well.
+The final step is to compile your plugin as a shared library that can be dynamically loaded by i3neostatus. I3neostatus uses C++20, your plugin should as well.
 
-The module binary file name cannot begin with an underscore, as i3neostatus reserves this as a shorthand to refer to built-in modules.
+The plugin binary file name cannot begin with an underscore, as i3neostatus reserves this as a shorthand to refer to built-in plugins.
 
-As a final piece of advice, be very wary of calling any non-thread-safe library functions in your module in order to avoid race conditions with other modules that may be loaded.
+As a final piece of advice, be very wary of calling any non-thread-safe library functions in your plugin in order to avoid race conditions with other plugins that may be loaded.
 
 ### Misc
 

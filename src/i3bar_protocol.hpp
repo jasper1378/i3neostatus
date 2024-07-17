@@ -84,16 +84,16 @@ void print_statusline(const std::vector<struct i3bar_data::block> &content,
                       const bool hide_empty, std::ostream &stream = std::cout);
 
 void print_statusline(const struct i3bar_data::block &content,
-                      const module_id::type content_index,
+                      const plugin_id::type content_index,
                       std::vector<std::string> &content_cache,
                       const bool hide_empty, std::ostream &stream = std::cout);
 void print_statusline(const struct i3bar_data::block &content,
-                      const module_id::type content_index,
+                      const plugin_id::type content_index,
                       std::vector<std::string> &content_cache,
                       const i3bar_data::block &separator_left,
-                      const module_id::type separator_left_index,
+                      const plugin_id::type separator_left_index,
                       const i3bar_data::block &separator_right,
-                      const module_id::type separator_right_index,
+                      const plugin_id::type separator_right_index,
                       std::vector<std::string> &separator_cache,
                       const bool hide_empty, std::ostream &stream = std::cout);
 

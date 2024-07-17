@@ -9,9 +9,9 @@ template <> std::string i3neostatus::hide_block::set() {
 }
 
 template <>
-struct i3neostatus::i3bar_data::block::data::module
+struct i3neostatus::i3bar_data::block::data::plugin
 i3neostatus::hide_block::set() {
-  return (struct i3neostatus::i3bar_data::block::data::module){
+  return (struct i3neostatus::i3bar_data::block::data::plugin){
       .full_text{set<std::string>()}};
 }
 
@@ -22,5 +22,5 @@ template <> bool i3neostatus::hide_block::get(const std::string &string) {
 }
 
 template <> bool i3neostatus::hide_block::get(const i3bar_data::block &block) {
-  return get(block.data.module.full_text);
+  return get(block.data.plugin.full_text);
 }

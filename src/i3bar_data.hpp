@@ -1,7 +1,7 @@
 #ifndef I3NEOSTATUS_I3BAR_DATA_HPP
 #define I3NEOSTATUS_I3BAR_DATA_HPP
 
-#include "module_id.hpp"
+#include "plugin_id.hpp"
 
 #include "bits-and-bytes/enum_flag_operators.hpp"
 #include "libconfigfile/color.hpp"
@@ -54,7 +54,7 @@ struct header {
 struct block {
   struct id {
     std::string name;
-    module_id::type instance{module_id::null};
+    plugin_id::type instance{plugin_id::null};
   };
 
   struct data {
@@ -78,7 +78,7 @@ struct block {
       struct theme theme;
     };
 
-    struct module {
+    struct plugin {
       std::string full_text;
       std::optional<std::string> short_text;
       std::optional<std::variant<types::pixel_count_t, std::string>> min_width;
@@ -88,7 +88,7 @@ struct block {
     };
 
     struct program program;
-    struct module module;
+    struct plugin plugin;
   };
 
   struct id id;
@@ -98,7 +98,7 @@ struct block {
 struct click_event {
   struct id {
     std::string name;
-    module_id::type instance;
+    plugin_id::type instance;
   };
 
   struct data {

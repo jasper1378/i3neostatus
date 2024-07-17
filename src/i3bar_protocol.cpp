@@ -3,7 +3,7 @@
 #include "hide_block.hpp"
 #include "i3bar_data.hpp"
 #include "i3bar_data_conversions.hpp"
-#include "module_id.hpp"
+#include "plugin_id.hpp"
 
 #include "bits-and-bytes/constexpr_hash_string.hpp"
 #include "bits-and-bytes/constexpr_min_max.hpp"
@@ -57,7 +57,7 @@ void i3neostatus::i3bar_protocol::print_statusline(
 
 void i3neostatus::i3bar_protocol::print_statusline(
     const struct i3bar_data::block &content,
-    const module_id::type content_index,
+    const plugin_id::type content_index,
     std::vector<std::string> &content_cache, const bool hide_empty,
     std::ostream &stream /*= std::cout*/) {
   content_cache[content_index].clear();
@@ -67,12 +67,12 @@ void i3neostatus::i3bar_protocol::print_statusline(
 
 void i3neostatus::i3bar_protocol::print_statusline(
     const struct i3bar_data::block &content,
-    const module_id::type content_index,
+    const plugin_id::type content_index,
     std::vector<std::string> &content_cache,
     const i3bar_data::block &separator_left,
-    const module_id::type separator_left_index,
+    const plugin_id::type separator_left_index,
     const i3bar_data::block &separator_right,
-    const module_id::type separator_right_index,
+    const plugin_id::type separator_right_index,
     std::vector<std::string> &separator_cache, const bool hide_empty,
     std::ostream &stream) {
   content_cache[content_index].clear();
@@ -228,43 +228,43 @@ t_output &i3neostatus::i3bar_protocol::impl::serialize_block(
                            block.data.program.theme.border_left);
 
           ret_val.emplace_back(json_strings::block::k_full_text, std::string{});
-          serialize_string(ret_val.back().second, block.data.module.full_text);
+          serialize_string(ret_val.back().second, block.data.plugin.full_text);
 
-          if (block.data.module.short_text.has_value()) {
+          if (block.data.plugin.short_text.has_value()) {
             ret_val.emplace_back(json_strings::block::k_short_text,
                                  std::string{});
             serialize_string(ret_val.back().second,
-                             *block.data.module.short_text);
+                             *block.data.plugin.short_text);
           }
 
-          if (block.data.module.min_width.has_value()) {
+          if (block.data.plugin.min_width.has_value()) {
             ret_val.emplace_back(json_strings::block::k_min_width,
                                  std::string{});
-            ((block.data.module.min_width->index() == 0)
+            ((block.data.plugin.min_width->index() == 0)
                  ? (serialize_number(ret_val.back().second,
-                                     std::get<0>(*block.data.module.min_width)))
+                                     std::get<0>(*block.data.plugin.min_width)))
                  : (serialize_string(
                        ret_val.back().second,
-                       std::get<1>(*block.data.module.min_width))));
+                       std::get<1>(*block.data.plugin.min_width))));
           }
 
-          if (block.data.module.align.has_value()) {
+          if (block.data.plugin.align.has_value()) {
             ret_val.emplace_back(json_strings::block::k_align, std::string{});
             serialize_string(
                 ret_val.back().second,
-                i3bar_data::types::to_string(*block.data.module.align));
+                i3bar_data::types::to_string(*block.data.plugin.align));
           }
 
-          if (block.data.module.urgent.has_value()) {
+          if (block.data.plugin.urgent.has_value()) {
             ret_val.emplace_back(json_strings::block::k_urgent, std::string{});
-            serialize_bool(ret_val.back().second, *block.data.module.urgent);
+            serialize_bool(ret_val.back().second, *block.data.plugin.urgent);
           }
 
-          if (block.data.module.markup.has_value()) {
+          if (block.data.plugin.markup.has_value()) {
             ret_val.emplace_back(json_strings::block::k_markup, std::string{});
             serialize_string(
                 ret_val.back().second,
-                i3bar_data::types::to_string(*block.data.module.markup));
+                i3bar_data::types::to_string(*block.data.plugin.markup));
           }
 
           return ret_val;
@@ -535,7 +535,7 @@ i3neostatus::i3bar_protocol::impl::parse_click_event(
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(
           json_strings::click_event::k_instance): {
-        ret_val.id.instance = module_id::from_string(
+        ret_val.id.instance = plugin_id::from_string(
             read_string_value(click_event, name_end_pos, continue_from_pos));
       } break;
       case bits_and_bytes::constexpr_hash_string::hash(

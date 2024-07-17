@@ -21,17 +21,17 @@ i3neostatus_SOURCES =              \
 	make_block.hpp             \
 	message_printing.cpp       \
 	message_printing.hpp       \
-	module_api.cpp             \
-	module_api.hpp             \
-	module_base.cpp            \
-	module_base.hpp            \
-	module_dev.hpp             \
-	module_error.cpp           \
-	module_error.hpp           \
-	module_handle.cpp          \
-	module_handle.hpp          \
-	module_id.cpp              \
-	module_id.hpp              \
+	plugin_api.cpp             \
+	plugin_api.hpp             \
+	plugin_base.cpp            \
+	plugin_base.hpp            \
+	plugin_dev.hpp             \
+	plugin_error.cpp           \
+	plugin_error.hpp           \
+	plugin_handle.cpp          \
+	plugin_handle.hpp          \
+	plugin_id.cpp              \
+	plugin_id.hpp              \
 	theme.hpp                  \
 	thread_comm.hpp
 i3neostatus_CPPFLAGS = -I$(top_srcdir)/deps/bits-and-bytes/include -I$(top_srcdir)/deps/libconfigfile/include
