@@ -5,14 +5,9 @@
 #include "i3bar_data.hpp"
 #include "plugin_api.hpp"
 #include "plugin_base.hpp"
+#include "plugin_factory.hpp"
 
 #include "libconfigfile/libconfigfile.hpp"
-
-#define I3NEOSTATUS_PLUGIN_DEV_DEFINE_ALLOC(plugin_)                           \
-  extern "C" {                                                                 \
-  i3neostatus::plugin_dev::base *allocator() { return new plugin_{}; }         \
-  void deleter(i3neostatus::plugin_dev::base *m) { delete m; }                 \
-  }
 
 namespace i3neostatus {
 namespace plugin_dev {

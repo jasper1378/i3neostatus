@@ -27,9 +27,9 @@ private:
   static constexpr char m_k_whitespace_char{' '};
 
 public:
-  error(const std::string &message, const std::string &file_path = "",
+  error(const std::string &message, const std::string &path = "",
         const long long pos_line = -1, const long long pos_char = -1);
-  error(const char *message, const char *file_path = "",
+  error(const char *message, const char *path = "",
         const long long pos_line = -1, const long long pos_char = -1);
   error(const error &other);
 
@@ -49,7 +49,7 @@ struct parsed {
   };
 
   struct plugin {
-    std::filesystem::path file_path;
+    std::variant<std::filesystem::path, std::string> path_or_name;
     libconfigfile::map_node config;
   };
 
@@ -58,16 +58,20 @@ struct parsed {
   std::vector<plugin> plugins;
 };
 
-parsed read(const char *file_path);
-parsed read(const std::string &file_path);
-parsed read(const std::filesystem::path &file_path);
+parsed read(const char *path);
+parsed read(const std::string &path);
+parsed read(const std::filesystem::path &path);
 parsed read();
 
+bool is_builtin_plugin(const std::string &path_or_name);
+std::string builtin_plugin_name(const std::string &name);
+std::filesystem::path builtin_plugin_path(const std::string &name);
+
 namespace impl {
-parsed read(const std::string &file_path);
+parsed read(const std::string &path);
 
 libconfigfile::node_ptr<libconfigfile::map_node>
-libconfigfile_parse_file_wrapper(const std::string &file_path);
+libconfigfile_parse_file_wrapper(const std::string &path);
 
 namespace constants {
 namespace misc {
@@ -75,7 +79,7 @@ static const std::filesystem::path k_builtin_plugin_path{AM_PKGLIBDIR
                                                          "/plugins"};
 static const std::filesystem::path k_builtin_theme_path{AM_PKGDATADIR
                                                         "/themes"};
-static constexpr char k_builtin_file_prefix_remove{'_'};
+static constexpr char k_builtin_file_suffix_remove{'_'};
 static constexpr std::string k_builtin_plugin_file_suffix_add{".so"};
 static constexpr std::string k_builtin_theme_file_suffix_add{".conf"};
 } // namespace misc
@@ -155,7 +159,7 @@ static constexpr std::string_view k_theme_border_width_left{
     "border_width_left"};
 
 static constexpr std::string k_plugins{"plugins"};
-static constexpr std::string k_plugins_path{"path"};
+static constexpr std::string k_plugins_path_or_name{"path_or_name"};
 static constexpr std::string k_plugins_config{"config"};
 } // namespace option_str
 
@@ -174,49 +178,45 @@ static constexpr std::pair<theme::pixel_count_t, theme::pixel_count_t>
 
 namespace error_helpers {
 static constexpr char k_nested_option_separator_char{'/'};
-error invalid_option(const std::string &file_path,
-                     const std::string &option_str);
-error missing_option(const std::string &file_path,
-                     const std::string &option_str);
-error invalid_data_type_for(const std::string &file_path,
+error invalid_option(const std::string &path, const std::string &option_str);
+error missing_option(const std::string &path, const std::string &option_str);
+error invalid_data_type_for(const std::string &path,
                             const std::string &option_str,
                             const std::string &valid_type);
-error invalid_data_type_in(const std::string &file_path,
+error invalid_data_type_in(const std::string &path,
                            const std::string &option_str,
                            const std::string &valid_type);
-error invalid_format_for(const std::string &file_path,
-                         const std::string &option_str,
+error invalid_format_for(const std::string &path, const std::string &option_str,
                          const std::string &valid_format);
 template <typename T>
-error invalid_range_for(const std::string &file_path,
-                        const std::string &option_str,
+error invalid_range_for(const std::string &path, const std::string &option_str,
                         const std::pair<T, T> &valid_range) {
   return error{"invalid range for: \"" + option_str + "\" (should be " +
                    std::to_string(valid_range.first) + "-" +
                    std::to_string(valid_range.second) + ")",
-               file_path};
+               path};
 }
 } // namespace error_helpers
 
-namespace file_path {
-std::string resolve(const std::string &file_path);
-} // namespace file_path
+namespace path {
+std::string resolve(const std::string &path);
+} // namespace path
 
 namespace section_handlers {
 decltype(parsed::general)
-general(const std::string &file_path,
+general(const std::string &path,
         libconfigfile::node_ptr<libconfigfile::node, true> &&ptr);
 namespace general_helpers {}
 
 decltype(parsed::theme)
-theme(const std::string &file_path,
+theme(const std::string &_path,
       libconfigfile::node_ptr<libconfigfile::node, true> &&ptr);
 namespace theme_helpers {
 template <bool or_special_str, typename t_special = void *,
           typename t_special_handler = void *>
 std::conditional_t<or_special_str, std::variant<theme::color, t_special>,
                    theme::color>
-read_color(const std::string &file_path,
+read_color(const std::string &path,
            libconfigfile::node_ptr<libconfigfile::node> &&ptr,
            const std::string &option_str,
            t_special_handler special_handler = {})
@@ -240,7 +240,7 @@ read_color(const std::string &file_path,
             libconfigfile::node_to_base(std::move(*ptr_string)));
       } else {
         throw error_helpers::invalid_format_for(
-            file_path,
+            path,
             (constants::option_str::k_theme +
              error_helpers::k_nested_option_separator_char + option_str),
             constants::error_str::k_format_color);
@@ -248,7 +248,7 @@ read_color(const std::string &file_path,
     }
   } else {
     throw error_helpers::invalid_data_type_for(
-        file_path,
+        path,
         (constants::option_str::k_theme +
          error_helpers::k_nested_option_separator_char + option_str),
         libconfigfile::node_type_to_str(libconfigfile::node_type::String));
@@ -256,7 +256,7 @@ read_color(const std::string &file_path,
 }
 
 std::variant<theme::color, theme::special_border_color>
-read_border_color(const std::string &file_path,
+read_border_color(const std::string &path,
                   libconfigfile::node_ptr<libconfigfile::node> &&ptr,
                   const std::string &option_str);
 
@@ -264,21 +264,21 @@ template <theme::separator_type separator_type>
 std::variant<theme::color,
              theme::impl::separator_type_enum_to_special_separator_color_enum_t<
                  separator_type>>
-read_separator_color(const std::string &file_path,
+read_separator_color(const std::string &path,
                      libconfigfile::node_ptr<libconfigfile::node> &&ptr,
                      const std::string &option_str) {
   using special_separator_color =
       theme::impl::separator_type_enum_to_special_separator_color_enum_t<
           separator_type>;
   return read_color<true, special_separator_color>(
-      file_path, std::move(ptr), option_str,
-      [&file_path,
+      path, std::move(ptr), option_str,
+      [&path,
        &option_str](const std::string &value) -> special_separator_color {
         static constexpr std::string k_special_str_left{"left"};
         static constexpr std::string k_special_str_right{"right"};
-        const auto throw_error{[&file_path, &option_str]() -> void {
+        const auto throw_error{[&path, &option_str]() -> void {
           throw error_helpers::invalid_format_for(
-              file_path,
+              path,
               (constants::option_str::k_theme +
                error_helpers::k_nested_option_separator_char + option_str),
               constants::error_str::k_format_color_or_special_str);
@@ -311,19 +311,19 @@ read_separator_color(const std::string &file_path,
 }
 
 std::string
-read_separator_sequence(const std::string &file_path,
+read_separator_sequence(const std::string &path,
                         libconfigfile::node_ptr<libconfigfile::node> &&ptr,
                         const std::string &option_str);
 
 theme::pixel_count_t
-read_border_width(const std::string &file_path,
+read_border_width(const std::string &path,
                   libconfigfile::node_ptr<libconfigfile::node> &&ptr,
                   const std::string &option_str);
 
 } // namespace theme_helpers
 
 decltype(parsed::plugins)
-plugins(const std::string &file_path,
+plugins(const std::string &path,
         libconfigfile::node_ptr<libconfigfile::node, true> &&ptr);
 namespace plugins_helpers {}
 } // namespace section_handlers

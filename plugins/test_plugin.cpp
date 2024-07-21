@@ -3,6 +3,8 @@
 
 #include "i3neostatus/plugin_dev.hpp"
 
+#include "config.h"
+
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -11,12 +13,15 @@
 #include <stdexcept>
 #include <string>
 
+#if !ENABLE_DYN_LOAD_PLUGIN_BUILTIN
+namespace i3neostatus {
+namespace plugins_builtin {
+namespace test_plugin {
+#endif
+
 namespace i3ns = i3neostatus::plugin_dev;
 
 class test_plugin : public i3ns::base {
-private:
-  static constexpr std::string k_name{"test_plugin"};
-
 private:
   enum class action {
     cont,
@@ -55,7 +60,7 @@ public:
       throw std::runtime_error{"expected 'format' string in config"};
     }
 
-    return {k_name, true};
+    return {true};
   }
 
   virtual void run() override {
@@ -144,6 +149,12 @@ public:
   }
 };
 
-I3NEOSTATUS_PLUGIN_DEV_DEFINE_ALLOC(test_plugin)
+I3NEOSTATUS_PLUGIN_FACTORY_DEFINE(test_plugin);
+
+#if !ENABLE_DYN_LOAD_PLUGIN_BUILTIN
+} // namespace test_plugin
+} // namespace plugins_builtin
+} // namespace i3neostatus
+#endif
 
 #endif

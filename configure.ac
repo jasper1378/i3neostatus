@@ -5,7 +5,7 @@ AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([1.17 foreign tar-ustar -Wall -Werror])
 LT_PREREQ([2.5.0.14-9a4a-dirty])
-LT_INIT([])
+LT_INIT([dlopen])
 AC_LANG([C++])
 
 # Checks for programs.
@@ -30,6 +30,12 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_FUNC_REALLOC
+
+# Misc.
+AC_ARG_ENABLE([dyn-load-plugin-builtin], [AS_HELP_STRING([--disable-dyn-load-plugin-builtin], [do not dynamically load built-in plugins])], [enable_dyn_load_plugin_builtin=${enableval}], [enable_dyn_load_plugin_builtin=yes])
+AS_IF([test "x${enable_dyn_load_plugin_builtin}" = xyes], \
+      [AC_DEFINE([ENABLE_DYN_LOAD_PLUGIN_BUILTIN], 1, [Define to 1 if dyamically loading built-in plugins])])
+AM_CONDITIONAL([ENABLE_DYN_LOAD_PLUGIN_BUILTIN], [test "x${enable_dyn_load_plugin_builtin}" = xyes])
 
 # Output files.
 AC_CONFIG_HEADERS([config.h])
