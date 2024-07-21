@@ -1,5 +1,5 @@
-#ifndef I3NEOSTATUS_DYN_LOAD_LIB_HPP
-#define I3NEOSTATUS_DYN_LOAD_LIB_HPP
+#ifndef I3NEOSTATUS_DYNAMIC_LOADER_HPP
+#define I3NEOSTATUS_DYNAMIC_LOADER_HPP
 
 #include "bits-and-bytes/enum_flag_operators.hpp"
 
@@ -11,7 +11,7 @@
 
 namespace i3neostatus {
 
-namespace dyn_load_lib {
+namespace dynamic_loader {
 class error : public std::runtime_error {
 private:
   using base_t = std::runtime_error;
@@ -108,7 +108,7 @@ private:
 
   static Dl_info get_info_impl(const void *addr);
 };
-} // namespace dyn_load_lib
+} // namespace dynamic_loader
 
 } // namespace i3neostatus
 #endif

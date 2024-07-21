@@ -239,7 +239,7 @@ int main(int argc, char *argv[]) {
          ++cur_plugin_id) {
       plugin_updates.emplace_back(cur_plugin_id, &update_queue, false);
       plugin_handles.emplace_back(
-          cur_plugin_id, std::move(config.plugins[cur_plugin_id].file_path),
+          cur_plugin_id, std::move(config.plugins[cur_plugin_id].path_or_name),
           std::move(config.plugins[cur_plugin_id].config),
           plugin_handle::state_change_callback{plugin_callback,
                                                &plugin_updates.back()});
@@ -248,7 +248,11 @@ int main(int argc, char *argv[]) {
            plugin_handles[cur_plugin_id].get_click_events_enabled());
       plugin_handles.back().run();
       content_cache.first.emplace_back(i3bar_data::block{
-          .id{.name{plugin_handles.back().get_name()},
+          .id{.name{std::visit(
+                  [](auto &&path_or_name) {
+                    return static_cast<std::string>(path_or_name);
+                  },
+                  plugin_handles.back().get_path_or_name())},
               .instance{cur_plugin_id}},
           .data{.plugin{
               hide_block::set<struct i3bar_data::block::data::plugin>()}}});
@@ -287,8 +291,8 @@ int main(int argc, char *argv[]) {
           } catch (const std::exception &exception) {
             content_cache.first[cur_plugin_id].data.plugin = {
                 .full_text{plugin_error{
-                    cur_plugin_id, plugin_handles[cur_plugin_id].get_name(),
-                    plugin_handles[cur_plugin_id].get_file_path(),
+                    cur_plugin_id,
+                    plugin_handles[cur_plugin_id].get_path_or_name(),
                     exception.what()}
                                .what()},
                 .short_text{std::nullopt},

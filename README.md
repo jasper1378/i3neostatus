@@ -80,7 +80,7 @@ In the context of plugins, `<state>` can be one of: `idle`, `info`, `good`, `war
 
 In addition to a color, `<state>_color_border` and `alternating_tint_boder` may also be specified as one of two 'special' strings: `"foreground"` (take color from foreground) or `"background"` (take color from background). In addition to a color, `separator_<location>_color_ground` and `separator_<location>_color_background` may also be specified as one of two 'special' strings: `"right"` (take color from right block) or `"left"` (take color from left block). Note that `begin` separators can't use `"left"` and `end` separators can't use `"right"`.
 
-Each element (`map`) in the `plugins` section must contain a `path` option (`string`) which specifies the location of the plugin binary to load. This location may be substituted for the name of a built-in plugin prefixed with a underscore. Each element may also contain a `config` option (`map`) which will be forwarded to that plugin as its configuration.
+Each element (`map`) in the `plugins` section must contain a `path_or_name` option (`string`) which specifies the location of the plugin binary to load or the name of a built-in plugin suffixed with a underscore. Each element may also contain a `config` option (`map`) which will be forwarded to that plugin as its configuration.
 
 Note that tildes in file paths handled by i3neostatus itself will be resolved.
 
@@ -186,10 +186,10 @@ class test_plugin : public i3ns::base {
 };
 ```
 
-Before we start implementing the `test_plugin` class, i3neostatus needs a way to create and destroy instances of your plugin. This is handled for you by invoking the macro `I3NEOSTATUS_PLUGIN_DEV_DEFINE_ALLOC()` with an argument corresponding to the name of your plugin class.
+Before we start implementing the `test_plugin` class, i3neostatus needs a way to create and destroy instances of your plugin. This is handled for you by invoking the macro `I3NEOSTATUS_PLUGIN_FACTORY_DEFINE()` with an argument corresponding to the name of your plugin class.
 
 ```cpp
-I3NEOSTATUS_PLUGIN_DEV_DEFINE_ALLOC(test_plugin);
+I3NEOSTATUS_PLUGIN_FACTORY_DEFINE(test_plugin);
 ```
 
 Your plugin class must be default constructible. It's recommended that this constructor does little to nothing; proper initialization of your plugin will be preformed later.
@@ -222,7 +222,6 @@ There are several main data structures that will be passed between i3neostatus a
 
 ```cpp
 struct i3ns::config_out {
-  std::string name // The name of your plugin (valid characters are [A-Za-z_-])
   bool click_events_enabled // Whether click events will be sent to your plugin
 };
 ```
@@ -361,7 +360,7 @@ public:
     }
 
     // return plugin information
-    return {.name{"test_plugin"}, .click_events_enabled{true}};
+    return {.click_events_enabled{true}};
   }
 };
 ```
@@ -530,7 +529,7 @@ public:
       throw std::runtime_error{"invalid configuration"};
     }
 
-    return {.name{"test_plugin"}, .click_events_enabled{true}};
+    return {.click_events_enabled{true}};
   }
 
   virtual void run() override {
@@ -574,12 +573,12 @@ public:
   }
 };
 
-I3NEOSTATUS_PLUGIN_DEV_DEFINE_ALLOC(test_plugin);
+I3NEOSTATUS_PLUGIN_FACTORY_DEFINE(test_plugin);
 ```
 
 The final step is to compile your plugin as a shared library that can be dynamically loaded by i3neostatus. I3neostatus uses C++20, your plugin should as well.
 
-The plugin binary file name cannot begin with an underscore, as i3neostatus reserves this as a shorthand to refer to built-in plugins.
+The plugin binary file path cannot contain a trailing underscore, as i3neostatus reserves this as a means to refer to built-in plugins.
 
 As a final piece of advice, be very wary of calling any non-thread-safe library functions in your plugin in order to avoid race conditions with other plugins that may be loaded.
 

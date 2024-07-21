@@ -21,7 +21,6 @@ public:
   using config_in = libconfigfile::map_node;
 
   struct config_out {
-    std::string name;
     bool click_events_enabled;
 
     static const std::string k_valid_name_chars;
