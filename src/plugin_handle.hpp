@@ -1,13 +1,13 @@
 #ifndef I3NEOSTATUS_PLUGIN_HANDLE_HPP
 #define I3NEOSTATUS_PLUGIN_HANDLE_HPP
 
-#include "generic_callback.hpp"
 #include "plugin_api.hpp"
 #include "plugin_base.hpp"
 #include "plugin_id.hpp"
 #include "plugin_loader.hpp"
 #include "thread_comm.hpp"
 
+#include "bits-and-bytes/generic_callback.hpp"
 #include "libconfigfile/libconfigfile.hpp"
 
 #include <filesystem>
@@ -25,7 +25,8 @@ public:
     new_exception,
   };
 
-  using state_change_callback = generic_callback<state_change_type>;
+  using state_change_callback =
+      bits_and_bytes::generic_callback<state_change_type>;
 
 private:
   plugin_id::type m_id;
