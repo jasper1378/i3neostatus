@@ -21,6 +21,7 @@
 #include <utility>
 #include <variant>
 
+#if !ENABLE_DYN_LOAD_PLUGIN_BUILTIN
 const std::unordered_map<
     std::string, std::pair<i3neostatus::plugin_factory::create_func_ptr_t,
                            i3neostatus::plugin_factory::destroy_func_ptr_t>>
@@ -28,6 +29,7 @@ const std::unordered_map<
         {"test_plugin",
          {&plugins_builtin::test_plugin::create,
           &plugins_builtin::test_plugin::destroy}}};
+#endif
 
 i3neostatus::plugin_loader::plugin_loader(
     const std::variant<std::filesystem::path, std::string> &path_or_name,
