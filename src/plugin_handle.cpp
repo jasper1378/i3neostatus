@@ -1,12 +1,12 @@
 #include "plugin_handle.hpp"
 
-#include "generic_callback.hpp"
 #include "plugin_api.hpp"
 #include "plugin_base.hpp"
 #include "plugin_error.hpp"
 #include "plugin_id.hpp"
 #include "thread_comm.hpp"
 
+#include "bits-and-bytes/generic_callback.hpp"
 #include "libconfigfile/libconfigfile.hpp"
 
 #include <filesystem>

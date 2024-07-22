@@ -1,9 +1,8 @@
 #ifndef I3NEOSTATUS_THREAD_COMM_HPP
 #define I3NEOSTATUS_THREAD_COMM_HPP
 
-#include "generic_callback.hpp"
-
 #include "bits-and-bytes/enum_flag_operators.hpp"
+#include "bits-and-bytes/generic_callback.hpp"
 #include "bits-and-bytes/is_same_template.hpp"
 #include "bits-and-bytes/unreachable_error.hpp"
 
@@ -30,7 +29,8 @@ enum class shared_state_state : unsigned int {
 };
 BITS_AND_BYTES_DEFINE_ENUM_FLAG_OPERATORS_FOR_TYPE(shared_state_state);
 
-using state_change_callback = generic_callback<shared_state_state>;
+using state_change_callback =
+    bits_and_bytes::generic_callback<shared_state_state>;
 
 template <typename t_value> class shared_state;
 template <typename t_value> class shared_state_ptr;
@@ -385,7 +385,7 @@ public:
   producer(producer &&other) noexcept
       : m_shared_state_ptr{std::move(other.m_shared_state_ptr)} {}
 
-  ~producer(){};
+  ~producer() {};
 
   producer &operator=(const producer &other) {
     if (this != &other) {
@@ -452,7 +452,7 @@ public:
   consumer(consumer &&other) noexcept
       : m_shared_state_ptr{std::move(other.m_shared_state_ptr)} {}
 
-  ~consumer(){};
+  ~consumer() {};
 
   consumer &operator=(const consumer &other) {
     if (this != &other) {

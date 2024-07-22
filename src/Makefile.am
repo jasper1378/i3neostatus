@@ -8,7 +8,6 @@ i3neostatus_SOURCES =              \
 	config_file.hpp            \
 	dynamic_loader.cpp         \
 	dynamic_loader.hpp         \
-	generic_callback.hpp       \
 	hide_block.cpp             \
 	hide_block.hpp             \
 	i3bar_data_conversions.cpp \
